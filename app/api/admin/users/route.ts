@@ -1,93 +1,154 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { sql } from "@/lib/db"
-import { getUserFromToken } from "@/lib/auth"
-import { hashPassword } from "@/lib/auth"
+import bcrypt from "bcryptjs"
 
 export async function GET(request: NextRequest) {
   try {
-    // Check if user is admin
-    const authHeader = request.headers.get("authorization")
-    if (!authHeader) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const token = authHeader.replace("Bearer ", "")
-    const user = await getUserFromToken(token)
-
-    if (!user || user.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    }
-
     const { searchParams } = new URL(request.url)
-    const role = searchParams.get("role")
+    const search = searchParams.get("search") || ""
+    const role = searchParams.get("role") || "all"
+    const status = searchParams.get("status") || "all"
 
-    let query = `
-      SELECT id, full_name, email, phone, age, sex, role, profile_picture, email_verified, created_at
-      FROM users
-    `
-    const params: any[] = []
+    let users
 
-    if (role && role !== "all") {
-      query += " WHERE role = $1"
-      params.push(role)
+    // Build query based on filters
+    if (search.trim() && role !== "all" && status !== "all") {
+      // All three filters
+      users = await sql`
+        SELECT id, full_name, email, phone, age, sex, role, status, profile_picture, created_at
+        FROM users 
+        WHERE (full_name ILIKE ${`%${search.trim()}%`} OR email ILIKE ${`%${search.trim()}%`})
+        AND role = ${role} AND status = ${status}
+        ORDER BY created_at DESC
+      `
+    } else if (search.trim() && role !== "all") {
+      // Search + role filter
+      users = await sql`
+        SELECT id, full_name, email, phone, age, sex, role, status,  profile_picture, created_at
+        FROM users 
+        WHERE (full_name ILIKE ${`%${search.trim()}%`} OR email ILIKE ${`%${search.trim()}%`})
+        AND role = ${role}
+        ORDER BY created_at DESC
+      `
+    } else if (search.trim() && status !== "all") {
+      // Search + status filter
+      users = await sql`
+        SELECT id, full_name, email, phone, age, sex, role, status,  profile_picture, created_at
+        FROM users 
+        WHERE (full_name ILIKE ${`%${search.trim()}%`} OR email ILIKE ${`%${search.trim()}%`})
+        AND status = ${status}
+        ORDER BY created_at DESC
+      `
+    } else if (role !== "all" && status !== "all") {
+      // Role + status filter
+      users = await sql`
+        SELECT id, full_name, email, phone, age, sex, role, status,  profile_picture, created_at
+        FROM users 
+        WHERE role = ${role} AND status = ${status}
+        ORDER BY created_at DESC
+      `
+    } else if (search.trim()) {
+      // Search only
+      users = await sql`
+        SELECT id, full_name, email, phone, age, sex, role, status,  profile_picture, created_at
+        FROM users 
+        WHERE full_name ILIKE ${`%${search.trim()}%`} OR email ILIKE ${`%${search.trim()}%`}
+        ORDER BY created_at DESC
+      `
+    } else if (role !== "all") {
+      // Role filter only
+      users = await sql`
+        SELECT id, full_name, email, phone, age, sex, role, status,  profile_picture, created_at
+        FROM users 
+        WHERE role = ${role}
+        ORDER BY created_at DESC
+      `
+    } else if (status !== "all") {
+      // Status filter only
+      users = await sql`
+        SELECT id, full_name, email, phone, age, sex, role, status,  profile_picture, created_at
+        FROM users 
+        WHERE status = ${status}
+        ORDER BY created_at DESC
+      `
+    } else {
+      // No filters
+      users = await sql`
+        SELECT id, full_name, email, phone, age, sex, role, status,  profile_picture, created_at
+        FROM users 
+        ORDER BY created_at DESC
+      `
     }
 
-    query += " ORDER BY created_at DESC"
-
-    const result = await sql(query, params)
-
-    return NextResponse.json({ users: result })
+    return NextResponse.json({
+      success: true,
+      users: users || [],
+    })
   } catch (error) {
     console.error("Error fetching users:", error)
-    return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to fetch users",
+        users: [],
+      },
+      { status: 500 },
+    )
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if user is admin
-    const authHeader = request.headers.get("authorization")
-    if (!authHeader) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const token = authHeader.replace("Bearer ", "")
-    const user = await getUserFromToken(token)
-
-    if (!user || user.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    }
-
     const body = await request.json()
-    const { full_name, email, phone, age, sex, role, password } = body
+    const { name, email, phone, age, gender, password, role = "student", status = "active", image_url } = body
 
-    // Validation
-    if (!full_name || !email || !password || !role) {
-      return NextResponse.json({ error: "Full name, email, password, and role are required" }, { status: 400 })
+    // Validate required fields
+    if (!name || !email || !password) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Name, email, and password are required",
+        },
+        { status: 400 },
+      )
     }
 
     // Check if user already exists
-    const existingUser = await sql`
-      SELECT id FROM users WHERE email = ${email}
-    `
+    const existingUser = await sql`SELECT id FROM users WHERE email = ${email}`
 
     if (existingUser.length > 0) {
-      return NextResponse.json({ error: "User with this email already exists" }, { status: 400 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: "User with this email already exists",
+        },
+        { status: 400 },
+      )
     }
 
     // Hash password
-    const hashedPassword = await hashPassword(password)
+    const hashedPassword = await bcrypt.hash(password, 12)
 
-    // Create user
+    // Insert new user
     const result = await sql`
-      INSERT INTO users (full_name, email, phone, age, sex, password_hash, role, email_verified)
-      VALUES (${full_name}, ${email}, ${phone || null}, ${age || null}, ${sex || null}, ${hashedPassword}, ${role}, true)
-      RETURNING id, full_name, email, phone, age, sex, role, profile_picture, email_verified, created_at
+      INSERT INTO users (full_name, email, phone, age, sex, password_hash, role, status,  profile_picture) 
+      VALUES (${name}, ${email}, ${phone || null}, ${age || null}, ${gender || null}, ${hashedPassword}, ${role}, ${status}, ${image_url || null})
+      RETURNING id, full_name, email, phone, age, sex, role, status,  profile_picture, created_at
     `
 
-    return NextResponse.json({ user: result[0] })
+    return NextResponse.json({
+      success: true,
+      user: result[0],
+      message: "User created successfully",
+    })
   } catch (error) {
     console.error("Error creating user:", error)
-    return NextResponse.json({ error: "Failed to create user" }, { status: 500 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to create user",
+      },
+      { status: 500 },
+    )
   }
 }

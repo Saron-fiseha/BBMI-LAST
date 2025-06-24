@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils"
 import {
   LayoutDashboard,
   Users,
-  UserCog,
   FolderOpen,
   BookOpen,
   GraduationCap,
@@ -28,11 +27,6 @@ const sidebarItems = [
     title: "Dashboard",
     href: "/admin/dashboard",
     icon: LayoutDashboard,
-  },
-  {
-    title: "Role Management",
-    href: "/admin/roles",
-    icon: UserCog,
   },
   {
     title: "User Accounts",

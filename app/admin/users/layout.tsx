@@ -6,5 +6,5 @@ export default function AdminUsersLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <DashboardLayout>{children}</DashboardLayout>
+  return <>{children}</>
 }
