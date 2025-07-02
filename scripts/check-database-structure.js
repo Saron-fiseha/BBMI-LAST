@@ -1,10 +1,10 @@
-import { neon } from "@neondatabase/serverless"
+import { neon } from "@neondatabase/serverless";
 
-const sql = neon(process.env.DATABASE_URL)
+const sql = neon(process.env.DATABASE_URL);
 
 async function checkDatabaseStructure() {
   try {
-    console.log("🔍 Checking database structure...")
+    console.log("🔍 Checking database structure...");
 
     // Check if categories table exists
     const tableExists = await sql`
@@ -13,9 +13,9 @@ async function checkDatabaseStructure() {
         WHERE table_schema = 'public' 
         AND table_name = 'categories'
       );
-    `
+    `;
 
-    console.log("📊 Categories table exists:", tableExists[0].exists)
+    console.log("📊 Categories table exists:", tableExists[0].exists);
 
     if (tableExists[0].exists) {
       // Get table structure
@@ -24,23 +24,26 @@ async function checkDatabaseStructure() {
         FROM information_schema.columns
         WHERE table_name = 'categories'
         ORDER BY ordinal_position;
-      `
+      `;
 
-      console.log("📋 Categories table structure:")
+      console.log("📋 Categories table structure:");
       columns.forEach((col) => {
-        console.log(`  - ${col.column_name}: ${col.data_type} (nullable: ${col.is_nullable})`)
-      })
+        console.log(
+          `  - ${col.column_name}: ${col.data_type} (nullable: ${col.is_nullable})`
+        );
+      });
 
       // Count records
-      const count = await sql`SELECT COUNT(*) as total FROM categories`
-      console.log(`📊 Total categories: ${count[0].total}`)
+      const count = await sql`SELECT COUNT(*) as total FROM categories`;
+      console.log(`📊 Total categories: ${count[0].total}`);
 
       // Show sample data
-      const sample = await sql`SELECT id, name, level, status FROM categories LIMIT 3`
-      console.log("📝 Sample categories:")
+      const sample =
+        await sql`SELECT id, name, level, status FROM categories LIMIT 3`;
+      console.log("📝 Sample categories:");
       sample.forEach((cat) => {
-        console.log(`  - ${cat.id}: ${cat.name} (${cat.level}, ${cat.status})`)
-      })
+        console.log(`  - ${cat.id}: ${cat.name} (${cat.level}, ${cat.status})`);
+      });
     }
 
     // Check other tables
@@ -49,17 +52,17 @@ async function checkDatabaseStructure() {
       FROM information_schema.tables 
       WHERE table_schema = 'public'
       ORDER BY table_name;
-    `
+    `;
 
-    console.log("📋 All tables in database:")
+    console.log("📋 All tables in database:");
     allTables.forEach((table) => {
-      console.log(`  - ${table.table_name}`)
-    })
+      console.log(`  - ${table.table_name}`);
+    });
 
-    console.log("✅ Database structure check completed")
+    console.log("✅ Database structure check completed");
   } catch (error) {
-    console.error("❌ Error checking database structure:", error)
+    console.error("❌ Error checking database structure:", error);
   }
 }
 
-checkDatabaseStructure()
+checkDatabaseStructure();

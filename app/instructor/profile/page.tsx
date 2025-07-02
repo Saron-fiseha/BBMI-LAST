@@ -1,523 +1,508 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/hooks/use-auth"
-import { InstructorLayout } from "@/components/instructor/instructor-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { User, Mail, Phone, MapPin, Calendar, Camera, Save, Edit } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { DollarSign, Star, Users, BookOpen, Camera, Instagram, Linkedin, Globe, Plus, X } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
+import { toast } from "sonner"
+import { InstructorLayout } from "@/components/instructor/instructor-layout"
 
 interface InstructorProfile {
   id: string
   name: string
   email: string
-  phone?: string
-  bio?: string
-  location?: string
-  profile_picture?: string
-  specialties: string[]
+  phone: string
+  bio: string
+  profile_picture: string
+  specialization: string
   experience_years: number
   certifications: string[]
   social_links: {
-    website?: string
     instagram?: string
     linkedin?: string
+    website?: string
   }
-  joined_date: string
-  total_students: number
-  total_courses: number
-  average_rating: number
+  location: string
+  hourly_rate: number
+  availability: {
+    [key: string]: {
+      available: boolean
+      hours: string
+    }
+  }
+  created_at: string
+  stats: {
+    total_courses: number
+    total_students: number
+    average_rating: number
+    total_earnings: number
+  }
 }
 
-export default function InstructorProfile() {
-  const { user, loading } = useAuth()
-  const router = useRouter()
+export default function InstructorProfilePage() {
   const [profile, setProfile] = useState<InstructorProfile | null>(null)
-  const [loadingData, setLoadingData] = useState(true)
-  const [isEditing, setIsEditing] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    bio: "",
-    location: "",
-    specialties: "",
-    experience_years: 0,
-    certifications: "",
-    website: "",
-    instagram: "",
-    linkedin: "",
-  })
+  const [loading, setLoading] = useState(true)
+  const [editing, setEditing] = useState(false)
+  const [formData, setFormData] = useState<Partial<InstructorProfile>>({})
+  const [newCertification, setNewCertification] = useState("")
+  const { user } = useAuth()
 
   useEffect(() => {
-    if (!loading && (!user || user.role !== "instructor")) {
-      router.push(user ? "/dashboard" : "/login")
-    }
-  }, [user, loading, router])
-
-  useEffect(() => {
-    if (user && user.role === "instructor") {
-      fetchProfile()
-    }
-  }, [user])
+    fetchProfile()
+  }, [])
 
   const fetchProfile = async () => {
     try {
-      setLoadingData(true)
+      const token = localStorage.getItem("token")
       const response = await fetch("/api/instructor/profile", {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       })
 
       if (response.ok) {
         const data = await response.json()
         setProfile(data)
-        setFormData({
-          name: data.name || "",
-          email: data.email || "",
-          phone: data.phone || "",
-          bio: data.bio || "",
-          location: data.location || "",
-          specialties: data.specialties?.join(", ") || "",
-          experience_years: data.experience_years || 0,
-          certifications: data.certifications?.join(", ") || "",
-          website: data.social_links?.website || "",
-          instagram: data.social_links?.instagram || "",
-          linkedin: data.social_links?.linkedin || "",
-        })
-      } else {
-        // Mock data fallback
-        const mockProfile = {
-          id: String(user?.id || "1"),
-          name: user?.full_name || "Betty Smith",
-          email: user?.email || "betty@brushedbybetty.com",
-          phone: "+1 (555) 123-4567",
-          bio: "Professional makeup artist and hair stylist with over 10 years of experience. Passionate about teaching and helping others discover their beauty potential.",
-          location: "Los Angeles, CA",
-          profile_picture: "/placeholder.svg?height=120&width=120",
-          specialties: ["Hair Styling", "Makeup Artistry", "Bridal Beauty", "Color Theory"],
-          experience_years: 10,
-          certifications: ["Certified Makeup Artist", "Advanced Hair Styling Certificate", "Bridal Beauty Specialist"],
-          social_links: {
-            website: "https://brushedbybetty.com",
-            instagram: "@brushedbybetty",
-            linkedin: "betty-smith-mua",
-          },
-          joined_date: "2023-01-15",
-          total_students: 1247,
-          total_courses: 5,
-          average_rating: 4.9,
-        }
-        setProfile(mockProfile)
-        setFormData({
-          name: mockProfile.name,
-          email: mockProfile.email,
-          phone: mockProfile.phone || "",
-          bio: mockProfile.bio || "",
-          location: mockProfile.location || "",
-          specialties: mockProfile.specialties.join(", "),
-          experience_years: mockProfile.experience_years,
-          certifications: mockProfile.certifications.join(", "),
-          website: mockProfile.social_links.website || "",
-          instagram: mockProfile.social_links.instagram || "",
-          linkedin: mockProfile.social_links.linkedin || "",
-        })
+        setFormData(data)
       }
     } catch (error) {
       console.error("Error fetching profile:", error)
-      toast({
-        title: "Error",
-        description: "Failed to load profile. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to load profile")
     } finally {
-      setLoadingData(false)
+      setLoading(false)
     }
   }
 
   const handleSave = async () => {
     try {
-      setSaving(true)
+      const token = localStorage.getItem("token")
       const response = await fetch("/api/instructor/profile", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          ...formData,
-          specialties: formData.specialties
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean),
-          certifications: formData.certifications
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean),
-          social_links: {
-            website: formData.website,
-            instagram: formData.instagram,
-            linkedin: formData.linkedin,
-          },
-        }),
+        body: JSON.stringify(formData),
       })
 
       if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Profile updated successfully!",
-        })
-        setIsEditing(false)
+        toast.success("Profile updated successfully")
+        setEditing(false)
         fetchProfile()
       } else {
-        throw new Error("Failed to update profile")
+        toast.error("Failed to update profile")
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setSaving(false)
+      console.error("Error updating profile:", error)
+      toast.error("Failed to update profile")
     }
   }
 
-  if (loading || !user || user.role !== "instructor") {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>
+  const addCertification = () => {
+    if (newCertification.trim()) {
+      setFormData({
+        ...formData,
+        certifications: [...(formData.certifications || []), newCertification.trim()],
+      })
+      setNewCertification("")
+    }
   }
 
-  if (loadingData) {
+  const removeCertification = (index: number) => {
+    setFormData({
+      ...formData,
+      certifications: formData.certifications?.filter((_, i) => i !== index) || [],
+    })
+  }
+
+  const updateAvailability = (day: string, field: "available" | "hours", value: boolean | string) => {
+    const prev = formData.availability?.[day] || { available: false, hours: "" }
+    setFormData({
+      ...formData,
+      availability: {
+        ...formData.availability,
+        [day]: {
+          available: field === "available" ? value as boolean : prev.available,
+          hours: field === "hours" ? value as string : prev.hours,
+        },
+      },
+    })
+  }
+
+  if (loading) {
     return (
-      <InstructorLayout>
-        <div className="space-y-6">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-          </div>
-          <Card>
-            <CardContent className="p-6 animate-pulse">
-              <div className="flex items-center space-x-4">
-                <div className="w-24 h-24 bg-gray-200 rounded-full"></div>
-                <div className="flex-1">
-                  <div className="h-6 bg-gray-200 rounded w-1/3 mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Profile</h1>
         </div>
-      </InstructorLayout>
+        <div className="grid gap-6 md:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      </div>
     )
   }
 
+  if (!profile) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">Failed to load profile</p>
+      </div>
+    )
+  }
+
+  const daysOfWeek = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+
   return (
     <InstructorLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Profile Settings</h1>
-            <p className="text-muted-foreground">Manage your instructor profile and preferences</p>
-          </div>
-          <Button
-            onClick={() => {
-              if (isEditing) {
-                handleSave()
-              } else {
-                setIsEditing(true)
-              }
-            }}
-            disabled={saving}
-          >
-            {isEditing ? (
-              <>
-                <Save className="mr-2 h-4 w-4" />
-                {saving ? "Saving..." : "Save Changes"}
-              </>
-            ) : (
-              <>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Profile
-              </>
-            )}
-          </Button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Profile</h1>
+          <p className="text-muted-foreground">Manage your instructor profile and settings</p>
         </div>
+        <div className="flex gap-2">
+          {editing ? (
+            <>
+              <Button variant="outline" onClick={() => setEditing(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave}>Save Changes</Button>
+            </>
+          ) : (
+            <Button onClick={() => setEditing(true)}>Edit Profile</Button>
+          )}
+        </div>
+      </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          {/* Profile Overview */}
-          <Card className="md:col-span-1">
+      {/* Stats Overview */}
+      <div className="grid gap-6 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
+            <BookOpen className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{profile.stats.total_courses}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{profile.stats.total_students}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
+            <Star className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold flex items-center gap-1">
+              {profile.stats.average_rating}
+              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${profile.stats.total_earnings.toLocaleString()}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="general" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="professional">Professional</TabsTrigger>
+          <TabsTrigger value="availability">Availability</TabsTrigger>
+          <TabsTrigger value="social">Social Links</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="general" className="space-y-6">
+          <Card>
             <CardHeader>
-              <CardTitle>Profile Overview</CardTitle>
+              <CardTitle>Personal Information</CardTitle>
+              <CardDescription>Update your personal details and contact information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="flex flex-col items-center space-y-4">
-                <div className="relative">
-                  <Avatar className="h-24 w-24">
-                    <AvatarImage src={profile?.profile_picture || "/placeholder.svg"} alt={profile?.name} />
-                    <AvatarFallback className="bg-gradient-to-r from-amber-400 to-amber-600 text-white text-2xl">
-                      {profile?.name
-                        ?.split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  {isEditing && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full p-0"
-                    >
-                      <Camera className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-                <div className="text-center">
-                  <h3 className="font-semibold text-lg">{profile?.name}</h3>
-                  <p className="text-muted-foreground">{profile?.email}</p>
-                </div>
+              {/* Profile Picture */}
+              <div className="flex items-center gap-6">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src={profile.profile_picture || "/placeholder.svg"} />
+                  <AvatarFallback className="text-lg">{profile.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                {editing && (
+                  <Button variant="outline" size="sm">
+                    <Camera className="h-4 w-4 mr-2" />
+                    Change Photo
+                  </Button>
+                )}
               </div>
 
-              <Separator />
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Total Students</span>
-                  <Badge variant="secondary">{profile?.total_students}</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Total Courses</span>
-                  <Badge variant="secondary">{profile?.total_courses}</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Average Rating</span>
-                  <Badge variant="secondary">{profile?.average_rating}/5</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Experience</span>
-                  <Badge variant="secondary">{profile?.experience_years} years</Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Profile Details */}
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
-              <CardDescription>
-                {isEditing ? "Update your profile information" : "Your current profile information"}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
-                  {isEditing ? (
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    />
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <User className="h-4 w-4 text-muted-foreground" />
-                      <span>{profile?.name}</span>
-                    </div>
-                  )}
+                  <Input
+                    id="name"
+                    value={editing ? formData.name || "" : profile.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    disabled={!editing}
+                  />
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  {isEditing ? (
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    />
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span>{profile?.email}</span>
-                    </div>
-                  )}
+                  <Input id="email" type="email" value={profile.email} disabled className="bg-muted" />
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone</Label>
-                  {isEditing ? (
-                    <Input
-                      id="phone"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    />
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span>{profile?.phone || "Not provided"}</span>
-                    </div>
-                  )}
+                  <Input
+                    id="phone"
+                    value={editing ? formData.phone || "" : profile.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    disabled={!editing}
+                  />
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
-                  {isEditing ? (
-                    <Input
-                      id="location"
-                      value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    />
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span>{profile?.location || "Not provided"}</span>
-                    </div>
-                  )}
+                  <Input
+                    id="location"
+                    value={editing ? formData.location || "" : profile.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    disabled={!editing}
+                  />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="bio">Bio</Label>
-                {isEditing ? (
-                  <Textarea
-                    id="bio"
-                    value={formData.bio}
-                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                    placeholder="Tell students about yourself..."
-                    className="min-h-[100px]"
-                  />
-                ) : (
-                  <p className="text-sm">{profile?.bio || "No bio provided"}</p>
-                )}
+                <Textarea
+                  id="bio"
+                  value={editing ? formData.bio || "" : profile.bio}
+                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  disabled={!editing}
+                  className="min-h-[100px]"
+                />
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
+        <TabsContent value="professional" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Professional Details</CardTitle>
+              <CardDescription>Manage your professional information and credentials</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="specialties">Specialties</Label>
-                  {isEditing ? (
-                    <Input
-                      id="specialties"
-                      value={formData.specialties}
-                      onChange={(e) => setFormData({ ...formData, specialties: e.target.value })}
-                      placeholder="Hair Styling, Makeup, etc. (comma separated)"
-                    />
-                  ) : (
-                    <div className="flex flex-wrap gap-1">
-                      {profile?.specialties?.map((specialty, index) => (
-                        <Badge key={index} variant="outline">
-                          {specialty}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
+                  <Label htmlFor="specialization">Specialization</Label>
+                  <Input
+                    id="specialization"
+                    value={editing ? formData.specialization || "" : profile.specialization}
+                    onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+                    disabled={!editing}
+                  />
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="experience">Years of Experience</Label>
-                  {isEditing ? (
-                    <Input
-                      id="experience"
-                      type="number"
-                      value={formData.experience_years}
-                      onChange={(e) => setFormData({ ...formData, experience_years: Number.parseInt(e.target.value) })}
-                    />
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span>{profile?.experience_years} years</span>
+                  <Input
+                    id="experience"
+                    type="number"
+                    value={editing ? formData.experience_years || "" : profile.experience_years}
+                    onChange={(e) => setFormData({ ...formData, experience_years: Number(e.target.value) })}
+                    disabled={!editing}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="hourly_rate">Hourly Rate ($)</Label>
+                  <Input
+                    id="hourly_rate"
+                    type="number"
+                    value={editing ? formData.hourly_rate || "" : profile.hourly_rate}
+                    onChange={(e) => setFormData({ ...formData, hourly_rate: Number(e.target.value) })}
+                    disabled={!editing}
+                  />
+                </div>
+              </div>
+
+              {/* Certifications */}
+              <div className="space-y-4">
+                <Label>Certifications</Label>
+                <div className="space-y-2">
+                  {(editing ? formData.certifications : profile.certifications)?.map((cert, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Badge variant="secondary" className="flex-1 justify-start">
+                        {cert}
+                      </Badge>
+                      {editing && (
+                        <Button size="sm" variant="ghost" onClick={() => removeCertification(index)}>
+                          <X className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  {editing && (
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Add new certification"
+                        value={newCertification}
+                        onChange={(e) => setNewCertification(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault()
+                            addCertification()
+                          }
+                        }}
+                      />
+                      <Button size="sm" onClick={addCertification}>
+                        <Plus className="h-4 w-4" />
+                      </Button>
                     </div>
                   )}
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="availability" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Weekly Availability</CardTitle>
+              <CardDescription>Set your available hours for each day of the week</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {daysOfWeek.map((day) => (
+                <div key={day} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center gap-4">
+                    <div className="w-24">
+                      <Label className="capitalize font-medium">{day}</Label>
+                    </div>
+                    <Switch
+                      checked={
+                        editing ? formData.availability?.[day]?.available : profile.availability?.[day]?.available
+                      }
+                      onCheckedChange={(checked) => updateAvailability(day, "available", checked)}
+                      disabled={!editing}
+                    />
+                  </div>
+                  {(editing ? formData.availability?.[day]?.available : profile.availability?.[day]?.available) && (
+                    <div className="flex-1 max-w-xs">
+                      <Input
+                        placeholder="e.g., 9:00 AM - 5:00 PM"
+                        value={
+                          editing ? formData.availability?.[day]?.hours || "" : profile.availability?.[day]?.hours || ""
+                        }
+                        onChange={(e) => updateAvailability(day, "hours", e.target.value)}
+                        disabled={!editing}
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="social" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Social Media Links</CardTitle>
+              <CardDescription>Connect your social media profiles to showcase your work</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="instagram" className="flex items-center gap-2">
+                  <Instagram className="h-4 w-4" />
+                  Instagram
+                </Label>
+                <Input
+                  id="instagram"
+                  placeholder="https://instagram.com/yourusername"
+                  value={editing ? formData.social_links?.instagram || "" : profile.social_links?.instagram || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      social_links: { ...formData.social_links, instagram: e.target.value },
+                    })
+                  }
+                  disabled={!editing}
+                />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="certifications">Certifications</Label>
-                {isEditing ? (
-                  <Input
-                    id="certifications"
-                    value={formData.certifications}
-                    onChange={(e) => setFormData({ ...formData, certifications: e.target.value })}
-                    placeholder="Certification 1, Certification 2, etc. (comma separated)"
-                  />
-                ) : (
-                  <div className="space-y-1">
-                    {profile?.certifications?.map((cert, index) => (
-                      <div key={index} className="text-sm">
-                        • {cert}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <Label htmlFor="linkedin" className="flex items-center gap-2">
+                  <Linkedin className="h-4 w-4" />
+                  LinkedIn
+                </Label>
+                <Input
+                  id="linkedin"
+                  placeholder="https://linkedin.com/in/yourusername"
+                  value={editing ? formData.social_links?.linkedin || "" : profile.social_links?.linkedin || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      social_links: { ...formData.social_links, linkedin: e.target.value },
+                    })
+                  }
+                  disabled={!editing}
+                />
               </div>
 
-              <Separator />
-
-              <div className="space-y-4">
-                <h4 className="font-medium">Social Links</h4>
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="website">Website</Label>
-                    {isEditing ? (
-                      <Input
-                        id="website"
-                        value={formData.website}
-                        onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                        placeholder="https://yourwebsite.com"
-                      />
-                    ) : (
-                      <span className="text-sm">{profile?.social_links?.website || "Not provided"}</span>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="instagram">Instagram</Label>
-                    {isEditing ? (
-                      <Input
-                        id="instagram"
-                        value={formData.instagram}
-                        onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
-                        placeholder="@username"
-                      />
-                    ) : (
-                      <span className="text-sm">{profile?.social_links?.instagram || "Not provided"}</span>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="linkedin">LinkedIn</Label>
-                    {isEditing ? (
-                      <Input
-                        id="linkedin"
-                        value={formData.linkedin}
-                        onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
-                        placeholder="username"
-                      />
-                    ) : (
-                      <span className="text-sm">{profile?.social_links?.linkedin || "Not provided"}</span>
-                    )}
-                  </div>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="website" className="flex items-center gap-2">
+                  <Globe className="h-4 w-4" />
+                  Website
+                </Label>
+                <Input
+                  id="website"
+                  placeholder="https://yourwebsite.com"
+                  value={editing ? formData.social_links?.website || "" : profile.social_links?.website || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      social_links: { ...formData.social_links, website: e.target.value },
+                    })
+                  }
+                  disabled={!editing}
+                />
               </div>
-
-              {isEditing && (
-                <div className="flex justify-end space-x-2 pt-4">
-                  <Button variant="outline" onClick={() => setIsEditing(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSave} disabled={saving}>
-                    {saving ? "Saving..." : "Save Changes"}
-                  </Button>
-                </div>
-              )}
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
+    </div>
     </InstructorLayout>
   )
 }

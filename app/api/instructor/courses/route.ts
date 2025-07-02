@@ -1,29 +1,70 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { verifyToken } from "@/lib/auth"
-import { query } from "@/lib/db"
+import { getUserFromToken } from "@/lib/auth"
+import { sql } from "@/lib/db"
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.headers.get("authorization")?.replace("Bearer ", "")
+    // Get the authorization header
+    const authHeader = request.headers.get("authorization")
+    console.log("Auth header:", authHeader)
+
+    if (!authHeader) {
+      console.log("No authorization header provided")
+      return NextResponse.json({ error: "No authorization header provided" }, { status: 401 })
+    }
+
+    // Extract token
+    const token = authHeader.replace("Bearer ", "")
+    console.log("Extracted token:", token ? "Token present" : "No token")
 
     if (!token) {
+      console.log("No token in authorization header")
       return NextResponse.json({ error: "No token provided" }, { status: 401 })
     }
 
-    const decoded = await verifyToken(token)
-    if (!decoded || decoded.role !== "instructor") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    // Get user from token
+    console.log("Attempting to get user from token...")
+    const user = await getUserFromToken(token)
+    console.log("User from token:", user ? { id: user.id, role: user.role } : "No user found")
+
+    if (!user) {
+      console.log("Invalid token - no user found")
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 })
     }
 
-    const instructorId = decoded.userId
+    if (user.role !== "instructor") {
+      console.log("User role is not instructor:", user.role)
+      return NextResponse.json({ error: "Access denied - instructor role required" }, { status: 403 })
+    }
+
+    const instructorId = user.id
+    console.log("Fetching courses for instructor ID:", instructorId)
+
+    // Define the course type
+    type CourseRow = {
+      id: number | string
+      title: string
+      description: string
+      students: number
+      rating: number
+      review_count: number
+      earnings_amount: number
+      thumbnail_url?: string
+      status?: string
+      price: number
+      duration?: number
+      level?: string
+      created_at: string
+      updated_at: string
+    }
 
     // Get instructor's courses with enrollment and rating data
-    const courses = await query(
-      `
+    const courses = await sql<CourseRow[]>`
       SELECT 
         c.*,
         COALESCE(enrollment_stats.student_count, 0) as students,
         COALESCE(rating_stats.avg_rating, 0) as rating,
+        COALESCE(rating_stats.review_count, 0) as review_count,
         COALESCE(c.price * enrollment_stats.student_count, 0) as earnings_amount
       FROM courses c
       LEFT JOIN (
@@ -31,34 +72,37 @@ export async function GET(request: NextRequest) {
           course_id, 
           COUNT(*) as student_count
         FROM enrollments
+        WHERE status = 'active'
         GROUP BY course_id
       ) enrollment_stats ON c.id = enrollment_stats.course_id
       LEFT JOIN (
         SELECT 
           course_id,
-          AVG(rating) as avg_rating
-        FROM course_reviews
+          AVG(rating) as avg_rating,
+          COUNT(*) as review_count
+        FROM reviews
         GROUP BY course_id
       ) rating_stats ON c.id = rating_stats.course_id
-      WHERE c.instructor_id = ?
+      WHERE c.instructor_id = ${instructorId}
       ORDER BY c.created_at DESC
-    `,
-      [instructorId],
-    )
+    `
+
+    console.log("Found courses:", courses.length)
 
     // Format the response
-    const formattedCourses = (courses.rows || []).map((course) => ({
+    const formattedCourses = courses.map((course: CourseRow) => ({
       id: course.id.toString(),
       title: course.title,
-      students: Number.parseInt(course.students) || 0,
-      rating: Number.parseFloat(course.rating) || 0,
-      earnings: `$${(course.earnings_amount || 0).toLocaleString()}`,
-      image: course.thumbnail_url || `/placeholder.svg?height=100&width=200`,
-      status: course.status || "draft",
       description: course.description,
-      price: course.price,
-      duration: course.duration,
-      level: course.level,
+      students: Number(course.students || 0),
+      rating: Number(Number(course.rating || 0).toFixed(1)),
+      review_count: Number(course.review_count || 0),
+      earnings: `$${(course.earnings_amount || 0).toLocaleString()}`,
+      image: course.thumbnail_url || `/placeholder.svg?height=200&width=300`,
+      status: course.status || "draft",
+      price: Number(course.price || 0),
+      duration: Number(course.duration || 0),
+      level: course.level || "beginner",
       created_at: course.created_at,
       updated_at: course.updated_at,
     }))
@@ -66,71 +110,135 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(formattedCourses)
   } catch (error) {
     console.error("Error fetching instructor courses:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
-  }
-}
 
-export async function POST(request: NextRequest) {
-  try {
-    const token = request.headers.get("authorization")?.replace("Bearer ", "")
-
-    if (!token) {
-      return NextResponse.json({ error: "No token provided" }, { status: 401 })
+    // Check if it's a database connection error
+    if (error instanceof Error) {
+      console.error("Error details:", {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+      })
     }
 
-    const decoded = await verifyToken(token)
-    if (!decoded || decoded.role !== "instructor") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const body = await request.json()
-    const { title, description, price, duration, level, category_id, thumbnail_url } = body
-
-    if (!title || !description) {
-      return NextResponse.json({ error: "Title and description are required" }, { status: 400 })
-    }
-
-    await query(
-      `
-      INSERT INTO courses (
-        title, description, price, duration, level, category_id, 
-        instructor_id, thumbnail_url, status, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft', NOW(), NOW())
-    `,
-      [
-        title,
-        description,
-        price || 0,
-        duration || 0,
-        level || "beginner",
-        category_id || null,
-        decoded.userId,
-        thumbnail_url || null,
-      ],
-    )
-
-    // Fetch the last inserted course for this instructor and title
-    const courseResult = await query(
-      `
-      SELECT id FROM courses
-      WHERE instructor_id = ? AND title = ?
-      ORDER BY created_at DESC
-      LIMIT 1
-      `,
-      [decoded.userId, title]
-    )
-
-    const courseId = courseResult.rows?.[0]?.id
-
+    // Return error response instead of mock data for debugging
     return NextResponse.json(
       {
-        id: courseId,
-        message: "Course created successfully",
+        error: "Failed to fetch courses",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 201 },
+      { status: 500 },
     )
-  } catch (error) {
-    console.error("Error creating course:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
+
+
+
+// import { type NextRequest, NextResponse } from "next/server"
+// import { getUserFromToken } from "@/lib/auth"
+// import { sql } from "@/lib/db"
+
+// export async function GET(request: NextRequest) {
+//   try {
+//     const token = request.headers.get("authorization")?.replace("Bearer ", "")
+
+//     if (!token) {
+//       return NextResponse.json({ error: "No token provided" }, { status: 401 })
+//     }
+
+//     const user = await getUserFromToken(token)
+//     if (!user || user.role !== "instructor") {
+//       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+//     }
+
+//     const instructorId = user.id
+
+//     // Define the course type
+//     type CourseRow = {
+//       id: number | string;
+//       title: string;
+//       description: string;
+//       students: number;
+//       rating: number;
+//       review_count: number;
+//       earnings_amount: number;
+//       thumbnail_url?: string;
+//       status?: string;
+//       price: number;
+//       duration?: number;
+//       level?: string;
+//       created_at: string;
+//       updated_at: string;
+//     };
+
+//     // Get instructor's courses with enrollment and rating data
+//     const courses = await sql<CourseRow[]>`
+//       SELECT 
+//         c.*,
+//         COALESCE(enrollment_stats.student_count, 0) as students,
+//         COALESCE(rating_stats.avg_rating, 0) as rating,
+//         COALESCE(rating_stats.review_count, 0) as review_count,
+//         COALESCE(c.price * enrollment_stats.student_count, 0) as earnings_amount
+//       FROM courses c
+//       LEFT JOIN (
+//         SELECT 
+//           course_id, 
+//           COUNT(*) as student_count
+//         FROM enrollments
+//         WHERE status = 'active'
+//         GROUP BY course_id
+//       ) enrollment_stats ON c.id = enrollment_stats.course_id
+//       LEFT JOIN (
+//         SELECT 
+//           course_id,
+//           AVG(rating) as avg_rating,
+//           COUNT(*) as review_count
+//         FROM reviews
+//         GROUP BY course_id
+//       ) rating_stats ON c.id = rating_stats.course_id
+//       WHERE c.instructor_id = ${instructorId}
+//       ORDER BY c.created_at DESC
+//     `;
+
+//     // Format the response
+//     const formattedCourses = courses.map((course: CourseRow) => ({
+//       id: course.id.toString(),
+//       title: course.title,
+//       description: course.description,
+//       students: Number(course.students || 0),
+//       rating: Number(Number(course.rating || 0).toFixed(1)),
+//       review_count: Number(course.review_count || 0),
+//       earnings: `$${(course.earnings_amount || 0).toLocaleString()}`,
+//       image: course.thumbnail_url || `/placeholder.svg?height=200&width=300`,
+//       status: course.status || "draft",
+//       price: Number(course.price || 0),
+//       duration: Number(course.duration || 0),
+//       level: course.level || "beginner",
+//       created_at: course.created_at,
+//       updated_at: course.updated_at,
+//     }))
+
+//     return NextResponse.json(formattedCourses)
+//   } catch (error) {
+//     console.error("Error fetching instructor courses:", error)
+
+//     // Return mock data as fallback
+//     return NextResponse.json([
+//       {
+//         id: "1",
+//         title: "Advanced Hair Styling Techniques",
+//         description: "Master advanced hair styling techniques for professional results",
+//         students: 324,
+//         rating: 4.8,
+//         review_count: 45,
+//         earnings: "$9,720",
+//         image: "/placeholder.svg?height=200&width=300",
+//         status: "published",
+//         price: 299,
+//         duration: 120,
+//         level: "advanced",
+//         created_at: "2024-01-15",
+//         updated_at: "2024-06-20",
+//       },
+//     ])
+//   }
+// }

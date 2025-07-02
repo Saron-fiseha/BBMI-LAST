@@ -1,17 +1,20 @@
-import { neon } from "@neondatabase/serverless"
+import { neon } from "@neondatabase/serverless";
 
-const sql = neon(process.env.DATABASE_URL)
+const sql = neon(process.env.DATABASE_URL);
 
 async function testDatabaseConnection() {
   try {
-    console.log("🔍 Testing database connection...")
-    console.log("📊 DATABASE_URL exists:", !!process.env.DATABASE_URL)
-    console.log("📊 DATABASE_URL preview:", process.env.DATABASE_URL?.substring(0, 50) + "...")
+    console.log("🔍 Testing database connection...");
+    console.log("📊 DATABASE_URL exists:", !!process.env.DATABASE_URL);
+    console.log(
+      "📊 DATABASE_URL preview:",
+      process.env.DATABASE_URL?.substring(0, 50) + "..."
+    );
 
     // Test basic connection
-    const result = await sql`SELECT 1 as test, CURRENT_TIMESTAMP as now`
-    console.log("✅ Database connection successful!")
-    console.log("📊 Test result:", result)
+    const result = await sql`SELECT 1 as test, CURRENT_TIMESTAMP as now`;
+    console.log("✅ Database connection successful!");
+    console.log("📊 Test result:", result);
 
     // Check if categories table exists
     const tableCheck = await sql`
@@ -20,8 +23,8 @@ async function testDatabaseConnection() {
         WHERE table_schema = 'public' 
         AND table_name = 'categories'
       ) as table_exists
-    `
-    console.log("📊 Categories table exists:", tableCheck[0].table_exists)
+    `;
+    console.log("📊 Categories table exists:", tableCheck[0].table_exists);
 
     if (tableCheck[0].table_exists) {
       // Get table structure
@@ -30,27 +33,27 @@ async function testDatabaseConnection() {
         FROM information_schema.columns 
         WHERE table_name = 'categories' 
         ORDER BY ordinal_position
-      `
-      console.log("📊 Table structure:", structure)
+      `;
+      console.log("📊 Table structure:", structure);
 
       // Get sample data
-      const sampleData = await sql`SELECT * FROM categories LIMIT 3`
-      console.log("📊 Sample data:", sampleData)
+      const sampleData = await sql`SELECT * FROM categories LIMIT 3`;
+      console.log("📊 Sample data:", sampleData);
 
       // Get row count
-      const count = await sql`SELECT COUNT(*) as total FROM categories`
-      console.log("📊 Total categories:", count[0].total)
+      const count = await sql`SELECT COUNT(*) as total FROM categories`;
+      console.log("📊 Total categories:", count[0].total);
     } else {
-      console.log("❌ Categories table does not exist!")
-      console.log("💡 Run the fix-categories-table-v2.sql script to create it")
+      console.log("❌ Categories table does not exist!");
+      console.log("💡 Run the fix-categories-table-v2.sql script to create it");
     }
   } catch (error) {
-    console.error("❌ Database connection failed:", error)
+    console.error("❌ Database connection failed:", error);
     console.error("❌ Error details:", {
       message: error.message,
       stack: error.stack,
-    })
+    });
   }
 }
 
-testDatabaseConnection()
+testDatabaseConnection();

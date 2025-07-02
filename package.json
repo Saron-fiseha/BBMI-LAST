@@ -6,12 +6,13 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "setup-db": "node scripts/setup-complete-database.js"
   },
   "dependencies": {
     "@auth/core": "latest",
     "@hookform/resolvers": "^3.9.1",
-    "@neondatabase/serverless": "latest",
+    "@neondatabase/serverless": "^1.0.1",
     "@radix-ui/react-accordion": "latest",
     "@radix-ui/react-alert-dialog": "latest",
     "@radix-ui/react-aspect-ratio": "latest",
@@ -46,6 +47,7 @@
     "cmdk": "latest",
     "critters": "^0.0.25",
     "date-fns": "4.1.0",
+    "dotenv": "^16.5.0",
     "embla-carousel-react": "latest",
     "fs": "latest",
     "input-otp": "latest",
