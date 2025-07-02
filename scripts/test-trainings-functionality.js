@@ -1,10 +1,10 @@
-import { neon } from "@neondatabase/serverless"
+import { neon } from "@neondatabase/serverless";
 
-const sql = neon(process.env.DATABASE_URL)
+const sql = neon(process.env.DATABASE_URL);
 
 async function testTrainingsFunctionality() {
   try {
-    console.log("🧪 Testing trainings functionality...")
+    console.log("🧪 Testing trainings functionality...");
 
     // 1. Check if trainings table exists
     const tableExists = await sql`
@@ -13,9 +13,9 @@ async function testTrainingsFunctionality() {
         WHERE table_schema = 'public' 
         AND table_name = 'trainings'
       );
-    `
+    `;
 
-    console.log("📊 Trainings table exists:", tableExists[0].exists)
+    console.log("📊 Trainings table exists:", tableExists[0].exists);
 
     if (tableExists[0].exists) {
       // 2. Get table structure
@@ -24,16 +24,18 @@ async function testTrainingsFunctionality() {
         FROM information_schema.columns
         WHERE table_name = 'trainings'
         ORDER BY ordinal_position;
-      `
+      `;
 
-      console.log("📋 Trainings table structure:")
+      console.log("📋 Trainings table structure:");
       columns.forEach((col) => {
-        console.log(`  - ${col.column_name}: ${col.data_type} (nullable: ${col.is_nullable})`)
-      })
+        console.log(
+          `  - ${col.column_name}: ${col.data_type} (nullable: ${col.is_nullable})`
+        );
+      });
 
       // 3. Count records
-      const count = await sql`SELECT COUNT(*) as total FROM trainings`
-      console.log(`📊 Total trainings: ${count[0].total}`)
+      const count = await sql`SELECT COUNT(*) as total FROM trainings`;
+      console.log(`📊 Total trainings: ${count[0].total}`);
 
       // 4. Test basic query
       const trainings = await sql`
@@ -46,30 +48,35 @@ async function testTrainingsFunctionality() {
         LEFT JOIN categories c ON t.category_id::text = c.id::text
         ORDER BY t.created_at DESC
         LIMIT 3
-      `
+      `;
 
-      console.log("📝 Sample trainings with categories:")
+      console.log("📝 Sample trainings with categories:");
       trainings.forEach((training) => {
-        console.log(`  - ${training.name} (${training.course_code}) - Category: ${training.category_name}`)
-      })
+        console.log(
+          `  - ${training.name} (${training.course_code}) - Category: ${training.category_name}`
+        );
+      });
 
       // 5. Test filtered query
       const activeTrainings = await sql`
         SELECT COUNT(*) as count FROM trainings WHERE status = 'active'
-      `
-      console.log(`✅ Active trainings: ${activeTrainings[0].count}`)
+      `;
+      console.log(`✅ Active trainings: ${activeTrainings[0].count}`);
 
       // 6. Test category relationship
-      const categoriesCount = await sql`SELECT COUNT(*) as count FROM categories`
-      console.log(`📊 Available categories: ${categoriesCount[0].count}`)
+      const categoriesCount =
+        await sql`SELECT COUNT(*) as count FROM categories`;
+      console.log(`📊 Available categories: ${categoriesCount[0].count}`);
     } else {
-      console.log("❌ Trainings table does not exist - run the setup script first")
+      console.log(
+        "❌ Trainings table does not exist - run the setup script first"
+      );
     }
 
-    console.log("✅ Trainings functionality test completed")
+    console.log("✅ Trainings functionality test completed");
   } catch (error) {
-    console.error("❌ Error testing trainings functionality:", error)
+    console.error("❌ Error testing trainings functionality:", error);
   }
 }
 
-testTrainingsFunctionality()
+testTrainingsFunctionality();

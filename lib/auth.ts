@@ -49,6 +49,11 @@ export async function generateToken(user: User): Promise<string> {
 
 export async function verifyToken(token: string): Promise<any | null> {
   try {
+
+    if (!token || token.split(".").length !== 3) {
+      throw new Error("Invalid token format")
+    }
+
     const { payload } = await jwtVerify(token, secretKey)
     return payload
   } catch (error) {
