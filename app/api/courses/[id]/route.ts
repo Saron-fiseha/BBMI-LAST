@@ -8,7 +8,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     // Get course details with instructor info
     const courseResult = await sql(
       `
-      SELECT c.*, u.name as instructor_name, u.image_url as instructor_image
+      SELECT c.*, u.full_name as instructor_name, u.image_url as instructor_image
       FROM courses c
       LEFT JOIN users u ON c.instructor_id = u.id
       WHERE c.id = $1
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     // Get course reviews
     const reviewsResult = await sql(
       `
-      SELECT r.rating, r.comment, r.created_at, u.name as user_name
+      SELECT r.rating, r.comment, r.created_at, u.full_name as user_name
       FROM reviews r
       LEFT JOIN users u ON r.user_id = u.id
       WHERE r.course_id = $1

@@ -8,69 +8,78 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get("userId")
 
-    if (!userId) {
-      return NextResponse.json({ error: "User ID required" }, { status: 400 })
+  if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID is required', certificates: [], total: 0 },
+        { status: 400 }
+      );
     }
 
+    // Fetch certificates with detailed course and enrollment information
     const certificates = await sql`
       SELECT 
-        cert.*,
+        cert.id,
+        cert.user_id,
+        cert.training_id,
+        cert.certificate_code,
+        cert.verification_code,
+        cert.issue_date,
+        cert.instructor_name,
         c.title as course_title,
-        u.name as student_name
+        c.category as course_category,
+        c.level as course_level,
+        c.duration,
+        u.full_name as student_name,
+        u.email as student_email,
+        enr.completion_date,
+        enr.progress,
+        enr.grade,
+        
+        -- Calculate modules information
+        (SELECT COUNT(*) FROM modules WHERE training_id = c.id) as total_modules,
+        (SELECT COUNT(DISTINCT mp.module_id) 
+         FROM module_progress mp 
+         JOIN modules m ON mp.module_id = m.id 
+         WHERE mp.user_id = ${userId} AND m.training_id = c.id AND mp.completed = true
+        ) as completed_modules,
+        
+        -- Get skills/topics covered
+        COALESCE(
+          (SELECT array_agg(DISTINCT m.name) 
+           FROM modules m 
+           WHERE m.training_id = c.id
+          ), 
+          ARRAY[]::text[]
+        ) as skills_learned
+        
       FROM certificates cert
-      JOIN courses c ON cert.course_id = c.id
+      JOIN courses c ON cert.training_id = c.id
       JOIN users u ON cert.user_id = u.id
+      JOIN enrollments enr ON enr.user_id = cert.user_id AND enr.training_id = cert.training_id
       WHERE cert.user_id = ${userId}
       ORDER BY cert.issue_date DESC
     `
 
-    return NextResponse.json({ certificates })
+    // Format the certificates data
+    const formattedCertificates = certificates.map((cert) => ({
+      ...cert,
+      verification_url: `${process.env.NEXT_PUBLIC_APP_URL}/verify/${cert.verification_code}`,
+      skills_learned: cert.skills_learned || [],
+    }))
+
+    return NextResponse.json({
+      certificates: formattedCertificates,
+      total: formattedCertificates.length,
+    })
   } catch (error) {
     console.error("Student certificates error:", error)
-    return NextResponse.json({ error: "Failed to fetch certificates" }, { status: 500 })
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const { userId, courseId } = await request.json()
-
-    // Check if course is 100% complete
-    const enrollment = await sql`
-      SELECT * FROM enrollments 
-      WHERE user_id = ${userId} AND course_id = ${courseId} AND progress = 100
-    `
-
-    if (enrollment.length === 0) {
-      return NextResponse.json({ error: "Course not completed" }, { status: 400 })
-    }
-
-    // Check if certificate already exists
-    const existing = await sql`
-      SELECT * FROM certificates 
-      WHERE user_id = ${userId} AND course_id = ${courseId}
-    `
-
-    if (existing.length > 0) {
-      return NextResponse.json({ certificate: existing[0] })
-    }
-
-    // Generate certificate
-    const certificateCode = `CERT-${Date.now()}-${userId}-${courseId}`
-    const verificationCode = `VER-${Math.random().toString(36).substring(2, 15)}`
-
-    const course = await sql`SELECT title, instructor_id FROM courses WHERE id = ${courseId}`
-    const instructor = await sql`SELECT name FROM users WHERE id = ${course[0].instructor_id}`
-
-    const certificate = await sql`
-      INSERT INTO certificates (user_id, course_id, certificate_code, verification_code, instructor_name)
-      VALUES (${userId}, ${courseId}, ${certificateCode}, ${verificationCode}, ${instructor[0].name})
-      RETURNING *
-    `
-
-    return NextResponse.json({ certificate: certificate[0] })
-  } catch (error) {
-    console.error("Certificate generation error:", error)
-    return NextResponse.json({ error: "Failed to generate certificate" }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: "Failed to fetch certificates",
+        certificates: [],
+        total: 0,
+      },
+      { status: 500 },
+    )
   }
 }

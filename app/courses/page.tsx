@@ -65,15 +65,19 @@ export default function CoursesPage() {
   const filterCourses = () => {
     let filtered = courses
 
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (course) =>
-          course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          course.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          course.instructor_name.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-    }
-
+   if (searchQuery) {
+  const query = searchQuery.trim().toLowerCase(); // Added trim()
+  filtered = filtered.filter((course) => {
+    const fields = [
+      course.title,
+      course.description,
+      course.instructor_name
+    ];
+    return fields.some(field => 
+      String(field || '').toLowerCase().includes(query)
+    );
+  });
+}
     if (categoryFilter !== "all") {
       filtered = filtered.filter((course) => course.category === categoryFilter)
     }
@@ -148,10 +152,10 @@ export default function CoursesPage() {
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
                 {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
+                 <SelectItem key={`category-${category}`} value={category}>
+                  {category}
+                 </SelectItem>
+                 ))}
               </SelectContent>
             </Select>
 
@@ -208,7 +212,7 @@ export default function CoursesPage() {
                   </div>
                   <div className="flex items-center">
                     <Star className="h-4 w-4 mr-1 fill-yellow-400 text-yellow-400" />
-                    {course.rating.toFixed(1)}
+                    {course.rating?.toFixed(1) ?? '0.0'}
                   </div>
                 </div>
 

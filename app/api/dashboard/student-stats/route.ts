@@ -1,7 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { neon } from "@neondatabase/serverless"
-
-const sql = neon(process.env.DATABASE_URL!)
+import { sql } from "@/lib/db"
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,57 +10,134 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "User ID required" }, { status: 400 })
     }
 
-    /* ---------- REAL DATABASE QUERIES ---------- */
-    const enrolledCourses = await sql`SELECT
-        e.*,
-        c.title,
-        c.description,
-        c.image_url,
-        c.price,
-        c.duration_hours,
-        c.level,
-        u.name      AS instructor_name,
-        cat.name    AS category_name
-      FROM enrollments e
-      JOIN courses      c   ON e.course_id  = c.id
-      LEFT JOIN users   u   ON c.instructor_id = u.id
-      LEFT JOIN categories cat ON c.category_id = cat.id
-      WHERE e.user_id = ${userId}
-      ORDER BY e.last_accessed DESC`
-
-    const [stats] = await sql`SELECT
-        COUNT(*)                         AS total_courses,
-        COALESCE(AVG(progress), 0)       AS avg_progress,
-        COUNT(CASE WHEN status = 'completed' THEN 1 END) AS completed_courses,
-        COALESCE(SUM(payment_amount), 0) AS total_spent
+    // Get enrolled courses count
+    const enrolledCoursesResult = await sql`
+      SELECT COUNT(*) as count
       FROM enrollments
-      WHERE user_id = ${userId}`
+      WHERE user_id = ${userId}
+        AND status = 'active'
+    `
 
-    const recentActivity = await sql`SELECT
-        mp.last_accessed,
-        m.name  AS module_name,
-        c.title AS course_title
-      FROM module_progress mp
-      JOIN modules m ON mp.module_id = m.id
-      JOIN courses c ON mp.course_id = c.id
-      WHERE mp.user_id = ${userId}
-      ORDER BY mp.last_accessed DESC
-      LIMIT 5`
+    // Get completed courses count
+    const completedCoursesResult = await sql`
+      SELECT COUNT(*) as count
+      FROM enrollments
+      WHERE user_id = ${userId}
+        AND status = 'completed'
+    `
 
-    return NextResponse.json({ enrolledCourses, stats, recentActivity })
+    // Get average progress
+    const avgProgressResult = await sql`
+      SELECT AVG(progress) as avg_progress
+      FROM enrollments
+      WHERE user_id = ${userId}
+        AND status IN ('active', 'completed')
+    `
+
+    // Get total investment
+    const totalInvestmentResult = await sql`
+      SELECT COALESCE(SUM(payment_amount), 0) as total_investment
+      FROM enrollments
+      WHERE user_id = ${userId}
+        AND payment_status = 'completed'
+    `
+
+    // Calculate monthly growth (mock for now)
+    const monthlyGrowth = "+15%"
+
+    const stats = {
+      totalCourses: Number(enrolledCoursesResult[0]?.count || 0),
+      completedCourses: Number(completedCoursesResult[0]?.count || 0),
+      averageProgress: Math.round(Number(avgProgressResult[0]?.avg_progress || 0)),
+      totalInvestment: Number(totalInvestmentResult[0]?.total_investment || 0),
+      monthlyGrowth,
+    }
+
+    return NextResponse.json({ stats })
   } catch (error) {
     console.error("Student dashboard stats error (falling back to empty):", error)
 
     // Safe fallback so the UI can still render
     return NextResponse.json({
-      enrolledCourses: [],
       stats: {
-        total_courses: 0,
-        avg_progress: 0,
-        completed_courses: 0,
-        total_spent: 0,
+        totalCourses: 0,
+        averageProgress: 0,
+        completedCourses: 0,
+        totalInvestment: 0,
+        monthlyGrowth: "+0%",
       },
-      recentActivity: [],
     })
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { userId, courseId, paymentAmount } = body
+
+    if (!userId || !courseId) {
+      return NextResponse.json({ error: "User ID and Course ID required" }, { status: 400 })
+    }
+
+    // Create new enrollment
+    const result = await sql`
+      INSERT INTO enrollments (user_id, course_id, payment_amount, status, progress, created_at)
+      VALUES (${userId}, ${courseId}, ${paymentAmount || 0}, 'active', 0, NOW())
+      RETURNING id
+    `
+
+    return NextResponse.json({ success: true, enrollmentId: result[0]?.id })
+  } catch (error) {
+    console.error("Error creating enrollment:", error)
+    return NextResponse.json({ error: "Failed to create enrollment" }, { status: 500 })
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { userId, courseId, progress, status } = body
+
+    if (!userId || !courseId) {
+      return NextResponse.json({ error: "User ID and Course ID required" }, { status: 400 })
+    }
+
+    // Update enrollment progress
+    await sql`
+      UPDATE enrollments
+      SET progress = ${progress || 0},
+          status = ${status || "active"},
+          updated_at = NOW(),
+          completed_at = ${status === "completed" ? "NOW()" : null}
+      WHERE user_id = ${userId} AND course_id = ${courseId}
+    `
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error("Error updating enrollment:", error)
+    return NextResponse.json({ error: "Failed to update enrollment" }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const userId = searchParams.get("userId")
+    const courseId = searchParams.get("courseId")
+
+    if (!userId || !courseId) {
+      return NextResponse.json({ error: "User ID and Course ID required" }, { status: 400 })
+    }
+
+    // Delete enrollment
+    await sql`
+      DELETE FROM enrollments
+      WHERE user_id = ${userId} AND course_id = ${courseId}
+    `
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error("Error deleting enrollment:", error)
+    return NextResponse.json({ error: "Failed to delete enrollment" }, { status: 500 })
   }
 }

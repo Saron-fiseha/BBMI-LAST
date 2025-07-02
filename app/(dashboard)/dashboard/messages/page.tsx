@@ -70,7 +70,7 @@ export default function MessagesPage() {
   const activeConversation = activeContact ? conversations[activeContact] || [] : []
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-6 pt-6 pb-8">
       <DashboardHeader heading="Messages" text="Chat with instructors and support team." />
       <Card className="h-[calc(100vh-13rem)]">
         <CardContent className="p-0 h-full">
