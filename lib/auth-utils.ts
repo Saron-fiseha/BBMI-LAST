@@ -24,12 +24,30 @@ export function createSessionToken(user: User): string {
 }
 
 export function verifySessionToken(token: string): User | null {
+  if (!token) return null;
+
   try {
-    const payload = JSON.parse(atob(token))
+    // Split JWT into parts (header.payload.signature)
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      console.error('Invalid token format: Not a JWT structure');
+      return null;
+    }
+
+    // Base64 URL decode (handles URL-safe encoding)
+    const payload = JSON.parse(
+      decodeURIComponent(
+        atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'))
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      )
+    );
 
     // Check expiration
     if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
-      return null
+      console.error('Token expired');
+      return null;
     }
 
     return {
@@ -38,12 +56,14 @@ export function verifySessionToken(token: string): User | null {
       name: payload.name,
       role: payload.role,
       image: payload.image,
-    }
+    };
   } catch (error) {
-    console.error("Token verification failed:", error)
-    return null
+    console.error('Token verification failed:', error);
+    return null;
   }
 }
+
+export const verifyToken = verifySessionToken
 
 export async function getUserFromRequest(request: Request): Promise<User | null> {
   try {

@@ -70,7 +70,7 @@ export default function BillingPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-6 pt-6 pb-8">
       <DashboardHeader heading="Billing & Payments" text="Manage your payment methods and view your invoices." />
       <Tabs defaultValue="payment-methods" className="space-y-6">
         <TabsList>
