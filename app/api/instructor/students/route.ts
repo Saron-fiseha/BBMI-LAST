@@ -30,38 +30,71 @@ export async function GET(request: NextRequest) {
 
     try {
       // Query to get students enrolled in instructor's courses
+      // const students = await sql`
+      //   SELECT DISTINCT
+      //     u.id,
+      //     u.full_name as name,
+      //     u.email,
+      //     u.profile_picture as avatar,
+      //     COUNT(DISTINCT e.training_id) as enrolled_courses,
+      //     COALESCE(AVG(e.progress), 0) as total_progress,
+      //     'active' as status,
+      //     MIN(e.enrolled_at) as enrollment_date,
+      //     CASE 
+      //       WHEN MAX(e.enrolled_at) > NOW() - INTERVAL '7 days' THEN 'This week'
+      //       WHEN MAX(e.enrolled_at) > NOW() - INTERVAL '30 days' THEN 'This month'
+      //       ELSE 'Earlier'
+      //     END as last_active,
+      //     ARRAY_AGG(
+      //       JSON_BUILD_OBJECT(
+      //         'id', t.id,
+      //         'title', t.name,
+      //         'progress', COALESCE(e.progress, 0),
+      //         'status', e.status,
+      //         'enrolled_at', e.enrolled_at
+      //       )
+      //     ) as trainings
+      //   FROM users u
+      //   JOIN enrollments e ON u.id = e.user_id
+      //   JOIN trainings t ON e.training_id = t.id
+      //   WHERE t.instructor_id = ${user.id}
+      //     AND u.role = 'student'
+      //   GROUP BY u.id, u.full_name, u.email, u.profile_picture
+      //   ORDER BY MIN(e.enrolled_at) DESC
+      // `
       const students = await sql`
-        SELECT DISTINCT
-          u.id,
-          u.full_name as name,
-          u.email,
-          u.profile_picture as avatar,
-          COUNT(DISTINCT e.course_id) as enrolled_courses,
-          COALESCE(AVG(e.progress), 0) as total_progress,
-          'active' as status,
-          MIN(e.enrolled_at) as enrollment_date,
-          CASE 
-            WHEN MAX(e.enrolled_at) > NOW() - INTERVAL '7 days' THEN 'This week'
-            WHEN MAX(e.enrolled_at) > NOW() - INTERVAL '30 days' THEN 'This month'
-            ELSE 'Earlier'
-          END as last_active,
-          ARRAY_AGG(
-            JSON_BUILD_OBJECT(
-              'id', c.id,
-              'title', c.title,
-              'progress', COALESCE(e.progress, 0),
-              'status', e.status,
-              'enrolled_at', e.enrolled_at
-            )
-          ) as courses
-        FROM users u
-        JOIN enrollments e ON u.id = e.user_id
-        JOIN courses c ON e.course_id = c.id
-        WHERE c.instructor_id = ${user.id}
-          AND u.role = 'student'
-        GROUP BY u.id, u.full_name, u.email, u.profile_picture
-        ORDER BY MIN(e.enrolled_at) DESC
-      `
+  SELECT
+    u.id,
+    u.full_name as name,
+    u.email,
+    u.profile_picture as avatar,
+    COUNT(DISTINCT e.training_id) as enrolled_courses,
+    COALESCE(AVG(e.progress), 0) as total_progress,
+    'active' as status,
+    MIN(e.enrolled_at) as enrollment_date,
+    CASE 
+      WHEN MAX(e.enrolled_at) > NOW() - INTERVAL '7 days' THEN 'This week'
+      WHEN MAX(e.enrolled_at) > NOW() - INTERVAL '30 days' THEN 'This month'
+      ELSE 'Earlier'
+    END as last_active,
+    ARRAY_AGG(
+      JSON_BUILD_OBJECT(
+        'id', t.id,
+        'title', t.name,
+        'progress', COALESCE(e.progress, 0),
+        'status', e.status,
+        'enrolled_at', e.enrolled_at
+      )
+    ) as trainings
+  FROM users u
+  JOIN enrollments e ON u.id = e.user_id
+  JOIN trainings t ON e.training_id = t.id
+  WHERE t.instructor_id = ${user.id}
+    AND u.role = 'student'
+  GROUP BY u.id, u.full_name, u.email, u.profile_picture
+  ORDER BY MIN(e.enrolled_at) DESC
+`
+
 
       console.log(`✅ Found ${students.length} students`)
       return NextResponse.json(students)

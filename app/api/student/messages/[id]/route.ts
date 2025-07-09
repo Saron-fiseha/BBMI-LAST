@@ -11,26 +11,26 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 
     const user = await getUserFromToken(token)
-    if (!user || user.role !== "instructor") {
+    if (!user || user.role !== "student") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const conversationId = params.id
-    const instructorId = user.id
+    const studentId = user.id
 
-    console.log("📨 Fetching messages for conversation:", conversationId, "instructor:", instructorId)
+    console.log("📨 Fetching messages for conversation:", conversationId, "student:", studentId)
 
-    // Verify instructor has access to this conversation
+    // Verify student has access to this conversation
     const conversationAccess = await sql`
       SELECT id FROM conversations 
       WHERE id = ${conversationId} 
-      AND (user1_id = ${instructorId} OR user2_id = ${instructorId})
+      AND (user1_id = ${studentId} OR user2_id = ${studentId})
     `
-    
 
     if (conversationAccess.length === 0) {
       return NextResponse.json({ error: "Conversation not found or access denied" }, { status: 404 })
     }
+
     // Get all messages for this conversation
     const messages = await sql`
       SELECT 
@@ -45,29 +45,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       WHERE m.conversation_id = ${conversationId}
       ORDER BY m.created_at ASC
     `
-    
-
-    // Mark messages as read by instructor (messages sent TO the instructor)
-    await sql`
-      UPDATE messages 
-      SET read_at = NOW() 
-      WHERE conversation_id = ${conversationId} 
-      AND sender_id != ${instructorId} 
-      AND read_at IS NULL
-    `
 
     // Format messages with time ago
-    const formattedMessages: Array<{
-      id: string;
-      sender_id: string;
-      sender_name: string;
-      content: string;
-      created_at: string;
-      read_at: string | null;
-      is_read: boolean;
-      time_ago: string;
-      is_from_me: boolean;
-    }> = messages.map((message: any) => ({
+    const formattedMessages = messages.map((message: any) => ({
       id: message.id.toString(),
       sender_id: message.sender_id.toString(),
       sender_name: message.sender_name,
@@ -76,9 +56,17 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       read_at: message.read_at,
       is_read: !!message.read_at,
       time_ago: formatTimeAgo(new Date(message.created_at)),
-      is_from_me: message.sender_id === instructorId,
+      is_from_me: message.sender_id === studentId,
     }))
-    
+
+    // Mark messages as read by student (messages sent TO the student)
+    await sql`
+      UPDATE messages 
+      SET read_at = NOW() 
+      WHERE conversation_id = ${conversationId} 
+      AND sender_id != ${studentId} 
+      AND read_at IS NULL
+    `
 
     console.log("✅ Returning messages from database:", formattedMessages.length)
     return NextResponse.json(formattedMessages)

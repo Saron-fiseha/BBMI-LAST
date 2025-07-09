@@ -7,6 +7,7 @@ import { InstructorSidebar } from "@/components/instructor/instructor-sidebar"
 import { Button } from "@/components/ui/button"
 import { Menu, X, Bell, LogOut } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,20 +16,30 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-
 interface InstructorLayoutProps {
   children: React.ReactNode
+}
+  
+// Add or extend the User type to include profile_picture
+type User = {
+  name?: string
+  email?: string
+  profile_picture?: string
 }
 
 export function InstructorLayout({ children }: InstructorLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const { user, logout } = useAuth()
+  // Extend the user type from useAuth to include profile_picture
+  const { user, logout } = useAuth() as { user: { name?: string; email?: string; profile_picture?: string }, logout: () => void }
   const router = useRouter()
 
   const handleLogout = () => {
     logout()
     router.push("/")
   }
+
+
+
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -49,9 +60,9 @@ export function InstructorLayout({ children }: InstructorLayoutProps) {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.profile_picture || "/placeholder.svg"} alt={user?.full_name} />
+                    <AvatarImage src={user?.profile_picture || "/placeholder.svg"} alt={user?.name} />
                     <AvatarFallback className="bg-gradient-to-r from-amber-400 to-amber-600 text-white">
-                      {user?.full_name?.charAt(0) || "I"}
+                      {user?.name?.charAt(0) || "I"}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -89,9 +100,9 @@ export function InstructorLayout({ children }: InstructorLayoutProps) {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.profile_picture || "/placeholder.svg"} alt={user?.full_name} />
+                        <AvatarImage src={user?.profile_picture || "/placeholder.svg"} alt={user?.name} />
                         <AvatarFallback className="bg-gradient-to-r from-amber-400 to-amber-600 text-white">
-                          {user?.full_name?.charAt(0) || "I"}
+                          {user?.name?.charAt(0) || "I"}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
@@ -99,7 +110,7 @@ export function InstructorLayout({ children }: InstructorLayoutProps) {
                   <DropdownMenuContent className="w-56" align="end" forceMount>
                     <div className="flex items-center justify-start gap-2 p-2">
                       <div className="flex flex-col space-y-1 leading-none">
-                        <p className="font-medium">{user?.full_name}</p>
+                        <p className="font-medium">{user?.name}</p>
                         <p className="w-[200px] truncate text-sm text-muted-foreground">{user?.email}</p>
                       </div>
                     </div>

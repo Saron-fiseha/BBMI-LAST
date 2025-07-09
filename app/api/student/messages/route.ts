@@ -10,13 +10,13 @@ export async function GET(req: NextRequest) {
     }
 
     const user = await getUserFromToken(token)
-    if (!user || user.role !== "instructor") {
+    if (!user || user.role !== "student") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    console.log("📋 Fetching conversations for instructor:", user.id)
+    console.log("📋 Fetching conversations for student:", user.id)
 
-    // Get conversations where the instructor is a participant
+    // Get conversations where the student is a participant
     const conversations = await sql`
       SELECT 
         c.id,
@@ -58,7 +58,6 @@ export async function GET(req: NextRequest) {
       WHERE c.user1_id = ${user.id} OR c.user2_id = ${user.id}
       ORDER BY c.updated_at DESC
     `
-    
 
     const formattedConversations = conversations.map((conv: any) => ({
       id: conv.id.toString(),
@@ -98,7 +97,7 @@ export async function POST(req: NextRequest) {
     }
 
     const user = await getUserFromToken(token)
-    if (!user || user.role !== "instructor") {
+    if (!user || user.role !== "student") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -108,15 +107,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing conversation_id or content" }, { status: 400 })
     }
 
-    console.log("📤 Sending message:", { conversation_id, content: content.substring(0, 50) + "..." })
+    console.log("📤 Student sending message:", { conversation_id, content: content.substring(0, 50) + "..." })
 
-    // Verify instructor has access to this conversation
+    // Verify student has access to this conversation
     const conversationAccess = await sql`
       SELECT id FROM conversations 
       WHERE id = ${conversation_id} 
       AND (user1_id = ${user.id} OR user2_id = ${user.id})
     `
-    
 
     if (conversationAccess.length === 0) {
       return NextResponse.json({ error: "Conversation not found or access denied" }, { status: 404 })
@@ -129,16 +127,15 @@ export async function POST(req: NextRequest) {
       INSERT INTO messages (conversation_id, sender_id, content, created_at)
       VALUES (${conversation_id}, ${user.id}, ${content}, ${now})
     `
-    
+
     // Update conversation timestamp
     await sql`
       UPDATE conversations 
       SET updated_at = ${now}
       WHERE id = ${conversation_id}
     `
-    
 
-    console.log("✅ Message sent successfully")
+    console.log("✅ Message sent successfully by student")
     return NextResponse.json({ message: "Message sent successfully" })
   } catch (error: any) {
     console.error("❌ Error sending message:", error)
