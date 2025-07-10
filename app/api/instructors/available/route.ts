@@ -14,9 +14,23 @@ export async function GET() {
         created_at
       FROM users 
       WHERE role = 'instructor' 
-      AND active = true
+      
       ORDER BY name ASC
     `
+    // const instructors = await sql`
+    //   SELECT 
+    //     id, 
+    //     full_name AS name, 
+    //     email, 
+    //     specialization,
+    //     bio,
+    //     profile_picture,
+    //     created_at
+    //   FROM users 
+    //   WHERE role = 'instructor' 
+    //   AND active = true
+    //   ORDER BY name ASC
+    // `
 
     return NextResponse.json({
       success: true,

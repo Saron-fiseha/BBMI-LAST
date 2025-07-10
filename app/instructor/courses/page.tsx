@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
-import { InstructorLayout } from "@/components/instructor/instructor-layout"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -69,7 +68,7 @@ export default function InstructorCourses() {
       setLoadingData(true)
       setError(null)
 
-      // Get token from localStorage
+      // Get token from localStorage - use consistent key
       const token = localStorage.getItem("auth_token")
       console.log("Token from localStorage:", token ? "Token present" : "No token found")
 
@@ -95,7 +94,7 @@ export default function InstructorCourses() {
 
         if (response.status === 401) {
           // Token might be expired, redirect to login
-          localStorage.removeItem("token")
+          localStorage.removeItem("auth_token")
           router.push("/login")
           return
         }
@@ -184,7 +183,7 @@ export default function InstructorCourses() {
   // Show error state
   if (error && !loadingData) {
     return (
-      <InstructorLayout>
+      <>
         <div className="space-y-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">My Courses</h1>
@@ -203,7 +202,7 @@ export default function InstructorCourses() {
             </CardContent>
           </Card>
         </div>
-      </InstructorLayout>
+      </>
     )
   }
 
@@ -266,7 +265,7 @@ export default function InstructorCourses() {
               </CardContent>
             </Card>
 
-            <Card>
+            {/* <Card>
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
                   <TrendingUp className="h-4 w-4 text-purple-500" />
@@ -276,7 +275,7 @@ export default function InstructorCourses() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         </div>
 

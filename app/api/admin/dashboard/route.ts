@@ -31,6 +31,17 @@ export async function GET() {
     `
 
     // Get course distribution
+    // const courseDistribution = await sql`
+    //   SELECT 
+    //     c.title,
+    //     COUNT(e.id) as students,
+    //     c.price
+    //   FROM courses c
+    //   LEFT JOIN enrollments e ON c.id = e.course_id
+    //   GROUP BY c.id, c.title, c.price
+    //   ORDER BY students DESC
+    //   LIMIT 10
+    // `
     const courseDistribution = await sql`
       SELECT 
         t.name,

@@ -38,3 +38,84 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 })
   }
 }
+
+// import { type NextRequest, NextResponse } from "next/server"
+// import { getUserByEmail, verifyPassword, generateToken } from "@/lib/auth"
+
+// export async function POST(request: NextRequest) {
+//   try {
+//     const { email, password } = await request.json()
+
+//     if (!email || !password) {
+//       return NextResponse.json({ success: false, message: "Email and password are required" }, { status: 400 })
+//     }
+
+//     // // Get user by email
+//     // const user = await getUserByEmail(email)
+//     // if (!user) {
+//     //   return NextResponse.json({ success: false, message: "Invalid credentials" }, { status: 401 })
+//     // }
+//     // console.log('User object from getUserByEmail:', user)
+
+//     // Get password from database
+//     const { sql } = await import("@/lib/db")
+//     const userWithPassword = await sql`
+//      SELECT id, email, password FROM users WHERE email = ${email} LIMIT 1
+//     `
+//     // if (!userWithPassword.length || userWithPassword[0].password === undefined) {
+//     //   console.error('Password not found for user:', user.id)
+//     //   return NextResponse.json(
+//     //     { success: false, message: "Authentication error" },
+//     //     { status: 500 }
+//     //   )
+//     // }
+  
+
+//     if (userWithPassword.length === 0) {
+//       return NextResponse.json({ success: false, message: "Invalid credentials" }, { status: 401 })
+//     }
+
+//     const dbUser = userWithPassword[0]
+//     const dbPassword = dbUser.password
+
+//     // Debug logs
+//     console.log('User from DB:', { 
+//       id: dbUser.id, 
+//       email: dbUser.email,
+//       hasPassword: !!dbPassword,
+//       passwordType: typeof dbPassword
+//     })
+
+//     if (!dbPassword) {
+//       console.error('No password stored for user:', dbUser.id)
+//       return NextResponse.json(
+//         { success: false, message: "Authentication configuration error" },
+//         { status: 500 }
+//       )
+//     }
+
+//     // Verify password
+//     const isValidPassword = await verifyPassword(password, dbPassword)
+//     if (!isValidPassword) {
+//       return NextResponse.json({ success: false, message: "Invalid credentials" }, { status: 401 })
+//     }
+
+//     // Generate token
+//     const token = generateToken(dbUser)
+
+//     return NextResponse.json({
+//       success: true,
+//       token,
+//       user: {
+//         id: dbUser.id,
+//         email: dbUser.email,
+//         full_name: dbUser.full_name,
+//         role: dbUser.role,
+//         profile_picture: dbUser.profile_picture,
+//       },
+//     })
+//   } catch (error) {
+//     console.error("Login error:", error)
+//     return NextResponse.json({ success: false, message: "Login failed" }, { status: 500 })
+//   }
+// }
