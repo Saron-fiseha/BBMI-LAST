@@ -16,49 +16,49 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch certificates with detailed course and enrollment information
-    const certificates = await sql`
-      SELECT 
-        cert.id,
-        cert.user_id,
-        cert.training_id,
-        cert.certificate_code,
-        cert.verification_code,
-        cert.issue_date,
-        cert.instructor_name,
-        c.title as course_title,
-        c.category as course_category,
-        c.level as course_level,
-        c.duration,
-        u.full_name as student_name,
-        u.email as student_email,
-        enr.completion_date,
-        enr.progress,
-        enr.grade,
-        
-        -- Calculate modules information
-        (SELECT COUNT(*) FROM modules WHERE training_id = c.id) as total_modules,
-        (SELECT COUNT(DISTINCT mp.module_id) 
-         FROM module_progress mp 
-         JOIN modules m ON mp.module_id = m.id 
-         WHERE mp.user_id = ${userId} AND m.training_id = c.id AND mp.completed = true
-        ) as completed_modules,
-        
-        -- Get skills/topics covered
-        COALESCE(
-          (SELECT array_agg(DISTINCT m.name) 
-           FROM modules m 
-           WHERE m.training_id = c.id
-          ), 
-          ARRAY[]::text[]
-        ) as skills_learned
-        
-      FROM certificates cert
-      JOIN courses c ON cert.training_id = c.id
-      JOIN users u ON cert.user_id = u.id
-      JOIN enrollments enr ON enr.user_id = cert.user_id AND enr.training_id = cert.training_id
-      WHERE cert.user_id = ${userId}
-      ORDER BY cert.issue_date DESC
-    `
+  const certificates = await sql`
+  SELECT 
+    cert.id,
+    cert.user_id,
+    cert.training_id,
+    cert.certificate_code,
+    cert.verification_code,
+    cert.issue_date,
+    cert.instructor_name,
+    t.name as course_title,
+    t.category_id as course_category,
+    t.level as course_level,
+    t.duration,
+    u.full_name as student_name,
+    u.email as student_email,
+    enr.completion_date,
+    enr.progress,
+    enr.grade,
+    
+    -- Calculate modules information
+    (SELECT COUNT(*) FROM modules WHERE training_id = t.id) as total_modules,
+    (SELECT COUNT(DISTINCT mp.module_id) 
+     FROM module_progress mp 
+     JOIN modules m ON mp.module_id = m.id 
+     WHERE mp.user_id = ${userId} AND m.training_id = t.id AND mp.completed = true
+    ) as completed_modules,
+    
+    -- Get skills/topics covered
+    COALESCE(
+      (SELECT array_agg(DISTINCT m.name) 
+       FROM modules m 
+       WHERE m.training_id = t.id
+      ), 
+      ARRAY[]::text[]
+    ) as skills_learned
+    
+  FROM certificates cert
+  JOIN trainings t ON cert.training_id = t.id
+  JOIN users u ON cert.user_id = u.id
+  JOIN enrollments enr ON enr.user_id = cert.user_id AND enr.training_id = cert.training_id
+  WHERE cert.user_id = ${userId}
+  ORDER BY cert.issue_date DESC
+`
 
     // Format the certificates data
     const formattedCertificates = certificates.map((cert) => ({

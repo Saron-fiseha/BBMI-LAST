@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import type React from "react"
+
+import { useState, useRef } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,31 +11,21 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { Camera, Save, Key, Eye, EyeOff } from "lucide-react"
-
-
-interface AdminProfile {
-  id: number
-  name: string
-  email: string
-  phone: string
-  bio: string
-  avatar: string
-}
+import { useAuth } from "@/hooks/use-auth"
+import { Camera, Save, Key, Shield, Trash2, Eye, EyeOff } from "lucide-react"
 
 export default function AdminProfilePage() {
   const { toast } = useToast()
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [changingPassword, setChangingPassword] = useState(false)
-
-  const [profile, setProfile] = useState<AdminProfile>({
-    id: 0,
-    name: "",
-    email: "",
-    phone: "",
-    bio: "",
-    avatar: "/placeholder.svg?height=100&width=100",
+  const { user, refreshUser } = useAuth()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+   const [changingPassword, setChangingPassword] = useState(false)
+ 
+  const [profile, setProfile] = useState({
+    name: user?.full_name || "Administrator",
+    email: user?.email || "sarifiseha0961test@gmail.com",
+    phone: user?.phone || "0961872397",
+    bio: "System Administrator for Glamour Academy Beauty Learning Management System",
+    avatar: user?.profile_picture || "/placeholder.svg?height=100&width=100",
   })
 
   const [passwords, setPasswords] = useState({
@@ -42,118 +34,146 @@ export default function AdminProfilePage() {
     confirm: "",
   })
 
+  const [security, setSecurity] = useState({
+    twoFactorEnabled: false,
+    loginNotifications: true,
+    sessionTimeout: 30,
+  })
+
   const [showPasswords, setShowPasswords] = useState({
     current: false,
     new: false,
     confirm: false,
   })
 
-  const [uploadingAvatar, setUploadingAvatar] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
 
-  // Fetch admin profile data
-  useEffect(() => {
-    fetchProfile()
-  }, [])
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
 
-  const fetchProfile = async () => {
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select an image file.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please select an image smaller than 5MB.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsUploadingImage(true)
+
     try {
-      const token = localStorage.getItem("auth_token")
-       console.log("Token from localStorage:", token ? "Found" : "Not found")
-      if (!token) {
-        toast({
-          title: "Authentication required",
-          description: "Please log in to access your profile.",
-          variant: "destructive",
-        })
-        return
-      }
+      const formData = new FormData()
+      formData.append("image", file)
+      formData.append("userId", user?.id?.toString() || "")
 
-      const response = await fetch("/api/admin/profile", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await fetch("/api/admin/profile/upload-image", {
+        method: "POST",
+        body: formData,
       })
 
-       console.log("Profile fetch response status:", response.status)
+      const data = await response.json()
 
-      if (response.ok) {
-        const data = await response.json()
-        setProfile(data)
-        console.log("✅ Profile data loaded:", data)
-      } else {
-        const error = await response.json()
+      if (data.success) {
+        setProfile((prev) => ({ ...prev, avatar: data.imageUrl }))
+        await refreshUser() // Refresh user data to update header
         toast({
-          title: "Error",
-          description: error.error || "Failed to load profile data.",
-          variant: "destructive",
+          title: "Profile picture updated",
+          description: "Your profile picture has been updated successfully.",
         })
+      } else {
+        throw new Error(data.error || "Upload failed")
       }
     } catch (error) {
-      console.error("Error fetching profile:", error)
+      console.error("Image upload error:", error)
       toast({
-        title: "Error",
-        description: "Failed to load profile data.",
+        title: "Upload failed",
+        description: "Failed to upload profile picture. Please try again.",
         variant: "destructive",
       })
     } finally {
-      setLoading(false)
+      setIsUploadingImage(false)
+    }
+  }
+
+  const handleDeleteImage = async () => {
+    try {
+      const response = await fetch("/api/admin/profile/delete-image", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: user?.id }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setProfile((prev) => ({ ...prev, avatar: "/placeholder.svg?height=100&width=100" }))
+        await refreshUser() // Refresh user data to update header
+        toast({
+          title: "Profile picture removed",
+          description: "Your profile picture has been removed successfully.",
+        })
+      } else {
+        throw new Error(data.error || "Delete failed")
+      }
+    } catch (error) {
+      console.error("Image delete error:", error)
+      toast({
+        title: "Delete failed",
+        description: "Failed to remove profile picture. Please try again.",
+        variant: "destructive",
+      })
     }
   }
 
   const handleProfileUpdate = async () => {
-    setSaving(true)
     try {
-      const token = localStorage.getItem("auth_token")
-      if (!token) {
-        toast({
-          title: "Authentication required",
-          description: "Please log in to update your profile.",
-          variant: "destructive",
-        })
-        return
-      }
-
-      const response = await fetch("/api/admin/profile", {
+      const response = await fetch("/api/admin/profile/update", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
+          userId: user?.id,
           name: profile.name,
           email: profile.email,
           phone: profile.phone,
-          bio: profile.bio, 
+          bio: profile.bio,
         }),
       })
 
-      if (response.ok) {
-        const result = await response.json()
+      const data = await response.json()
+
+      if (data.success) {
+        await refreshUser() // Refresh user data
         toast({
           title: "Profile updated",
           description: "Your profile information has been updated successfully.",
         })
-        console.log("✅ Profile updated successfully")
-        // Refresh profile data
-        await fetchProfile()
       } else {
-        const error = await response.json()
-        toast({
-          title: "Update failed",
-          description: error.error || "Failed to update profile.",
-          variant: "destructive",
-        })
+        throw new Error(data.error || "Update failed")
       }
     } catch (error) {
-      console.error("Error updating profile:", error)
+      console.error("Profile update error:", error)
       toast({
-        title: "Error",
-        description: "Failed to update profile.",
+        title: "Update failed",
+        description: "Failed to update profile. Please try again.",
         variant: "destructive",
       })
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -240,81 +260,11 @@ export default function AdminProfilePage() {
     }))
   }
 
-  
-  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    setUploadingAvatar(true)
-    try {
-      const token = localStorage.getItem("authToken")
-      if (!token) {
-        toast({
-          title: "Authentication required",
-          description: "Please log in to upload your profile picture.",
-          variant: "destructive",
-        })
-        return
-      }
-
-      const formData = new FormData()
-      formData.append("avatar", file)
-
-      const response = await fetch("/api/admin/upload-avatar", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      })
-
-      if (response.ok) {
-        const result = await response.json()
-        setProfile({ ...profile, avatar: result.avatarUrl })
-        toast({
-          title: "Profile picture updated",
-          description: "Your profile picture has been updated successfully.",
-        })
-        console.log("✅ Avatar uploaded successfully")
-      } else {
-        const error = await response.json()
-        console.error("Avatar upload error:", error)
-        toast({
-          title: "Upload failed",
-          description: error.error || "Failed to upload profile picture.",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      console.error("Error uploading avatar:", error)
-      toast({
-        title: "Error",
-        description: "Failed to upload profile picture.",
-        variant: "destructive",
-      })
-    } finally {
-      setUploadingAvatar(false)
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ""
-      }
-    }
-  }
-
-  const triggerFileUpload = () => {
-    fileInputRef.current?.click()
-  }
-
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Admin Profile</h1>
-          <p className="text-gray-600">Loading profile information...</p>
-        </div>
-      </div>
-    )
+  const handleSecurityUpdate = () => {
+    toast({
+      title: "Security settings updated",
+      description: "Your security preferences have been saved.",
+    })
   }
 
   return (
@@ -327,7 +277,8 @@ export default function AdminProfilePage() {
       <Tabs defaultValue="profile" className="space-y-6">
         <TabsList>
           <TabsTrigger value="profile">Profile Information</TabsTrigger>
-          <TabsTrigger value="password">Password</TabsTrigger>
+          <TabsTrigger value="password">Password & Security</TabsTrigger>
+          {/* <TabsTrigger value="preferences">Preferences</TabsTrigger> */}
         </TabsList>
 
         <TabsContent value="profile">
@@ -347,19 +298,29 @@ export default function AdminProfilePage() {
                       .join("")}
                   </AvatarFallback>
                 </Avatar>
-                  <div className="space-y-2">
-                <Button variant="outline" onClick={triggerFileUpload} disabled={uploadingAvatar}>
-                  <Camera className="h-4 w-4 mr-2" />
-                 {uploadingAvatar ? "Uploading..." : "Change Photo"}
-                </Button>
-                <input
-                    ref={fileInputRef}
+                <div className="flex flex-col space-y-2">
+                  <input
                     type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageUpload}
                     accept="image/*"
-                    onChange={handleAvatarUpload}
                     className="hidden"
                   />
-                  <p className="text-sm text-gray-500">JPG, PNG or GIF (max 5MB)</p>
+                  <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploadingImage}>
+                    <Camera className="h-4 w-4 mr-2" />
+                    {isUploadingImage ? "Uploading..." : "Change Photo"}
+                  </Button>
+                  {profile.avatar !== "/placeholder.svg?height=100&width=100" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDeleteImage}
+                      className="text-red-600 hover:text-red-700 bg-transparent"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Remove Photo
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -398,20 +359,20 @@ export default function AdminProfilePage() {
                   value={profile.bio}
                   onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
                   rows={4}
-                  placeholder="Tell us about yourself..."
                 />
               </div>
 
-              <Button onClick={handleProfileUpdate} disabled={saving}>
+              <Button onClick={handleProfileUpdate}>
                 <Save className="h-4 w-4 mr-2" />
-                {saving ? "Saving..." : "Save Changes"}
+                Save Changes
               </Button>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="password">
-          <Card>
+          <div className="space-y-6">
+            <Card>
             <CardHeader>
               <CardTitle>Change Password</CardTitle>
               <CardDescription>Update your account password</CardDescription>
@@ -483,7 +444,94 @@ export default function AdminProfilePage() {
               </Button>
             </CardContent>
           </Card>
+
+            {/* <Card>
+              <CardHeader>
+                <CardTitle>Security Settings</CardTitle>
+                <CardDescription>Manage your account security preferences</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Two-Factor Authentication</Label>
+                    <p className="text-sm text-gray-500">Add an extra layer of security to your account</p>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    {security.twoFactorEnabled ? "Disable" : "Enable"}
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Login Notifications</Label>
+                    <p className="text-sm text-gray-500">Get notified of new login attempts</p>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    {security.loginNotifications ? "Disable" : "Enable"}
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="session-timeout">Session Timeout (minutes)</Label>
+                  <Input
+                    id="session-timeout"
+                    type="number"
+                    value={security.sessionTimeout}
+                    onChange={(e) => setSecurity({ ...security, sessionTimeout: Number(e.target.value) })}
+                  />
+                </div>
+                <Button onClick={handleSecurityUpdate}>
+                  <Shield className="h-4 w-4 mr-2" />
+                  Update Security Settings
+                </Button>
+              </CardContent>
+            </Card> */}
+          </div>
         </TabsContent>
+
+        {/* <TabsContent value="preferences">
+          <Card>
+            <CardHeader>
+              <CardTitle>System Preferences</CardTitle>
+              <CardDescription>Customize your admin panel experience</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Theme</Label>
+                <div className="flex space-x-2">
+                  <Button variant="outline" size="sm">
+                    Light
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    Dark
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    System
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Language</Label>
+                <select className="w-full p-2 border rounded">
+                  <option>English</option>
+                  <option>Spanish</option>
+                  <option>French</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label>Timezone</Label>
+                <select className="w-full p-2 border rounded">
+                  <option>UTC-5 (Eastern Time)</option>
+                  <option>UTC-6 (Central Time)</option>
+                  <option>UTC-7 (Mountain Time)</option>
+                  <option>UTC-8 (Pacific Time)</option>
+                </select>
+              </div>
+              <Button>
+                <Save className="h-4 w-4 mr-2" />
+                Save Preferences
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent> */}
       </Tabs>
     </div>
   )

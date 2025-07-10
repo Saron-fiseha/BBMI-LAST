@@ -36,7 +36,7 @@ interface Session {
   start_time: string
   end_time: string
   duration_minutes: number
-  session_type: "live" | "recorded" | "workshop"
+  session_type: "live" | "recorded"
   status: "upcoming" | "ongoing" | "completed" | "cancelled"
   location: string
   max_participants: number
@@ -144,7 +144,7 @@ export default function CalendarPage() {
             start_time: "14:00",
             end_time: "16:30",
             duration_minutes: 150,
-            session_type: "workshop",
+            session_type: "live",
             status: "upcoming",
             location: "Main Hall",
             max_participants: 20,
@@ -162,7 +162,7 @@ export default function CalendarPage() {
             start_time: "09:00",
             end_time: "17:00",
             duration_minutes: 480,
-            session_type: "workshop",
+            session_type: "live",
             status: "upcoming",
             location: "Studio B",
             max_participants: 10,
@@ -199,7 +199,7 @@ export default function CalendarPage() {
             start_time: "11:00",
             end_time: "14:00",
             duration_minutes: 180,
-            session_type: "workshop",
+            session_type: "live",
             status: "upcoming",
             location: "Studio C",
             max_participants: 8,
@@ -748,10 +748,10 @@ export default function CalendarPage() {
                       <User className="h-4 w-4 text-gray-400" />
                       <span>{session.instructor_name}</span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    {/* <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-gray-400" />
                       <span>{session.location}</span>
-                    </div>
+                    </div> */}
                   </div>
 
                   <div className="flex items-center justify-between mt-4 pt-4 border-t">
@@ -801,10 +801,10 @@ export default function CalendarPage() {
                                 <span className="font-medium">Instructor:</span>
                                 <p>{session.instructor_name}</p>
                               </div>
-                              <div>
+                              {/* <div>
                                 <span className="font-medium">Location:</span>
                                 <p>{session.location}</p>
-                              </div>
+                              </div> */}
                               <div>
                                 <span className="font-medium">Category:</span>
                                 <p>{session.category}</p>

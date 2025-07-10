@@ -21,20 +21,15 @@ export async function GET(request: NextRequest) {
     s.id,
     s.title,
     s.description,
-    s.instructor_name,
     s.instructor_id,
-    s.category,
-    s.session_date,
-    s.start_time,
-    s.end_time,
-    s.duration_minutes,
+    s.category_id,
+    s.scheduled_at,
+    s.duration,
     s.session_type,
     s.status,
-    s.location,
     s.max_participants,
     s.current_participants,
-    s.meeting_link,
-    s.materials_link,
+    s.meeting_url,
     CASE 
       WHEN e.user_id IS NOT NULL THEN true 
       ELSE false 
@@ -46,15 +41,15 @@ export async function GET(request: NextRequest) {
 
 // Add filters using sql fragments
 if (date) {
-  query = sql`${query} AND s.session_date = ${date}`;
+  query = sql`${query} AND s.scheduled_at= ${date}`;
 }
 
 if (category && category !== "all") {
-  query = sql`${query} AND s.category = ${category}`;
+  query = sql`${query} AND s.category_id = ${category}`;
 }
 
 if (instructor && instructor !== "all") {
-  query = sql`${query} AND s.instructor_name = ${instructor}`;
+  query = sql`${query} AND s.instructor_id = ${instructor}`;
 }
 
 if (search) {
@@ -64,14 +59,14 @@ if (search) {
     AND (
       s.title ILIKE ${searchPattern} OR 
       s.description ILIKE ${searchPattern} OR 
-      s.instructor_name ILIKE ${searchPattern} OR 
-      s.category ILIKE ${searchPattern}
+      s.instructor_id ILIKE ${searchPattern} OR 
+      s.category_id ILIKE ${searchPattern}
     )
   `;
 }
 
 // Add ordering
-query = sql`${query} ORDER BY s.session_date ASC, s.start_time ASC`;
+query = sql`${query} ORDER BY s.scheduled_at ASC`;
 
 // Execute the query
 const sessions = await query;

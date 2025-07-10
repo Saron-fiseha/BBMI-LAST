@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
 
     // Create new enrollment
     const result = await sql`
-      INSERT INTO enrollments (user_id, course_id, payment_amount, status, progress, created_at)
+      INSERT INTO enrollments (user_id, training_id, payment_amount, status, progress, created_at)
       VALUES (${userId}, ${courseId}, ${paymentAmount || 0}, 'active', 0, NOW())
       RETURNING id
     `
@@ -109,7 +109,7 @@ export async function PUT(request: NextRequest) {
           status = ${status || "active"},
           updated_at = NOW(),
           completed_at = ${status === "completed" ? "NOW()" : null}
-      WHERE user_id = ${userId} AND course_id = ${courseId}
+      WHERE user_id = ${userId} AND training_id = ${courseId}
     `
 
     return NextResponse.json({ success: true })
@@ -123,7 +123,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get("userId")
-    const courseId = searchParams.get("courseId")
+    const courseId = searchParams.get("training_id")
 
     if (!userId || !courseId) {
       return NextResponse.json({ error: "User ID and Course ID required" }, { status: 400 })
@@ -132,7 +132,7 @@ export async function DELETE(request: NextRequest) {
     // Delete enrollment
     await sql`
       DELETE FROM enrollments
-      WHERE user_id = ${userId} AND course_id = ${courseId}
+      WHERE user_id = ${userId} AND training_id = ${courseId}
     `
 
     return NextResponse.json({ success: true })

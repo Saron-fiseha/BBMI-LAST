@@ -51,8 +51,15 @@ interface Certificate {
   completed_modules: number
 }
 
+interface Category {
+  id: number
+  name: string
+  description: string
+  course_count: number
+}
+
 interface FilterOptions {
-  categories: string[]
+  categories: Category[]
   levels: string[]
   years: number[]
   instructors: string[]
@@ -79,6 +86,8 @@ export default function StudentCertificatesPage() {
   const [selectedCertificate, setSelectedCertificate] = useState<Certificate | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
+
 
   useEffect(() => {
     if (user?.id) {
@@ -89,6 +98,37 @@ export default function StudentCertificatesPage() {
   useEffect(() => {
     filterCertificates()
   }, [certificates, searchTerm, selectedCategory, selectedLevel, selectedYear, selectedInstructor])
+
+  const fetchCategories = async () => {
+    try {
+      setCategoriesLoading(true)
+      const response = await fetch("/api/dashboard/categories")
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (data.success && data.categories) {
+        setFilterOptions((prev) => ({
+          ...prev,
+          categories: data.categories,
+        }))
+      } else {
+        console.warn("Categories API returned no data, using fallback")
+      }
+    } catch (error) {
+      console.error("Categories fetch error:", error)
+      toast({
+        title: "Warning",
+        description: "Could not load categories from database. Using default categories.",
+        variant: "default",
+      })
+    } finally {
+      setCategoriesLoading(false)
+    }
+  }
 
   const fetchCertificates = async () => {
     try {
@@ -175,15 +215,42 @@ export default function StudentCertificatesPage() {
             total_modules: 5,
             completed_modules: 5,
           },
+           {
+            id: 3,
+            user_id: user?.id || 1,
+            course_id: 4,
+            course_title: "Advanced Color Theory & Application",
+            course_category: "leg Theory",
+            course_level: "Advanced",
+            instructor_name: "Emma Wilson",
+            student_name: user?.full_name || "Student Name",
+            completion_date: "2023-12-10",
+            issue_date: "2023-12-11",
+            certificate_code: "BBMI-CTA-2023-045",
+            verification_code: "VER-XYZ789GHI012",
+            grade: "A",
+            duration_hours: 15,
+            skills_learned: [
+              "Color Matching",
+              "Skin Tone Analysis",
+              "Color Correction",
+              "Seasonal Color Analysis",
+              "Advanced Color Theory",
+            ],
+            verification_url: `${window.location.origin}/verify/${encodeURIComponent("VER-XYZ789GHI012")}`,
+            progress: 100,
+            total_modules: 5,
+            completed_modules: 5,
+          },
         ]
 
         setCertificates(mockCertificates)
-        setFilterOptions({
-          categories: ["Bridal Makeup", "Color Theory"],
-          levels: ["Intermediate", "Advanced"],
-          years: [2024, 2023],
-          instructors: ["Sarah Martinez", "Emma Wilson"],
-        })
+        // setFilterOptions({
+        //   // categories: ["Bridal Makeup", "Color Theory"],
+        //   levels: ["Intermediate", "Advanced"],
+        //   years: [2024, 2023],
+        //   instructors: ["Sarah Martinez", "Emma Wilson"],
+        // })
       }
     } catch (error) {
       console.error("Certificates fetch error:", error)
@@ -459,13 +526,19 @@ Verify at: ${certificate.verification_url}
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
-              <SelectContent>
+             <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                {filterOptions.categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
+                {categoriesLoading ? (
+                  <SelectItem value="loading" disabled>
+                    Loading...
                   </SelectItem>
-                ))}
+                ) : (
+                  filterOptions.categories.map((category) => (
+                    <SelectItem key={category.id} value={category.name}>
+                      {category.name} ({category.course_count})
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
 {/* 

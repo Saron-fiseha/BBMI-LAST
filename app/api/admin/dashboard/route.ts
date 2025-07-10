@@ -33,12 +33,12 @@ export async function GET() {
     // Get course distribution
     const courseDistribution = await sql`
       SELECT 
-        c.title,
+        t.name,
         COUNT(e.id) as students,
-        c.price
-      FROM courses c
-      LEFT JOIN enrollments e ON c.id = e.course_id
-      GROUP BY c.id, c.title, c.price
+        t.price
+      FROM trainings t
+      LEFT JOIN enrollments e ON t.id = e.training_id
+      GROUP BY t.id, t.name, t.price
       ORDER BY students DESC
       LIMIT 10
     `
@@ -47,11 +47,11 @@ export async function GET() {
     const categoryStats = await sql`
       SELECT 
         cat.name,
-        COUNT(c.id) as courses,
+        COUNT(t.id) as courses,
         COUNT(m.id) as modules
       FROM categories cat
-      LEFT JOIN courses c ON cat.id = c.category_id
-      LEFT JOIN modules m ON c.id = m.course_id
+      LEFT JOIN trainings t ON cat.id = t.category_id
+      LEFT JOIN modules m ON t.id = m.training_id
       GROUP BY cat.id, cat.name
       ORDER BY courses DESC
     `

@@ -1,5 +1,6 @@
 import type React from "react"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
+import { Toaster } from "@/components/ui/toaster"
 
 export default function AdminLayout({
   children,
@@ -9,7 +10,7 @@ export default function AdminLayout({
   return (
     <div className="flex min-h-screen bg-ivory">
       <AdminSidebar />
-      <main className="flex-1 p-6">{children}</main>
+      <main className="flex-1 p-6">{children}<Toaster /></main>
     </div>
   )
 }

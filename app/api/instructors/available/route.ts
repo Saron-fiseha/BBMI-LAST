@@ -8,10 +8,8 @@ export async function GET() {
     const instructors = await sql`
       SELECT 
         id, 
-        name, 
+        full_name, 
         email, 
-        specialization,
-        bio,
         profile_picture,
         created_at
       FROM users 

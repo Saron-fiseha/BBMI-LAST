@@ -69,20 +69,20 @@ export async function GET(request: NextRequest) {
       FROM courses c
       LEFT JOIN (
         SELECT 
-          course_id, 
+          training_id, 
           COUNT(*) as student_count
         FROM enrollments
         WHERE status = 'active'
-        GROUP BY course_id
-      ) enrollment_stats ON c.id = enrollment_stats.course_id
+        GROUP BY training_id
+      ) enrollment_stats ON c.id = enrollment_stats.training_id
       LEFT JOIN (
         SELECT 
-          course_id,
+          training_id,
           AVG(rating) as avg_rating,
           COUNT(*) as review_count
         FROM reviews
-        GROUP BY course_id
-      ) rating_stats ON c.id = rating_stats.course_id
+        GROUP BY training_id
+      ) rating_stats ON c.id = rating_stats.training_id
       WHERE c.instructor_id = ${instructorId}
       ORDER BY c.created_at DESC
     `
