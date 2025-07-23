@@ -4,6 +4,18 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { useRouter } from "next/navigation"
 import type { User } from "@/lib/auth"
 
+// interface User {
+//   id: number
+//   full_name: string
+//   email: string
+//   phone?: string
+//   age?: number
+//   sex?: string
+//   role: "student" | "instructor" | "admin"
+//   profile_picture?: string
+//   email_verified: boolean
+// }
+
 interface AuthContextType {
   user: User | null
   loading: boolean
@@ -11,6 +23,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>
   register: (userData: RegisterData) => Promise<{ success: boolean; message?: string }>
   logout: () => void
+  refreshUser: () => Promise<void>
   checkAuth: () => Promise<void>
 }
 
@@ -31,6 +44,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+
+   const isAuthenticated = !!user
+
+  // Check if user is logged in on mount
+  useEffect(() => {
+    checkAuth()
+  }, [])
 
   const checkAuth = async () => {
     try {
@@ -73,6 +93,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const refreshUser = async () => {
+    try {
+      const token = localStorage.getItem("auth_token")
+      if (!token) return
+
+      const response = await fetch("/api/auth/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setUser(data.user)
+      }
+    } catch (error) {
+      console.error("Failed to refresh user:", error)
     }
   }
 
@@ -191,6 +231,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     register,
     logout,
+    refreshUser,
     checkAuth,
   }
 

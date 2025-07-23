@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,8 +8,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Edit, Trash2, Search, Download, Loader2, X } from "lucide-react"
+import { Plus, Edit, Trash2, Search, Download, Loader2, X, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useRouter, useSearchParams } from "next/navigation"
+import Image from "next/image"
 
 interface Project {
   id: string
@@ -26,17 +28,38 @@ interface Project {
   created_at: string
 }
 
+interface PaginationInfo {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+  hasNext: boolean
+  hasPrev: boolean
+}
+
 export default function ProjectsPage() {
   const { toast } = useToast()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filterType, setFilterType] = useState("all")
-  const [filterStatus, setFilterStatus] = useState("all")
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "")
+  const [filterType, setFilterType] = useState(searchParams.get("type") || "all")
+  const [filterStatus, setFilterStatus] = useState(searchParams.get("status") || "all")
   const [showCreateForm, setShowCreateForm] = useState(false)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [showEditForm, setShowEditForm] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+    hasNext: false,
+    hasPrev: false,
+  })
 
   const [newProject, setNewProject] = useState({
     name: "",
@@ -47,36 +70,30 @@ export default function ProjectsPage() {
     mentor_address: "",
   })
 
-  // Debounced fetch function for real-time search
-  const debouncedFetchProjects = useCallback(
-    debounce(async (search: string, type: string, status: string) => {
-      try {
-        setLoading(true)
-        const params = new URLSearchParams()
-        if (search.trim()) params.append("search", search.trim())
-        if (type !== "all") params.append("type", type)
-        if (status !== "all") params.append("status", status)
-
-        const response = await fetch(`/api/admin/projects?${params}`)
-        if (!response.ok) throw new Error("Failed to fetch projects")
-
-        const data = await response.json()
-        setProjects(data.projects || [])
-      } catch (error) {
-        console.error("Error fetching projects:", error)
-        toast({
-          title: "Error",
-          description: "Failed to fetch projects",
-          variant: "destructive",
-        })
-      } finally {
-        setLoading(false)
-      }
-    }, 300),
-    [toast],
+  // Update URL when filters change
+  const updateURL = useCallback(
+    (newParams: Record<string, string>) => {
+      const params = new URLSearchParams(searchParams)
+      Object.entries(newParams).forEach(([key, value]) => {
+        if (value && value !== "all" && value !== "") {
+          params.set(key, value)
+        } else {
+          params.delete(key)
+        }
+      })
+      router.push(`?${params.toString()}`, { scroll: false })
+    },
+    [router, searchParams],
   )
 
-  // Simple debounce function
+  // Debounced search
+  const debouncedSearch = useCallback(
+    debounce((search: string) => {
+      updateURL({ search, page: "1" })
+    }, 300),
+    [updateURL],
+  )
+
   function debounce(func: Function, wait: number) {
     let timeout: NodeJS.Timeout
     return function executedFunction(...args: any[]) {
@@ -89,15 +106,108 @@ export default function ProjectsPage() {
     }
   }
 
-  // Trigger search immediately when filters change
-  useEffect(() => {
-    debouncedFetchProjects(searchQuery, filterType, filterStatus)
-  }, [searchQuery, filterType, filterStatus, debouncedFetchProjects])
+  // Fetch projects from database with pagination
+  const fetchProjects = async (search: string, type: string, status: string, page = 1) => {
+    try {
+      setLoading(true)
+      setError(null)
+      console.log("🔍 Fetching projects with pagination...")
 
-  // Initial load
+      const params = new URLSearchParams({
+        search,
+        type,
+        status,
+        page: page.toString(),
+        limit: "10",
+      })
+
+      const response = await fetch(`/api/admin/projects?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+      })
+
+      console.log("📡 Response status:", response.status)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error("❌ Response not ok:", errorText)
+        throw new Error(`HTTP ${response.status}: ${errorText}`)
+      }
+
+      const data = await response.json()
+      console.log("📊 Received data:", data)
+
+      if (data.success === false) {
+        throw new Error(data.error || "Failed to fetch projects")
+      }
+
+      const projectsData = data.projects || []
+      console.log("✅ Projects loaded:", projectsData.length)
+
+      setProjects(projectsData)
+      setPagination(
+        data.pagination || {
+          page: 1,
+          limit: 10,
+          total: 0,
+          totalPages: 0,
+          hasNext: false,
+          hasPrev: false,
+        },
+      )
+    } catch (error) {
+      console.error("❌ Error fetching projects:", error)
+      const errorMessage = error instanceof Error ? error.message : "Failed to fetch projects"
+      setError(errorMessage)
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      })
+      setProjects([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    updateURL({ page: newPage.toString() })
+  }
+
+  // Handle filter changes
+  const handleTypeChange = (type: string) => {
+    setFilterType(type)
+    updateURL({ type, page: "1" })
+  }
+
+  const handleStatusChange = (status: string) => {
+    setFilterStatus(status)
+    updateURL({ status, page: "1" })
+  }
+
+  // Handle search change
+  const handleSearchChange = (search: string) => {
+    setSearchQuery(search)
+    debouncedSearch(search)
+  }
+
+  // Effect to fetch data when URL params change
   useEffect(() => {
-    debouncedFetchProjects("", "all", "all")
-  }, [debouncedFetchProjects])
+    const page = Number.parseInt(searchParams.get("page") || "1")
+    const search = searchParams.get("search") || ""
+    const type = searchParams.get("type") || "all"
+    const status = searchParams.get("status") || "all"
+
+    setSearchQuery(search)
+    setFilterType(type)
+    setFilterStatus(status)
+
+    fetchProjects(search, type, status, page)
+  }, [searchParams])
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -113,16 +223,30 @@ export default function ProjectsPage() {
 
     try {
       setSubmitting(true)
+      setError(null)
+
+      console.log("📝 Creating project with data:", newProject)
+
       const response = await fetch("/api/admin/projects", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(newProject),
       })
 
-      if (!response.ok) throw new Error("Failed to create project")
+      console.log("📡 Create response status:", response.status)
 
       const data = await response.json()
-      setProjects([data.project, ...projects])
+      console.log("📊 Parsed response data:", data)
+
+      if (!response.ok || data.success === false) {
+        throw new Error(data.error || `HTTP ${response.status}`)
+      }
+
+      console.log("🎉 Project created successfully:", data.project)
+
+      // Reset form
       setNewProject({
         name: "",
         description: "",
@@ -131,17 +255,25 @@ export default function ProjectsPage() {
         mentor_name: "",
         mentor_address: "",
       })
+
+      // Close form
       setShowCreateForm(false)
 
       toast({
         title: "Success",
         description: "Project created successfully",
       })
+
+      // Refresh current page
+      const currentPage = Number.parseInt(searchParams.get("page") || "1")
+      fetchProjects(searchQuery, filterType, filterStatus, currentPage)
     } catch (error) {
-      console.error("Error creating project:", error)
+      console.error("❌ Error creating project:", error)
+      const errorMessage = error instanceof Error ? error.message : "Failed to create project"
+      setError(errorMessage)
       toast({
         title: "Error",
-        description: "Failed to create project",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {
@@ -149,7 +281,8 @@ export default function ProjectsPage() {
     }
   }
 
-  const handleEditProject = async () => {
+  const handleEditProject = async (e: React.FormEvent) => {
+    e.preventDefault()
     if (!editingProject) return
 
     try {
@@ -160,22 +293,29 @@ export default function ProjectsPage() {
         body: JSON.stringify(editingProject),
       })
 
-      if (!response.ok) throw new Error("Failed to update project")
-
       const data = await response.json()
-      setProjects(projects.map((p) => (p.id === editingProject.id ? data.project : p)))
-      setIsEditDialogOpen(false)
+
+      if (!response.ok || data.success === false) {
+        throw new Error(data.error || data.details || "Failed to update project")
+      }
+
+      setShowEditForm(false)
       setEditingProject(null)
 
       toast({
         title: "Success",
         description: "Project updated successfully",
       })
+
+      // Refresh current page
+      const currentPage = Number.parseInt(searchParams.get("page") || "1")
+      fetchProjects(searchQuery, filterType, filterStatus, currentPage)
     } catch (error) {
       console.error("Error updating project:", error)
+      const errorMessage = error instanceof Error ? error.message : "Failed to update project"
       toast({
         title: "Error",
-        description: "Failed to update project",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {
@@ -191,18 +331,26 @@ export default function ProjectsPage() {
         method: "DELETE",
       })
 
-      if (!response.ok) throw new Error("Failed to delete project")
+      const data = await response.json()
 
-      setProjects(projects.filter((p) => p.id !== projectId))
+      if (!response.ok || data.success === false) {
+        throw new Error(data.error || "Failed to delete project")
+      }
+
       toast({
         title: "Success",
         description: "Project deleted successfully",
       })
+
+      // Refresh current page
+      const currentPage = Number.parseInt(searchParams.get("page") || "1")
+      fetchProjects(searchQuery, filterType, filterStatus, currentPage)
     } catch (error) {
       console.error("Error deleting project:", error)
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete project"
       toast({
         title: "Error",
-        description: "Failed to delete project",
+        description: errorMessage,
         variant: "destructive",
       })
     }
@@ -228,10 +376,31 @@ export default function ProjectsPage() {
     document.body.removeChild(link)
   }
 
-  const openEditDialog = (project: Project) => {
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case "paid":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+      case "free":
+        return "bg-green-100 text-green-800 border-green-200"
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200"
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "bg-green-100 text-green-800 border-green-200"
+      case "inactive":
+        return "bg-gray-100 text-gray-800 border-gray-200"
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200"
+    }
+  }
+
+  const openEditForm = (project: Project) => {
     setEditingProject({
       ...project,
-      // Ensure all fields have string values to prevent null input errors
       name: project.name || "",
       description: project.description || "",
       image_url: project.image_url || "",
@@ -240,66 +409,190 @@ export default function ProjectsPage() {
       type: project.type || "free",
       status: project.status || "active",
     })
-    setIsEditDialogOpen(true)
+    setShowEditForm(true)
   }
 
-  if (loading) {
+  // Pagination component
+  const renderPagination = () => {
+    if (pagination.totalPages <= 1) return null
+
+    const getPageNumbers = () => {
+      const current = pagination.page
+      const total = pagination.totalPages
+      const delta = 2
+      const range = []
+      const rangeWithDots = []
+
+      for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+        range.push(i)
+      }
+
+      if (current - delta > 2) {
+        rangeWithDots.push(1, "...")
+      } else {
+        rangeWithDots.push(1)
+      }
+
+      rangeWithDots.push(...range)
+
+      if (current + delta < total - 1) {
+        rangeWithDots.push("...", total)
+      } else {
+        rangeWithDots.push(total)
+      }
+
+      return rangeWithDots
+    }
+
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-yellow-600" />
+      <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
+        <div className="flex justify-between flex-1 sm:hidden">
+          <Button
+            onClick={() => handlePageChange(pagination.page - 1)}
+            disabled={!pagination.hasPrev || loading}
+            variant="outline"
+            size="sm"
+          >
+            Previous
+          </Button>
+          <Button
+            onClick={() => handlePageChange(pagination.page + 1)}
+            disabled={!pagination.hasNext || loading}
+            variant="outline"
+            size="sm"
+          >
+            Next
+          </Button>
+        </div>
+        <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm text-gray-700">
+              Showing{" "}
+              <span className="font-medium">
+                {Math.min((pagination.page - 1) * pagination.limit + 1, pagination.total)}
+              </span>{" "}
+              to <span className="font-medium">{Math.min(pagination.page * pagination.limit, pagination.total)}</span>{" "}
+              of <span className="font-medium">{pagination.total}</span> results
+            </p>
+          </div>
+          <div>
+            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+              <Button
+                onClick={() => handlePageChange(pagination.page - 1)}
+                disabled={!pagination.hasPrev || loading}
+                variant="outline"
+                size="sm"
+                className="relative inline-flex items-center px-2 py-2 rounded-l-md"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              {getPageNumbers().map((pageNum, index) => (
+                <Button
+                  key={index}
+                  onClick={() => (typeof pageNum === "number" ? handlePageChange(pageNum) : undefined)}
+                  disabled={pageNum === "..." || loading}
+                  variant={pageNum === pagination.page ? "default" : "outline"}
+                  size="sm"
+                  className="relative inline-flex items-center px-4 py-2"
+                >
+                  {pageNum}
+                </Button>
+              ))}
+
+              <Button
+                onClick={() => handlePageChange(pagination.page + 1)}
+                disabled={!pagination.hasNext || loading}
+                variant="outline"
+                size="sm"
+                className="relative inline-flex items-center px-2 py-2 rounded-r-md"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </nav>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="relative space-y-4 sm:space-y-6 p-4 sm:p-6">
+      {/* Header - Responsive */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Project Management</h1>
-          <p className="text-gray-600">Manage training projects and programs</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Project Management</h1>
+          <p className="text-sm sm:text-base text-deep-purple mt-1">Manage training projects and programs</p>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
           <Button
             variant="outline"
             onClick={exportProjects}
-            className="border-yellow-600 text-yellow-600 hover:bg-yellow-600 hover:text-white"
+            disabled={loading || projects.length === 0}
+            className="w-full sm:w-auto border-mustard text-mustard hover:bg-mustard hover:text-ivory bg-transparent"
           >
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button onClick={() => setShowCreateForm(true)} className="bg-yellow-600 hover:bg-yellow-700 text-white">
+          <Button
+            onClick={() => setShowCreateForm(true)}
+            className="w-full sm:w-auto bg-mustard hover:bg-mustard/90 text-ivory transition-all duration-200 hover:scale-105 active:scale-95"
+            disabled={submitting}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Create Project
           </Button>
         </div>
       </div>
 
-      {/* Search and Filter */}
-      <div className="flex space-x-4">
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {error}
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-2 bg-transparent"
+              onClick={() => {
+                setError(null)
+                const currentPage = Number.parseInt(searchParams.get("page") || "1")
+                fetchProjects(searchQuery, filterType, filterStatus, currentPage)
+              }}
+            >
+              Retry
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Search and Filter - Responsive */}
+      <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
         <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-deep-purple" />
           <Input
             placeholder="Search projects by name, mentor, or description..."
-            className="pl-8 border-yellow-200 focus:border-yellow-600"
+            className="pl-8 border-mustard/20 focus:border-mustard"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
           />
         </div>
-        <Select value={filterType} onValueChange={setFilterType}>
-          <SelectTrigger className="w-[180px] border-yellow-200 focus:border-yellow-600">
+        <Select value={filterType} onValueChange={handleTypeChange}>
+          <SelectTrigger className="w-full sm:w-[180px] border-mustard/20 focus:border-mustard">
             <SelectValue placeholder="Filter by type" />
           </SelectTrigger>
-          <SelectContent className="bg-white border-yellow-200">
+          <SelectContent className="bg-ivory border-mustard/20">
             <SelectItem value="all">All Types</SelectItem>
             <SelectItem value="free">Free</SelectItem>
             <SelectItem value="paid">Paid</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-[180px] border-yellow-200 focus:border-yellow-600">
+        <Select value={filterStatus} onValueChange={handleStatusChange}>
+          <SelectTrigger className="w-full sm:w-[180px] border-mustard/20 focus:border-mustard">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
-          <SelectContent className="bg-white border-yellow-200">
+          <SelectContent className="bg-ivory border-mustard/20">
             <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
@@ -307,136 +600,249 @@ export default function ProjectsPage() {
         </Select>
       </div>
 
-      {/* Projects Table */}
-      <div className="bg-white border border-yellow-200 rounded-lg">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-yellow-200">
-              <TableHead className="text-gray-900 font-semibold">No.</TableHead>
-              <TableHead className="text-gray-900 font-semibold">Name</TableHead>
-              <TableHead className="text-gray-900 font-semibold">Description</TableHead>
-              <TableHead className="text-gray-900 font-semibold">Type</TableHead>
-              <TableHead className="text-gray-900 font-semibold">Mentor</TableHead>
-              <TableHead className="text-gray-900 font-semibold">Students</TableHead>
-              <TableHead className="text-gray-900 font-semibold">Trainings</TableHead>
-              <TableHead className="text-gray-900 font-semibold">Status</TableHead>
-              <TableHead className="text-gray-900 font-semibold">Created</TableHead>
-              <TableHead className="text-gray-900 font-semibold">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {projects.map((project, index) => (
-              <TableRow key={project.id} className="border-yellow-100 hover:bg-yellow-50">
-                <TableCell className="font-medium text-gray-900">{index + 1}</TableCell>
-                <TableCell className="font-medium text-gray-900">{project.name}</TableCell>
-                <TableCell className="text-gray-600 max-w-xs truncate">{project.description}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={project.type === "paid" ? "default" : "secondary"}
-                    className={project.type === "paid" ? "bg-yellow-600 text-white" : "bg-gray-600 text-white"}
-                  >
-                    {project.type}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-gray-600">{project.mentor_name}</TableCell>
-                <TableCell className="text-gray-900">{project.students_count}</TableCell>
-                <TableCell className="text-gray-900">{project.trainings_count}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="border-yellow-600 text-yellow-600">
-                    {project.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-gray-600">{new Date(project.created_at).toLocaleDateString()}</TableCell>
-                <TableCell>
-                  <div className="flex space-x-1">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openEditDialog(project)}
-                      className="border-yellow-200 text-yellow-600 hover:bg-yellow-600 hover:text-white"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDeleteProject(project.id)}
-                      className="border-red-200 text-red-600 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+      {/* Loading State */}
+      {loading && projects.length === 0 && (
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-mustard mx-auto mb-2" />
+            <p className="text-deep-purple">Loading projects...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Projects Table - Responsive */}
+      <div className="bg-ivory border border-mustard/20 rounded-lg">
+        <div className="p-4 border-b border-mustard/20">
+          <h3 className="text-lg font-semibold text-charcoal">Projects ({pagination.total})</h3>
+        </div>
+
+        {!loading && (
+          <>
+            {/* Mobile View */}
+            <div className="block sm:hidden">
+              <div className="space-y-4 p-4">
+                {projects.length === 0 ? (
+                  <div className="text-center py-8 text-deep-purple">
+                    {error
+                      ? "Error loading projects. Please try again."
+                      : "No projects found. Click 'Create Project' to add your first project."}
                   </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                ) : (
+                  projects.map((project, index) => (
+                    <div key={project.id} className="border border-mustard/10 rounded-lg p-4 space-y-3 bg-white">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center space-x-3">
+                          <div className="relative h-12 w-12">
+                            <Image
+                              src={project.image_url || "/placeholder.svg?height=48&width=48"}
+                              alt={project.name}
+                              fill
+                              className="object-cover rounded-md"
+                            />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-charcoal">{project.name}</h4>
+                            <p className="text-sm text-deep-purple">{project.description.substring(0, 50)}...</p>
+                          </div>
+                        </div>
+                        <Badge className={getTypeColor(project.type)}>{project.type}</Badge>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-gray-500">Mentor:</span>
+                          <p className="font-medium">{project.mentor_name}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Students:</span>
+                          <p className="font-medium">{project.students_count}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Trainings:</span>
+                          <p className="font-medium">{project.trainings_count}</p>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Status:</span>
+                          <Badge className={getStatusColor(project.status)}>{project.status}</Badge>
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openEditForm(project)}
+                          className="flex-1 border-mustard/20 text-mustard hover:bg-mustard hover:text-ivory"
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDeleteProject(project.id)}
+                          className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Desktop View */}
+            <div className="hidden sm:block">
+              <div className="h-96 overflow-auto">
+                <Table>
+                  <TableHeader className="sticky top-0 bg-ivory z-10">
+                    <TableRow className="border-mustard/20">
+                      <TableHead className="text-charcoal font-semibold">No.</TableHead>
+                      <TableHead className="text-charcoal font-semibold">Name</TableHead>
+                      <TableHead className="text-charcoal font-semibold">Description</TableHead>
+                      <TableHead className="text-charcoal font-semibold">Type</TableHead>
+                      <TableHead className="text-charcoal font-semibold">Mentor</TableHead>
+                      <TableHead className="text-charcoal font-semibold">Students</TableHead>
+                      <TableHead className="text-charcoal font-semibold">Trainings</TableHead>
+                      <TableHead className="text-charcoal font-semibold">Status</TableHead>
+                      <TableHead className="text-charcoal font-semibold">Created</TableHead>
+                      <TableHead className="text-charcoal font-semibold">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {projects.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={10} className="text-center py-8 text-deep-purple">
+                          {error
+                            ? "Error loading projects. Please try again."
+                            : "No projects found. Click 'Create Project' to add your first project."}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      projects.map((project, index) => (
+                        <TableRow
+                          key={project.id}
+                          className="border-mustard/10 hover:bg-mustard/5 transition-colors duration-200"
+                        >
+                          <TableCell className="font-medium text-charcoal">
+                            {(pagination.page - 1) * pagination.limit + index + 1}
+                          </TableCell>
+                          <TableCell className="font-medium text-charcoal">{project.name}</TableCell>
+                          <TableCell className="text-deep-purple max-w-xs truncate">{project.description}</TableCell>
+                          <TableCell>
+                            <Badge className={getTypeColor(project.type)}>{project.type}</Badge>
+                          </TableCell>
+                          <TableCell className="text-deep-purple">{project.mentor_name}</TableCell>
+                          <TableCell className="text-charcoal">{project.students_count}</TableCell>
+                          <TableCell className="text-charcoal">{project.trainings_count}</TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(project.status)}>{project.status}</Badge>
+                          </TableCell>
+                          <TableCell className="text-deep-purple">
+                            {new Date(project.created_at).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => openEditForm(project)}
+                                className="border-mustard/20 text-mustard hover:bg-mustard hover:text-ivory"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDeleteProject(project.id)}
+                                className="border-red-200 text-red-600 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+
+            {/* Pagination */}
+            {renderPagination()}
+          </>
+        )}
       </div>
 
-      {/* Create Project Form Overlay */}
+      {/* Create Project Form Overlay - Responsive */}
       {showCreateForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg border border-yellow-200 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Create New Project</h2>
-                  <p className="text-gray-600">Set up a new training project</p>
-                </div>
+          <div className="bg-ivory border border-mustard/20 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl sm:text-2xl font-bold text-charcoal">Create New Project</h2>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowCreateForm(false)}
-                  className="text-gray-600 hover:bg-yellow-100"
+                  className="text-charcoal hover:bg-mustard/10"
+                  disabled={submitting}
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
 
               <form onSubmit={handleCreateProject} className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-900">Project Name *</label>
+                  <label className="block text-sm font-medium text-charcoal mb-1">Project Name *</label>
                   <Input
                     value={newProject.name}
                     onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
                     placeholder="Enter project name"
-                    className="border-yellow-200 focus:border-yellow-600"
+                    className="border-mustard/20 focus:border-mustard"
                     required
+                    disabled={submitting}
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-900">Description *</label>
+                  <label className="block text-sm font-medium text-charcoal mb-1">Description *</label>
                   <Textarea
                     value={newProject.description}
                     onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
                     placeholder="Enter project description"
-                    className="border-yellow-200 focus:border-yellow-600"
+                    className="border-mustard/20 focus:border-mustard"
                     rows={3}
                     required
+                    disabled={submitting}
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-900">Image URL</label>
+                  <label className="block text-sm font-medium text-charcoal mb-1">Image URL</label>
                   <Input
                     value={newProject.image_url}
                     onChange={(e) => setNewProject({ ...newProject, image_url: e.target.value })}
                     placeholder="Enter image URL (optional)"
-                    className="border-yellow-200 focus:border-yellow-600"
+                    className="border-mustard/20 focus:border-mustard"
+                    disabled={submitting}
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-900">Project Type</label>
+                  <label className="block text-sm font-medium text-charcoal mb-1">Project Type</label>
                   <Select
                     value={newProject.type}
                     onValueChange={(value: "free" | "paid") => setNewProject({ ...newProject, type: value })}
+                    disabled={submitting}
                   >
-                    <SelectTrigger className="border-yellow-200 focus:border-yellow-600">
+                    <SelectTrigger className="border-mustard/20 focus:border-mustard">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-white border-yellow-200">
+                    <SelectContent className="bg-ivory border-mustard/20">
                       <SelectItem value="free">Free</SelectItem>
                       <SelectItem value="paid">Paid</SelectItem>
                     </SelectContent>
@@ -444,39 +850,52 @@ export default function ProjectsPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-900">Mentor Name *</label>
+                  <label className="block text-sm font-medium text-charcoal mb-1">Mentor Name *</label>
                   <Input
                     value={newProject.mentor_name}
                     onChange={(e) => setNewProject({ ...newProject, mentor_name: e.target.value })}
                     placeholder="Enter mentor name"
-                    className="border-yellow-200 focus:border-yellow-600"
+                    className="border-mustard/20 focus:border-mustard"
                     required
+                    disabled={submitting}
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-900">Mentor Address</label>
+                  <label className="block text-sm font-medium text-charcoal mb-1">Mentor Address</label>
                   <Textarea
                     value={newProject.mentor_address}
                     onChange={(e) => setNewProject({ ...newProject, mentor_address: e.target.value })}
                     placeholder="Enter mentor address (optional)"
-                    className="border-yellow-200 focus:border-yellow-600"
+                    className="border-mustard/20 focus:border-mustard"
                     rows={2}
+                    disabled={submitting}
                   />
                 </div>
 
-                <div className="flex justify-end space-x-3 pt-4">
+                <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => setShowCreateForm(false)}
-                    className="border-yellow-200 text-gray-600 hover:bg-yellow-100"
+                    className="w-full sm:w-auto border-mustard/20 text-charcoal hover:bg-mustard/10"
+                    disabled={submitting}
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={submitting} className="bg-yellow-600 hover:bg-yellow-700 text-white">
-                    {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                    Create Project
+                  <Button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full sm:w-auto bg-mustard hover:bg-mustard/90 text-ivory"
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Creating...
+                      </>
+                    ) : (
+                      "Create Project"
+                    )}
                   </Button>
                 </div>
               </form>
@@ -485,70 +904,72 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {/* Edit Project Form Overlay */}
-      {isEditDialogOpen && editingProject && (
+      {/* Edit Project Form Overlay - Responsive */}
+      {showEditForm && editingProject && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg border border-yellow-200 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Edit Project</h2>
-                  <p className="text-gray-600">Update project information</p>
-                </div>
+          <div className="bg-ivory border border-mustard/20 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl sm:text-2xl font-bold text-charcoal">Edit Project</h2>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setIsEditDialogOpen(false)}
-                  className="text-gray-600 hover:bg-yellow-100"
+                  onClick={() => setShowEditForm(false)}
+                  className="text-charcoal hover:bg-mustard/10"
+                  disabled={submitting}
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
 
-              <div className="space-y-4">
+              <form onSubmit={handleEditProject} className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-900">Project Name *</label>
+                  <label className="block text-sm font-medium text-charcoal mb-1">Project Name *</label>
                   <Input
                     value={editingProject.name}
                     onChange={(e) => setEditingProject({ ...editingProject, name: e.target.value })}
                     placeholder="Enter project name"
-                    className="border-yellow-200 focus:border-yellow-600"
+                    className="border-mustard/20 focus:border-mustard"
                     required
+                    disabled={submitting}
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-900">Description *</label>
+                  <label className="block text-sm font-medium text-charcoal mb-1">Description *</label>
                   <Textarea
                     value={editingProject.description}
                     onChange={(e) => setEditingProject({ ...editingProject, description: e.target.value })}
                     placeholder="Enter project description"
-                    className="border-yellow-200 focus:border-yellow-600"
+                    className="border-mustard/20 focus:border-mustard"
                     rows={3}
                     required
+                    disabled={submitting}
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-900">Image URL</label>
+                  <label className="block text-sm font-medium text-charcoal mb-1">Image URL</label>
                   <Input
                     value={editingProject.image_url}
                     onChange={(e) => setEditingProject({ ...editingProject, image_url: e.target.value })}
                     placeholder="Enter image URL (optional)"
-                    className="border-yellow-200 focus:border-yellow-600"
+                    className="border-mustard/20 focus:border-mustard"
+                    disabled={submitting}
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-900">Project Type</label>
+                  <label className="block text-sm font-medium text-charcoal mb-1">Project Type</label>
                   <Select
                     value={editingProject.type}
                     onValueChange={(value: "free" | "paid") => setEditingProject({ ...editingProject, type: value })}
+                    disabled={submitting}
                   >
-                    <SelectTrigger className="border-yellow-200 focus:border-yellow-600">
+                    <SelectTrigger className="border-mustard/20 focus:border-mustard">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-white border-yellow-200">
+                    <SelectContent className="bg-ivory border-mustard/20">
                       <SelectItem value="free">Free</SelectItem>
                       <SelectItem value="paid">Paid</SelectItem>
                     </SelectContent>
@@ -556,17 +977,18 @@ export default function ProjectsPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-900">Status</label>
+                  <label className="block text-sm font-medium text-charcoal mb-1">Status</label>
                   <Select
                     value={editingProject.status}
                     onValueChange={(value: "active" | "inactive") =>
                       setEditingProject({ ...editingProject, status: value })
                     }
+                    disabled={submitting}
                   >
-                    <SelectTrigger className="border-yellow-200 focus:border-yellow-600">
+                    <SelectTrigger className="border-mustard/20 focus:border-mustard">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-white border-yellow-200">
+                    <SelectContent className="bg-ivory border-mustard/20">
                       <SelectItem value="active">Active</SelectItem>
                       <SelectItem value="inactive">Inactive</SelectItem>
                     </SelectContent>
@@ -574,46 +996,55 @@ export default function ProjectsPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-900">Mentor Name *</label>
+                  <label className="block text-sm font-medium text-charcoal mb-1">Mentor Name *</label>
                   <Input
                     value={editingProject.mentor_name}
                     onChange={(e) => setEditingProject({ ...editingProject, mentor_name: e.target.value })}
                     placeholder="Enter mentor name"
-                    className="border-yellow-200 focus:border-yellow-600"
+                    className="border-mustard/20 focus:border-mustard"
                     required
+                    disabled={submitting}
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-900">Mentor Address</label>
+                  <label className="block text-sm font-medium text-charcoal mb-1">Mentor Address</label>
                   <Textarea
                     value={editingProject.mentor_address}
                     onChange={(e) => setEditingProject({ ...editingProject, mentor_address: e.target.value })}
                     placeholder="Enter mentor address (optional)"
-                    className="border-yellow-200 focus:border-yellow-600"
+                    className="border-mustard/20 focus:border-mustard"
                     rows={2}
+                    disabled={submitting}
                   />
                 </div>
 
-                <div className="flex justify-end space-x-3 pt-4">
+                <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4">
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setIsEditDialogOpen(false)}
-                    className="border-yellow-200 text-gray-600 hover:bg-yellow-100"
+                    onClick={() => setShowEditForm(false)}
+                    className="w-full sm:w-auto border-mustard/20 text-charcoal hover:bg-mustard/10"
+                    disabled={submitting}
                   >
                     Cancel
                   </Button>
                   <Button
-                    onClick={handleEditProject}
+                    type="submit"
                     disabled={submitting}
-                    className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                    className="w-full sm:w-auto bg-mustard hover:bg-mustard/90 text-ivory"
                   >
-                    {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                    Update Project
+                    {submitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Updating...
+                      </>
+                    ) : (
+                      "Update Project"
+                    )}
                   </Button>
                 </div>
-              </div>
+              </form>
             </div>
           </div>
         </div>

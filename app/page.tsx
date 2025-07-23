@@ -1,6 +1,7 @@
 import { HeroSection } from "@/components/hero-section"
 import { FeaturedCourses } from "@/components/featured-courses"
 import { StatsSection } from "@/components/stats-section"
+import { TrustedPartners } from "@/components/trusted-partners" 
 import { Testimonials } from "@/components/testimonials"
 import { CTASection } from "@/components/cta-section"
 import { SiteHeader } from "@/components/site-header"
@@ -17,6 +18,7 @@ export default function HomePage() {
        <main className="flex-1">
          <HeroSection />
          <FeaturedCourses />
+         <TrustedPartners />
          <StatsSection />
          <Testimonials />
          <CTASection />

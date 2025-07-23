@@ -3,6 +3,8 @@ import { neon } from "@neondatabase/serverless"
 
 const sql = neon(process.env.DATABASE_URL!)
 
+export const dynamic = "force-dynamic"
+
 export async function GET(request: NextRequest) {
   try {
     console.log("🔍 Fetching trainings...")
@@ -22,8 +24,8 @@ export async function GET(request: NextRequest) {
         SELECT 
           t.*,
           COALESCE(c.name, 'Unknown') as category_name,
-          0 as current_trainees,
-          0 as modules_count
+          COALESCE(t.modules, 0) as modules_count,
+          0 as current_trainees
         FROM trainings t
         LEFT JOIN categories c ON t.category_id::text = c.id::text
         WHERE (t.name ILIKE ${`%${search}%`} OR t.course_code ILIKE ${`%${search}%`})
@@ -36,8 +38,8 @@ export async function GET(request: NextRequest) {
         SELECT 
           t.*,
           COALESCE(c.name, 'Unknown') as category_name,
-          0 as current_trainees,
-          0 as modules_count
+          COALESCE(t.modules, 0) as modules_count,
+          0 as current_trainees
         FROM trainings t
         LEFT JOIN categories c ON t.category_id::text = c.id::text
         WHERE (t.name ILIKE ${`%${search}%`} OR t.course_code ILIKE ${`%${search}%`})
@@ -49,8 +51,8 @@ export async function GET(request: NextRequest) {
         SELECT 
           t.*,
           COALESCE(c.name, 'Unknown') as category_name,
-          0 as current_trainees,
-          0 as modules_count
+          COALESCE(t.modules, 0) as modules_count,
+          0 as current_trainees
         FROM trainings t
         LEFT JOIN categories c ON t.category_id::text = c.id::text
         WHERE (t.name ILIKE ${`%${search}%`} OR t.course_code ILIKE ${`%${search}%`})
@@ -62,8 +64,8 @@ export async function GET(request: NextRequest) {
         SELECT 
           t.*,
           COALESCE(c.name, 'Unknown') as category_name,
-          0 as current_trainees,
-          0 as modules_count
+          COALESCE(t.modules, 0) as modules_count,
+          0 as current_trainees
         FROM trainings t
         LEFT JOIN categories c ON t.category_id::text = c.id::text
         WHERE t.category_id = ${category}
@@ -75,8 +77,8 @@ export async function GET(request: NextRequest) {
         SELECT 
           t.*,
           COALESCE(c.name, 'Unknown') as category_name,
-          0 as current_trainees,
-          0 as modules_count
+          COALESCE(t.modules, 0) as modules_count,
+          0 as current_trainees
         FROM trainings t
         LEFT JOIN categories c ON t.category_id::text = c.id::text
         WHERE t.name ILIKE ${`%${search}%`} OR t.course_code ILIKE ${`%${search}%`}
@@ -87,8 +89,8 @@ export async function GET(request: NextRequest) {
         SELECT 
           t.*,
           COALESCE(c.name, 'Unknown') as category_name,
-          0 as current_trainees,
-          0 as modules_count
+          COALESCE(t.modules, 0) as modules_count,
+          0 as current_trainees
         FROM trainings t
         LEFT JOIN categories c ON t.category_id::text = c.id::text
         WHERE t.category_id = ${category}
@@ -99,8 +101,8 @@ export async function GET(request: NextRequest) {
         SELECT 
           t.*,
           COALESCE(c.name, 'Unknown') as category_name,
-          0 as current_trainees,
-          0 as modules_count
+          COALESCE(t.modules, 0) as modules_count,
+          0 as current_trainees
         FROM trainings t
         LEFT JOIN categories c ON t.category_id::text = c.id::text
         WHERE t.status = ${status}
@@ -111,8 +113,8 @@ export async function GET(request: NextRequest) {
         SELECT 
           t.*,
           COALESCE(c.name, 'Unknown') as category_name,
-          0 as current_trainees,
-          0 as modules_count
+          COALESCE(t.modules, 0) as modules_count,
+          0 as current_trainees
         FROM trainings t
         LEFT JOIN categories c ON t.category_id::text = c.id::text
         ORDER BY t.created_at DESC
@@ -131,10 +133,20 @@ export async function POST(request: NextRequest) {
   try {
     console.log("🚀 Creating new training...")
 
-    const { name, description, image_url, course_code, category_id, price, discount, max_trainees } =
-      await request.json()
+    const {
+      name,
+      description,
+      image_url,
+      course_code,
+      category_id,
+      price,
+      discount,
+      max_trainees,
+      instructor_id,
+      instructor_name,
+    } = await request.json()
 
-    console.log("📝 Training data:", { name, course_code, category_id, price })
+    console.log("📝 Training data:", { name, course_code, category_id, price, instructor_name })
 
     // Validate required fields
     if (!name || !description || !course_code || !category_id) {
@@ -142,9 +154,45 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
+    // Get level from category
+    const categoryData = await sql`
+      SELECT level FROM categories WHERE id = ${category_id}
+    `
+    const level = categoryData[0]?.level || "beginner"
+
     const training = await sql`
-      INSERT INTO trainings (name, description, image_url, course_code, category_id, price, discount, max_trainees, status)
-      VALUES (${name}, ${description}, ${image_url || ""}, ${course_code}, ${category_id}, ${price || 0}, ${discount || 0}, ${max_trainees || 0}, 'draft')
+      INSERT INTO trainings (
+        name, 
+        description, 
+        image_url, 
+        course_code, 
+        category_id, 
+        price, 
+        discount, 
+        max_trainees, 
+        instructor_id,
+        instructor_name,
+        level,
+        modules,
+        duration,
+        status
+      )
+      VALUES (
+        ${name}, 
+        ${description}, 
+        ${image_url || ""}, 
+        ${course_code}, 
+        ${category_id}, 
+        ${price || 0}, 
+        ${discount || 0}, 
+        ${max_trainees || 0},
+        ${instructor_id || null},
+        ${instructor_name || ""},
+        ${level},
+        0,
+        0,
+        'draft'
+      )
       RETURNING *
     `
 
@@ -160,16 +208,45 @@ export async function PUT(request: NextRequest) {
   try {
     console.log("🔄 Updating training...")
 
-    const { id, name, description, image_url, course_code, category_id, price, discount, max_trainees, status } =
-      await request.json()
+    const {
+      id,
+      name,
+      description,
+      image_url,
+      course_code,
+      category_id,
+      price,
+      discount,
+      max_trainees,
+      status,
+      instructor_id,
+      instructor_name,
+    } = await request.json()
 
-    console.log("📝 Update data:", { id, name, course_code, category_id })
+    console.log("📝 Update data:", { id, name, course_code, category_id, instructor_name })
 
     // Validate required fields
     if (!id || !name || !description || !course_code || !category_id) {
       console.log("❌ Validation failed: Missing required fields")
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
+
+    // Get level from category
+    const categoryData = await sql`
+      SELECT level FROM categories WHERE id = ${category_id}
+    `
+    const level = categoryData[0]?.level || "beginner"
+
+    // Get current module count and duration
+    const moduleStats = await sql`
+      SELECT 
+        COUNT(*) as module_count,
+        COALESCE(SUM(duration), 0) as total_duration
+      FROM modules 
+      WHERE training_id = ${id}
+    `
+    const modules = moduleStats[0]?.module_count || 0
+    const duration = moduleStats[0]?.total_duration || 0
 
     const training = await sql`
       UPDATE trainings 
@@ -182,6 +259,11 @@ export async function PUT(request: NextRequest) {
           discount = ${discount || 0}, 
           max_trainees = ${max_trainees || 0}, 
           status = ${status || "draft"},
+          instructor_id = ${instructor_id || null},
+          instructor_name = ${instructor_name || ""},
+          level = ${level},
+          modules = ${modules},
+          duration = ${duration},
           updated_at = CURRENT_TIMESTAMP
       WHERE id = ${id}
       RETURNING *

@@ -45,7 +45,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { sql } from "@/lib/db"
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     // Fetch all trainings
     const trainings = await sql`

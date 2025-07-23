@@ -790,7 +790,36 @@ export default function CalendarPage() {
                           Details
                         </Button>
 
-                        {/* session.is_enrolled && */}
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              {/* <div>
+                                <span className="font-medium">Date:</span>
+                                <p>{new Date(session.session_date).toLocaleDateString()}</p>
+                              </div>
+                              <div>
+                                <span className="font-medium">Time:</span>
+                                <p>
+                                  {session.start_time} - {session.end_time}
+                                </p>
+                              </div> */}
+                              <div>
+                                <span className="font-medium">Instructor:</span>
+                                <p>{session.instructor_name}</p>
+                              </div>
+                              {/* <div>
+                                <span className="font-medium">Location:</span>
+                                <p>{session.location}</p>
+                              </div> */}
+                              <div>
+                                <span className="font-medium">Category:</span>
+                                <p>{session.category}</p>
+                              </div>
+                              <div>
+                                <span className="font-medium">Participants:</span>
+                                <p>
+                                  {session.current_participants}/{session.max_participants}
+                                </p>
+                              </div>
+                            </div>
 
                         {session.status === "scheduled" &&
                           session.meeting_url && (

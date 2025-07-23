@@ -21,12 +21,12 @@ export async function POST(request: NextRequest) {
     const enrollment = await sql`
       SELECT 
         enr.*,
-        c.title as course_title,
-        c.duration_hours,
-        u.name as student_name,
+        t.name as course_title,
+        t.duration,
+        u.full_name as student_name,
         u.email as student_email
       FROM enrollments enr
-      JOIN courses c ON enr.course_id = c.id
+      JOIN trainings t ON enr.training_id = t.id
       JOIN users u ON enr.user_id = u.id
       WHERE enr.user_id = ${userId} 
         AND enr.course_id = ${courseId} 
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     // Check if certificate already exists
     const existingCertificate = await sql`
       SELECT * FROM certificates 
-      WHERE user_id = ${userId} AND course_id = ${courseId}
+      WHERE user_id = ${userId} AND training_id = ${courseId}
     `
 
     if (existingCertificate.length > 0) {
@@ -61,11 +61,11 @@ export async function POST(request: NextRequest) {
     // Get course instructor information
     const courseInfo = await sql`
       SELECT 
-        c.*,
-        u.name as instructor_name
-      FROM courses c
-      LEFT JOIN users u ON c.instructor_id = u.id
-      WHERE c.id = ${courseId}
+        t.*,
+        u.full_name as instructor_name
+      FROM trainings t
+      LEFT JOIN users u ON t.instructor_id = u.id
+      WHERE t.id = ${courseId}
     `
 
     if (courseInfo.length === 0) {
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     const newCertificate = await sql`
       INSERT INTO certificates (
         user_id, 
-        course_id, 
+        training_id, 
         certificate_code, 
         verification_code, 
         instructor_name,
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
       SET 
         certificate_issued = true,
         certificate_date = NOW()
-      WHERE user_id = ${userId} AND course_id = ${courseId}
+      WHERE user_id = ${userId} AND training_id = ${courseId}
     `
 
     return NextResponse.json({

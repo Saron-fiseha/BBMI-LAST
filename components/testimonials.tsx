@@ -1,133 +1,104 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, Quote } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { BlurFade } from "@/components/magicui/blur-fade"
+import { AnimatedShinyText } from "@/components/magicui/animated-shiny-text"
+import { AnimatedGradientText } from "@/components/magicui/animated-gradient-text"
+import { Star } from "lucide-react"
+import Image from "next/image"
 
 const testimonials = [
   {
     id: 1,
-    name: "Jessica Miller",
-    role: "Salon Owner",
-    image: "/placeholder.svg?height=100&width=100",
+    name: "Sarah Johnson",
+    role: "Professional Makeup Artist",
+    image: "/placeholder.svg?height=80&width=80",
     content:
-      "The courses at Glamour Academy completely transformed my approach to hair styling. The instructors are top-notch professionals who truly care about student success. I now own my own salon and couldn't have done it without the skills I learned here.",
+      "BBMI transformed my passion into a thriving career. The instructors are incredibly knowledgeable and supportive.",
+    rating: 5,
   },
   {
     id: 2,
-    name: "Marcus Thompson",
-    role: "Makeup Artist",
-    image: "/placeholder.svg?height=100&width=100",
+    name: "Maria Rodriguez",
+    role: "Skincare Specialist",
+    image: "/placeholder.svg?height=80&width=80",
     content:
-      "After completing the Professional Makeup Artistry course, I landed a job working with celebrities for major events. The hands-on training and industry connections provided by Glamour Academy were invaluable to my career.",
+      "The hands-on training and real-world experience I gained at BBMI gave me the confidence to start my own practice.",
+    rating: 5,
   },
   {
     id: 3,
-    name: "Sophia Chen",
-    role: "Nail Technician",
-    image: "/placeholder.svg?height=100&width=100",
+    name: "Emily Chen",
+    role: "Bridal Beauty Expert",
+    image: "/placeholder.svg?height=80&width=80",
     content:
-      "I was struggling to find quality education in nail art until I discovered Glamour Academy. Their comprehensive curriculum and supportive learning environment helped me master techniques that my clients absolutely love.",
+      "I love how BBMI combines traditional techniques with modern trends. It's exactly what the industry needs.",
+    rating: 5,
   },
   {
     id: 4,
-    name: "Daniel Jackson",
-    role: "Esthetician",
-    image: "/placeholder.svg?height=100&width=100",
+    name: "Jessica Williams",
+    role: "Beauty Entrepreneur",
+    image: "/placeholder.svg?height=80&width=80",
     content:
-      "The skincare knowledge I gained at Glamour Academy is unmatched. The instructors stay current with industry trends and teach practical skills that I use daily in my practice. My clients have noticed the difference in my expertise.",
+      "The business training component helped me launch my own beauty studio. BBMI doesn't just teach skills, they build careers.",
+    rating: 5,
   },
 ]
 
 export function Testimonials() {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [activeTestimonial, setActiveTestimonial] = useState(testimonials[0])
-
-  const handlePrevious = () => {
-    const newIndex = (currentIndex - 1 + testimonials.length) % testimonials.length
-    setCurrentIndex(newIndex)
-    setActiveTestimonial(testimonials[newIndex])
-  }
-
-  const handleNext = () => {
-    const newIndex = (currentIndex + 1) % testimonials.length
-    setCurrentIndex(newIndex)
-    setActiveTestimonial(testimonials[newIndex])
-  }
-
-  const handleDotClick = (index: number) => {
-    setCurrentIndex(index)
-    setActiveTestimonial(testimonials[index])
-  }
-
   return (
-    <section className="py-16 bg-muted/50">
-      <div className="container">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">What Our Students Say</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Hear from our graduates who have transformed their passion into successful careers.
-          </p>
-        </div>
+    <section className="py-20 bg-gradient-to-br from-pink-50 via-white to-purple-50">
+  <div className="container mx-auto px-4">
+    <BlurFade className="text-center mb-16">
+      <AnimatedGradientText text="What Our Students Say" className="text-4xl md:text-5xl font-bold mb-4" />
+      <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+        Hear from our successful graduates who are now thriving in the beauty industry
+      </p>
+    </BlurFade>
 
-        <div className="relative max-w-4xl mx-auto">
-          <Card className="border-none shadow-lg bg-background">
-            <CardContent className="p-8 md:p-12">
-              <div className="absolute top-8 left-8 text-pink-500 opacity-20">
-                <Quote size={60} />
+    <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+      {testimonials.map((testimonial, index) => (
+        <BlurFade key={testimonial.id} delay={index * 0.2}>
+          <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+            <CardContent className="p-8">
+              <div className="flex items-center mb-4">
+                {[...Array(testimonial.rating)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 fill-amber-700 text-amber-700" />
+                ))}
               </div>
-              <div className="relative z-10">
-                <p className="text-lg md:text-xl italic mb-8">{activeTestimonial.content}</p>
-                <div className="flex items-center">
-                  <div className="mr-4">
-                    <img
-                      src={activeTestimonial.image || "/placeholder.svg"}
-                      alt={activeTestimonial.name}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <h4 className="font-bold">{activeTestimonial.name}</h4>
-                    <p className="text-sm text-muted-foreground">{activeTestimonial.role}</p>
-                  </div>
+
+              <blockquote className="text-gray-700 mb-6 text-lg leading-relaxed">
+                "{testimonial.content}"
+              </blockquote>
+
+              <div className="flex items-center">
+                <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4 ring-4 ring-amber-700">
+                  <Image
+                    src={testimonial.image || "/placeholder.svg"}
+                    alt={testimonial.name}
+                    width={64}
+                    height={64}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900 text-lg">
+                    <AnimatedGradientText text={testimonial.name} />
+                  </h4>
+                  <p className="text-amber-700 font-medium">
+                    {testimonial.role}
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
-
-          <div className="flex justify-between mt-6">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handlePrevious}
-              className="rounded-full"
-              aria-label="Previous testimonial"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <div className="flex space-x-2">
-              {testimonials.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleDotClick(index)}
-                  className={`w-2 h-2 rounded-full ${index === currentIndex ? "bg-primary" : "bg-muted-foreground/30"}`}
-                  aria-label={`Go to testimonial ${index + 1}`}
-                />
-              ))}
-            </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleNext}
-              className="rounded-full"
-              aria-label="Next testimonial"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
-    </section>
+        </BlurFade>
+      ))}
+    </div>
+  </div>
+</section>
   )
 }

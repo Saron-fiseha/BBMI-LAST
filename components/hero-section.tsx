@@ -1,47 +1,75 @@
+"use client"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { SparklesText } from "@/components/magicui/sparkles-text"
+import { TextAnimate } from "@/components/magicui/text-animate"
+import { AuroraText } from "@/components/magicui/aurora-text"
+import { ShinyButton } from "@/components/magicui/shiny-button"
+import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button"
+import Image from "next/image"
 
 export function HeroSection() {
   return (
-    <section className="relative py-20 md:py-32 overflow-hidden bg-gradient-to-b from-amber-50 to-white dark:from-gray-900 dark:to-background">
-      <div className="container">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-              Transform Your Passion into a
-              <span className="bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-700 bg-clip-text text-transparent">
-                {" "}
-                Beautiful Career
-              </span>
-            </h1>
-            <p className="text-xl text-muted-foreground">
-              Join Brushed by Betty Makeup Institute for professional beauty training and certification. Learn from
-              industry experts and launch your career in beauty.
-            </p>
+    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-white to-purple-50 overflow-hidden">
+      <div className="container mx-auto px-4 py-20">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <SparklesText
+                text="Transform Your Passion Into Profession"
+                className="text-4xl md:text-6xl font-bold text-gray-900"
+              />
+              <TextAnimate
+                text="Join BBMI's comprehensive beauty training programs and master the art of makeup, skincare, and beauty techniques with industry experts."
+                className="text-lg md:text-xl text-gray-600 leading-relaxed"
+              />
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button
+              <ShinyButton href="/courses" size="lg" className="text-lg px-8 py-4">
+                Explore Courses
+              </ShinyButton>
+              <InteractiveHoverButton
+                href="/register"
+                variant="outline"
                 size="lg"
-                className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
-                asChild
+                className="text-lg px-8 py-4 border-0 border-golden-500 text-black-600 hover:bg-slate-800 hover:text-black-200"
               >
-                <Link href="/courses">Explore Courses</Link>
-              </Button>
-              <Button size="lg" variant="outline" className="border-amber-600 text-amber-700 hover:bg-amber-50" asChild>
-                <Link href="/register">Join Now</Link>
-              </Button>
+                Join Now
+              </InteractiveHoverButton>
+            </div>
+
+            <div className="flex items-center gap-8 pt-8">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-indigo-600">500+</div>
+                <div className="text-sm text-gray-600">Students Trained</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-slate-800">15+</div>
+                <div className="text-sm text-gray-600">Expert Instructors</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-emerald-600">98%</div>
+                <div className="text-sm text-gray-600">Success Rate</div>
+              </div>
             </div>
           </div>
-          <div className="relative h-[400px] md:h-[500px] rounded-lg overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-amber-300 to-yellow-300 dark:from-amber-900 dark:to-yellow-900 opacity-20 rounded-lg"></div>
-            <img
-              src="/placeholder.svg?height=500&width=600"
-              alt="Beauty professionals teaching students at Brushed by Betty"
-              className="w-full h-full object-cover rounded-lg"
-            />
+
+          <div className="relative">
+            <AuroraText text="Beauty Mastery Awaits" className="text-2xl md:text-3xl font-bold mb-6 text-center" />
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl">
+              <Image
+                src="/placeholder.svg?height=600&width=500"
+                alt="Beauty training at BBMI"
+                width={500}
+                height={600}
+                className="w-full h-auto object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+            </div>
           </div>
         </div>
       </div>
-      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent"></div>
     </section>
   )
 }

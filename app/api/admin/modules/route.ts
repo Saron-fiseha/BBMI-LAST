@@ -9,7 +9,7 @@ export async function GET() {
     const modules = await sql`
       SELECT 
         m.*,
-        COALESCE(t.name, 'No Program') as program_name
+      COALESCE(t.name, 'No Program') as program_name
       FROM modules m
       LEFT JOIN trainings t ON m.training_id::text = t.id::text
       ORDER BY m.created_at DESC

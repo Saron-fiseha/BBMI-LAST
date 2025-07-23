@@ -14,7 +14,7 @@ export async function GET() {
         name,
         description,
         created_at,
-        (SELECT COUNT(*) FROM courses WHERE category = categories.name AND status = 'published') as course_count
+        (SELECT COUNT(*) FROM trainings WHERE category_id = categories.id AND status = 'published') as course_count
       FROM categories 
       WHERE status = 'active'
       ORDER BY name ASC
