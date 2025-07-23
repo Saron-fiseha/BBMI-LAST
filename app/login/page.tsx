@@ -57,7 +57,7 @@ export default function LoginPage() {
       <ShineBorder className="w-full max-w-md">
         <Card className="w-full border-0 shadow-xl bg-white/80 backdrop-blur-sm">
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r  from-amber-600 via-yellow-600 to-amber-900 bg-clip-text text-transparent">
               Welcome Back
             </CardTitle>
             <CardDescription className="text-gray-600">
@@ -82,7 +82,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="border-pink-200 focus:border-pink-500"
+                  className="border-amber-200 focus:border-amber-500"
                 />
               </div>
 
@@ -96,7 +96,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="border-pink-200 focus:border-pink-500 pr-10"
+                    className="border-amber-200 focus:border-pink-500 pr-10"
                   />
                   <Button
                     type="button"
@@ -115,7 +115,7 @@ export default function LoginPage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <Link href="/forgot-password" className="text-sm text-pink-600 hover:text-pink-700 hover:underline">
+                <Link href="/forgot-password" className="text-sm text-amber-600 hover:amber-pink-700 hover:underline">
                   Forgot password?
                 </Link>
               </div>

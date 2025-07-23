@@ -83,7 +83,7 @@ export default function RegisterPage() {
       <ShineBorder className="w-full max-w-md">
         <Card className="w-full border-0 shadow-xl bg-white/80 backdrop-blur-sm">
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-900 bg-clip-text text-transparent">
               Join BBMI
             </CardTitle>
             <CardDescription className="text-gray-600">
