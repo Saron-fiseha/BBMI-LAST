@@ -15,12 +15,12 @@ export async function GET(request: NextRequest) {
       (
         SELECT 
           'enrollment' as type,
-          CONCAT('Enrolled in ', c.title) as title,
-          CONCAT('Started learning ', c.title) as description,
+          CONCAT('Enrolled in ', t.name) as title,
+          CONCAT('Started learning ', t.name) as description,
           e.created_at as activity_time,
           e.id::text as activity_id
         FROM enrollments e
-        JOIN courses c ON e.course_id = c.id
+        JOIN trainings t ON e.training_id = t.id
         WHERE e.user_id = ${userId}
         ORDER BY e.created_at DESC
         LIMIT 3
@@ -29,12 +29,12 @@ export async function GET(request: NextRequest) {
       (
         SELECT 
           'progress' as type,
-          CONCAT('Progress update in ', c.title) as title,
+          CONCAT('Progress update in ', t.name) as title,
           CONCAT('Completed ', ROUND(e.progress), '% of the course') as description,
           e.updated_at as activity_time,
           e.id::text as activity_id
         FROM enrollments e
-        JOIN courses c ON e.course_id = c.id
+        JOIN trainings t ON e.training_id = t.id
         WHERE e.user_id = ${userId}
           AND e.progress > 0
         ORDER BY e.updated_at DESC
@@ -44,12 +44,12 @@ export async function GET(request: NextRequest) {
       (
         SELECT 
           'completion' as type,
-          CONCAT('Completed ', c.title) as title,
+          CONCAT('Completed ', t.name) as title,
           'Course completed successfully!' as description,
           e.completed_at as activity_time,
           e.id::text as activity_id
         FROM enrollments e
-        JOIN courses c ON e.course_id = c.id
+        JOIN trainings t ON e.training_id = t.id
         WHERE e.user_id = ${userId}
           AND e.status = 'completed'
         ORDER BY e.completed_at DESC

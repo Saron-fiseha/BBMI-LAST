@@ -1,93 +1,109 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Clock, Users, Star, Search } from "lucide-react"
-import Link from "next/link"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
-import { useAuth } from "@/hooks/use-auth"
-import { useRouter } from "next/navigation"
-import { useToast } from "@/hooks/use-toast"
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Clock, Users, Star, Search, Tag } from "lucide-react";
+import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
+import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 interface Course {
-  id: number
-  title: string
-  description: string
-  instructor_name: string
-  price: number
-  duration: number
-  level: string
-  category: string
-  image_url: string
-  students_count: number
-  rating: number
+  id: number;
+  title: string;
+  description: string;
+  instructor_name: string;
+  price: number;
+  duration: number;
+  level: string;
+  image_url: string;
+  category_id: number;
+  discount: number;
+  max_trainees: number;
+  modules: number;
+  course_code: string;
+  status: string;
 }
 
 export default function CoursesPage() {
-  const [courses, setCourses] = useState<Course[]>([])
-  const [filteredCourses, setFilteredCourses] = useState<Course[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("all")
-  const [levelFilter, setLevelFilter] = useState("all")
-  const [loading, setLoading] = useState(true)
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [levelFilter, setLevelFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
 
-  const { isAuthenticated } = useAuth()
-  const router = useRouter()
-  const { toast } = useToast()
-
-  useEffect(() => {
-    fetchCourses()
-  }, [])
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
-    filterCourses()
-  }, [courses, searchQuery, categoryFilter, levelFilter])
+    fetchCourses();
+  }, []);
+
+  useEffect(() => {
+    filterCourses();
+  }, [courses, searchQuery, categoryFilter, levelFilter]);
 
   const fetchCourses = async () => {
     try {
-      const response = await fetch("/api/courses")
+      const response = await fetch("/api/courses");
       if (response.ok) {
-        const data = await response.json()
-        setCourses(data.courses || [])
+        const data = await response.json();
+        setCourses(data.courses || []);
       }
     } catch (error) {
-      console.error("Failed to fetch courses:", error)
+      console.error("Failed to fetch courses:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const filterCourses = () => {
-    let filtered = courses
+    let filtered = courses;
 
-   if (searchQuery) {
-  const query = searchQuery.trim().toLowerCase(); // Added trim()
-  filtered = filtered.filter((course) => {
-    const fields = [
-      course.title,
-      course.description,
-      course.instructor_name
-    ];
-    return fields.some(field => 
-      String(field || '').toLowerCase().includes(query)
-    );
-  });
-}
+    if (searchQuery) {
+      const query = searchQuery.trim().toLowerCase();
+      filtered = filtered.filter((course) =>
+        [course.title, course.description, course.instructor_name].some(
+          (field) =>
+            String(field || "")
+              .toLowerCase()
+              .includes(query)
+        )
+      );
+    }
+
     if (categoryFilter !== "all") {
-      filtered = filtered.filter((course) => course.category === categoryFilter)
+      filtered = filtered.filter(
+        (course) => course.category_id.toString() === categoryFilter
+      );
     }
 
     if (levelFilter !== "all") {
-      filtered = filtered.filter((course) => course.level === levelFilter)
+      filtered = filtered.filter((course) => course.level === levelFilter);
     }
 
-    setFilteredCourses(filtered)
-  }
+    setFilteredCourses(filtered);
+  };
 
   const handleEnrollClick = (courseId: number) => {
     if (!isAuthenticated) {
@@ -95,16 +111,18 @@ export default function CoursesPage() {
         title: "Authentication Required",
         description: "Please login to enroll in courses.",
         variant: "destructive",
-      })
-      router.push("/login")
-      return
+      });
+      router.push("/login");
+      return;
     }
 
-    router.push(`/courses/${courseId}`)
-  }
+    router.push(`/courses/${courseId}`);
+  };
 
-  const categories = Array.from(new Set(courses.map((course) => course.category)))
-  const levels = Array.from(new Set(courses.map((course) => course.level)))
+  const categoryIds = Array.from(
+    new Set(courses.map((course) => course.category_id))
+  );
+  const levels = Array.from(new Set(courses.map((course) => course.level)));
 
   if (loading) {
     return (
@@ -122,7 +140,7 @@ export default function CoursesPage() {
         </main>
         <SiteFooter />
       </div>
-    )
+    );
   }
 
   return (
@@ -130,15 +148,17 @@ export default function CoursesPage() {
       <SiteHeader />
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-4">All Courses</h1>
-          <p className="text-gray-600 mb-6">Discover our comprehensive beauty education programs</p>
+          <h1 className="text-3xl font-bold mb-4">All Trainings</h1>
+          <p className="text-gray-600 mb-6">
+            Explore professional beauty training programs
+          </p>
 
           {/* Filters */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Search courses..."
+                placeholder="Search trainings..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -151,11 +171,11 @@ export default function CoursesPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((category) => (
-                 <SelectItem key={`category-${category}`} value={category}>
-                  {category}
-                 </SelectItem>
-                 ))}
+                {categoryIds.map((id) => (
+                  <SelectItem key={`category-${id}`} value={id.toString()}>
+                    Category #{id}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
@@ -175,13 +195,18 @@ export default function CoursesPage() {
           </div>
         </div>
 
-        {/* Courses Grid */}
+        {/* Trainings Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCourses.map((course) => (
-            <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+            <Card
+              key={course.id}
+              className="overflow-hidden hover:shadow-lg transition-shadow"
+            >
               <div className="aspect-video relative">
                 <img
-                  src={course.image_url || "/placeholder.svg?height=200&width=300"}
+                  src={
+                    course.image_url || "/placeholder.svg?height=200&width=300"
+                  }
                   alt={course.title}
                   className="w-full h-full object-cover"
                 />
@@ -192,14 +217,22 @@ export default function CoursesPage() {
 
               <CardHeader>
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg line-clamp-2">{course.title}</CardTitle>
-                  <div className="text-lg font-bold text-mustard">{course.price > 0 ? `$${course.price}` : "Free"}</div>
+                  <CardTitle className="text-lg line-clamp-2">
+                    {course.title}
+                  </CardTitle>
+                  <div className="text-lg font-bold text-mustard">
+                    {course.price > 0 ? `$${course.price}` : "Free"}
+                  </div>
                 </div>
-                <CardDescription className="line-clamp-2">{course.description}</CardDescription>
+                <CardDescription className="line-clamp-2">
+                  {course.description}
+                </CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-4">
-                <div className="text-sm text-gray-600">Instructor: {course.instructor_name}</div>
+                <div className="text-sm text-gray-600">
+                  Instructor: {course.instructor_name}
+                </div>
 
                 <div className="flex items-center justify-between text-sm text-gray-500">
                   <div className="flex items-center">
@@ -208,11 +241,11 @@ export default function CoursesPage() {
                   </div>
                   <div className="flex items-center">
                     <Users className="h-4 w-4 mr-1" />
-                    {course.students_count} students
+                    Max {course.max_trainees}
                   </div>
                   <div className="flex items-center">
-                    <Star className="h-4 w-4 mr-1 fill-yellow-400 text-yellow-400" />
-                    {course.rating?.toFixed(1) ?? '0.0'}
+                    <Tag className="h-4 w-4 mr-1" />
+                    {course.discount}% off
                   </div>
                 </div>
 
@@ -220,7 +253,10 @@ export default function CoursesPage() {
                   <Button asChild variant="outline" className="flex-1">
                     <Link href={`/courses/${course.id}`}>View Details</Link>
                   </Button>
-                  <Button onClick={() => handleEnrollClick(course.id)} className="flex-1">
+                  <Button
+                    onClick={() => handleEnrollClick(course.id)}
+                    className="flex-1"
+                  >
                     Enroll Now
                   </Button>
                 </div>
@@ -231,12 +267,14 @@ export default function CoursesPage() {
 
         {filteredCourses.length === 0 && (
           <div className="text-center py-12">
-            <h3 className="text-lg font-semibold mb-2">No courses found</h3>
-            <p className="text-gray-600">Try adjusting your search or filter criteria</p>
+            <h3 className="text-lg font-semibold mb-2">No trainings found</h3>
+            <p className="text-gray-600">
+              Try adjusting your search or filter criteria
+            </p>
           </div>
         )}
       </main>
       <SiteFooter />
     </div>
-  )
+  );
 }
