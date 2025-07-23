@@ -1,48 +1,78 @@
-import { Award, Calendar, Users, BookOpen } from "lucide-react"
+"use client"
+
+import { NumberTicker } from "@/components/magicui/number-ticker"
+import { FlipText } from "@/components/magicui/flip-text"
+import { AnimatedShinyText } from "@/components/magicui/animated-shiny-text"
+import { Users, Award, BookOpen, TrendingUp } from "lucide-react"
+
+const stats = [
+  {
+    icon: Users,
+    value: 500,
+    label: "Students Trained",
+    description: "Successful graduates working in the beauty industry",
+  },
+  {
+    icon: Award,
+    value: 15,
+    label: "Expert Instructors",
+    description: "Industry professionals with years of experience",
+  },
+  {
+    icon: BookOpen,
+    value: 25,
+    label: "Comprehensive Courses",
+    description: "Covering all aspects of beauty and wellness",
+  },
+  {
+    icon: TrendingUp,
+    value: 98,
+    label: "Success Rate",
+    description: "Students who successfully complete our programs",
+  },
+]
 
 export function StatsSection() {
   return (
-    <section className="py-16 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
-      <div className="container">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Why Choose Glamour Academy</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            We're committed to providing the highest quality beauty education and training.
-          </p>
+    <section className="py-20 bg-gradient-to-br from-pink-50 via-white to-purple-50 text-black">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-16">
+          <FlipText text="Why Choose BBMI?" className="text-4xl md:text-5xl font-bold mb-4" />
+          <AnimatedShinyText
+            text="Join thousands of successful beauty professionals who started their journey with us"
+            className="text-lg text-black-500 max-w-2xl mx-auto"
+          />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div className="bg-background p-6 rounded-lg shadow-sm text-center">
-            <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-pink-100 dark:bg-pink-900 text-pink-600 dark:text-pink-300 mb-4">
-              <Users className="h-6 w-6" />
-            </div>
-            <h3 className="text-2xl font-bold mb-2">5,000+</h3>
-            <p className="text-muted-foreground">Graduates</p>
-          </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {stats.map((stat, index) => {
+            const IconComponent = stat.icon
+            return (
+              <div key={index} className="text-center group">
+                <div className="mb-4 flex justify-center">
+                  <div className="p-4 bg-rose-300 rounded-full group-hover:bg-rose-300 transition-colors duration-300">
+                    <IconComponent className="w-8 h-8 text-grey-500" />
+                  </div>
+                </div>
 
-          <div className="bg-background p-6 rounded-lg shadow-sm text-center">
-            <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 mb-4">
-              <BookOpen className="h-6 w-6" />
-            </div>
-            <h3 className="text-2xl font-bold mb-2">25+</h3>
-            <p className="text-muted-foreground">Specialized Courses</p>
-          </div>
+                <div className="mb-2">
+                  <NumberTicker value={stat.value} className="text-4xl md:text-5xl font-bold text-grey-200" />
+                  {stat.label.includes("Rate") && <span className="text-4xl md:text-5xl font-bold">%</span>}
+                  {stat.label.includes("Students") && <span className="text-4xl md:text-5xl font-bold">+</span>}
+                  {stat.label.includes("Instructors") && <span className="text-4xl md:text-5xl font-bold">+</span>}
+                  {stat.label.includes("Courses") && <span className="text-4xl md:text-5xl font-bold">+</span>}
+                </div>
 
-          <div className="bg-background p-6 rounded-lg shadow-sm text-center">
-            <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 mb-4">
-              <Award className="h-6 w-6" />
-            </div>
-            <h3 className="text-2xl font-bold mb-2">15+</h3>
-            <p className="text-muted-foreground">Industry Awards</p>
-          </div>
+                <h3 className="text-xl font-semibold mb-2 text-grey-200">
+                  <AnimatedShinyText text={stat.label} />
+                </h3>
 
-          <div className="bg-background p-6 rounded-lg shadow-sm text-center">
-            <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 mb-4">
-              <Calendar className="h-6 w-6" />
-            </div>
-            <h3 className="text-2xl font-bold mb-2">10+</h3>
-            <p className="text-muted-foreground">Years of Excellence</p>
-          </div>
+                <p className="text-grey-100 text-sm">
+                  <AnimatedShinyText text={stat.description} />
+                </p>
+              </div>
+            )
+          })}
         </div>
       </div>
     </section>

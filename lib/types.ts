@@ -1,3 +1,5 @@
+import { z } from "zod"
+
 export interface User {
   id: string
   name: string
@@ -7,17 +9,18 @@ export interface User {
 }
 
 export interface Course {
-  id: string
+   id: string
   title: string
   description: string
-  image?: string
-  category: string
-  level: "Beginner" | "Intermediate" | "Advanced"
-  duration: string
-  students: number
-  rating: number
-  instructor: string
   price: number
+  duration_hours: number
+  level: "Beginner" | "Intermediate" | "Advanced"
+  image_url: string | null
+  category_id: string
+  instructor_id: string | null
+  discount?: number | null //  NEW  – percentage (0-100)
+  average_rating?: number | null //  Already stored by triggers, may be NULL
+  students?: number | null //  Optional: populated by a VIEW or join
 }
 
 export interface Lesson {
@@ -96,3 +99,21 @@ export interface Instructor {
   courses: number
   rating: number
 }
+
+
+// Validation schema for creating a new course/training.
+// (Used by POST /api/courses)
+export const NewCourseSchema = z.object({
+  title: z.string().min(2).max(200),
+  description: z.string().min(10),
+  price: z.number().nonnegative(),
+  duration_hours: z.number().positive(),
+  level: z.string().min(2).max(50),
+  image_url: z.string().url().nullable().optional(),
+  video_url: z.string().url().nullable().optional(),
+  category_id: z.number().int(),
+  instructor_id: z.number().int().nullable().optional(),
+  discount: z.number().min(0).max(100).optional().default(0),
+})
+
+export type NewCourseInput = z.infer<typeof NewCourseSchema>

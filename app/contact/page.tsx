@@ -12,8 +12,13 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { useToast } from "@/components/ui/use-toast"
-import { MapPin, Phone, Mail, Clock, ChevronDown, ChevronUp } from "lucide-react"
+import { MapPin, Phone, Mail, Clock, ChevronDown, ChevronUp, Loader2 } from "lucide-react"
+import { BlurFade } from "@/components/magicui/blur-fade"
+import { AnimatedShinyText } from "@/components/magicui/animated-shiny-text"
+import { AnimatedGradientText } from "@/components/magicui/animated-gradient-text"
+import { ShineBorder } from "@/components/magicui/shine-border"
 
+// FAQ array remains the same
 const faqs = [
   {
     question: "How do I enroll in a course?",
@@ -57,6 +62,7 @@ const faqs = [
   },
 ]
 
+
 export default function ContactPage() {
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -73,13 +79,26 @@ export default function ContactPage() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+  // --- MODIFIED SECTION START ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      // Assuming your API endpoint is at '/api/contact'
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to send message. Please try again.")
+      }
+
+      // const result = await response.json(); // You can use the result if needed
 
       toast({
         title: "Message sent successfully!",
@@ -87,31 +106,33 @@ export default function ContactPage() {
       })
 
       setFormData({ name: "", email: "", subject: "", message: "" })
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error sending message",
-        description: "Please try again later.",
+        description: error.message || "Please try again later.",
         variant: "destructive",
       })
     } finally {
       setIsSubmitting(false)
     }
   }
+  // --- MODIFIED SECTION END ---
+
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index)
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-charcoal text-ivory">
       <SiteHeader />
       <main className="flex-1">
         {/* Hero Section */}
-        <div className="bg-muted py-12">
+        <div className="bg-charcoal py-12">
           <div className="container">
             <div className="text-center">
-              <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              <h1 className="text-4xl font-bold mb-4 text-ivory">Contact Us</h1>
+              <p className="text-xl text-ivory max-w-2xl mx-auto">
                 Have questions about our courses or need support? We're here to help!
               </p>
             </div>
@@ -119,117 +140,186 @@ export default function ContactPage() {
         </div>
 
         {/* Contact Information */}
-        <div className="container py-12">
+        <div className="container py-12 bg-charcoal">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            <Card>
-              <CardContent className="p-6 text-center">
-                <MapPin className="h-8 w-8 mx-auto mb-4 text-primary" />
-                <h3 className="font-bold mb-2">Address</h3>
-                <p className="text-muted-foreground">
-                  123 Beauty Street
-                  <br />
-                  New York, NY 10001
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6 text-center">
-                <Phone className="h-8 w-8 mx-auto mb-4 text-primary" />
-                <h3 className="font-bold mb-2">Phone</h3>
-                <p className="text-muted-foreground">(123) 456-7890</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6 text-center">
-                <Mail className="h-8 w-8 mx-auto mb-4 text-primary" />
-                <h3 className="font-bold mb-2">Email</h3>
-                <p className="text-muted-foreground">info@glamouracademy.com</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-6 text-center">
-                <Clock className="h-8 w-8 mx-auto mb-4 text-primary" />
-                <h3 className="font-bold mb-2">Hours</h3>
-                <p className="text-muted-foreground">
-                  Mon-Fri: 9AM-6PM
-                  <br />
-                  Sat-Sun: 10AM-4PM
-                </p>
-              </CardContent>
-            </Card>
+            <BlurFade delay={0.1}>
+              <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                <CardContent className="p-6 text-center">
+                  <MapPin className="h-8 w-8 mx-auto mb-4 text-mustard" />
+                  <h3 className="font-bold mb-2 text-charcoal">
+                    <AnimatedGradientText text="Address" />
+                  </h3>
+                  <p className="text-gray-700">
+                    <AnimatedShinyText text="123 Beauty Street" />
+                    <br />
+                    <AnimatedShinyText text="New York, NY 10001" />
+                  </p>
+                </CardContent>
+              </Card>
+            </BlurFade>
+            <BlurFade delay={0.2}>
+              <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                <CardContent className="p-6 text-center">
+                  <Phone className="h-8 w-8 mx-auto mb-4 text-mustard" />
+                  <h3 className="font-bold mb-2 text-charcoal">
+                    <AnimatedGradientText text="Phone" />
+                  </h3>
+                  <p className="text-gray-700">
+                    <AnimatedShinyText text="(123) 456-7890" />
+                  </p>
+                </CardContent>
+              </Card>
+            </BlurFade>
+            <BlurFade delay={0.3}>
+              <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                <CardContent className="p-6 text-center">
+                  <Mail className="h-8 w-8 mx-auto mb-4 text-mustard" />
+                  <h3 className="font-bold mb-2 text-charcoal">
+                    <AnimatedGradientText text="Email" />
+                  </h3>
+                  <p className="text-gray-700">
+                    <AnimatedShinyText text="info@glamouracademy.com" />
+                  </p>
+                </CardContent>
+              </Card>
+            </BlurFade>
+            <BlurFade delay={0.4}>
+              <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                <CardContent className="p-6 text-center">
+                  <Clock className="h-8 w-8 mx-auto mb-4 text-mustard" />
+                  <h3 className="font-bold mb-2 text-charcoal">
+                    <AnimatedGradientText text="Hours" />
+                  </h3>
+                  <p className="text-gray-700">
+                    <AnimatedShinyText text="Mon-Fri: 9AM-6PM" />
+                    <br />
+                    <AnimatedShinyText text="Sat-Sun: 10AM-4PM" />
+                  </p>
+                </CardContent>
+              </Card>
+            </BlurFade>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Contact Form */}
             <div>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Send us a Message</CardTitle>
-                  <CardDescription>
-                    Fill out the form below and we'll get back to you as soon as possible.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Name</Label>
-                        <Input id="name" name="name" value={formData.name} onChange={handleChange} required />
+              <ShineBorder className="w-full">
+                <Card className="w-full border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+                  <CardHeader className="space-y-1 text-center">
+                    <CardTitle className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+                      Send us a Message
+                    </CardTitle>
+                    <CardDescription className="text-gray-600">
+                      Fill out the form below and we'll get back to you as soon as possible.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="name" className="text-charcoal">
+                            Name
+                          </Label>
+                          <Input
+                            id="name"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                            className="border-pink-200 focus:border-pink-500"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="email" className="text-charcoal">
+                            Email
+                          </Label>
+                          <Input
+                            id="email"
+                            name="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                            className="border-pink-200 focus:border-pink-500"
+                          />
+                        </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="subject" className="text-charcoal">
+                          Subject
+                        </Label>
                         <Input
-                          id="email"
-                          name="email"
-                          type="email"
-                          value={formData.email}
+                          id="subject"
+                          name="subject"
+                          value={formData.subject}
                           onChange={handleChange}
                           required
+                          className="border-pink-200 focus:border-pink-500"
                         />
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="subject">Subject</Label>
-                      <Input id="subject" name="subject" value={formData.subject} onChange={handleChange} required />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="message">Message</Label>
-                      <Textarea
-                        id="message"
-                        name="message"
-                        rows={5}
-                        value={formData.message}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
-                      {isSubmitting ? "Sending..." : "Send Message"}
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
+                      <div className="space-y-2">
+                        <Label htmlFor="message" className="text-charcoal">
+                          Message
+                        </Label>
+                        <Textarea
+                          id="message"
+                          name="message"
+                          rows={5}
+                          value={formData.message}
+                          onChange={handleChange}
+                          required
+                          className="border-pink-200 focus:border-pink-500"
+                        />
+                      </div>
+                      <Button
+                        type="submit"
+                        className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          "Send Message"
+                        )}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </ShineBorder>
             </div>
 
             {/* FAQ Section */}
             <div>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Frequently Asked Questions</CardTitle>
-                  <CardDescription>Find answers to common questions about our courses and services.</CardDescription>
+              <Card className="h-full border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+                <CardHeader className="space-y-1 text-center">
+                  <CardTitle className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+                    Frequently Asked Questions
+                  </CardTitle>
+                  <CardDescription className="text-gray-600">
+                    Find answers to common questions about our courses and services.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     {faqs.map((faq, index) => (
-                      <Collapsible key={index} open={openFaq === index} onOpenChange={() => toggleFaq(index)}>
-                        <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-4 text-left hover:bg-muted/50">
-                          <span className="font-medium">{faq.question}</span>
-                          {openFaq === index ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="px-4 pb-4">
-                          <p className="text-muted-foreground">{faq.answer}</p>
-                        </CollapsibleContent>
-                      </Collapsible>
+                      <BlurFade key={index} delay={index * 0.1}>
+                        <Collapsible open={openFaq === index} onOpenChange={() => toggleFaq(index)}>
+                          <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-4 text-left hover:bg-muted/50 border-mustard text-charcoal">
+                            <span className="font-medium">{faq.question}</span>
+                            {openFaq === index ? (
+                              <ChevronUp className="h-4 w-4 text-mustard" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 text-mustard" />
+                            )}
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="px-4 pb-4 text-gray-700">
+                            <p>{faq.answer}</p>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      </BlurFade>
                     ))}
                   </div>
                 </CardContent>
