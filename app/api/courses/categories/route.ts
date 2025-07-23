@@ -7,7 +7,7 @@ export async function GET() {
 
     const categories = await sql`
       SELECT id, name, 
-      (SELECT COUNT(*) FROM courses WHERE category = categories.name) as course_count
+      (SELECT COUNT(*) FROM trainings WHERE category = categories.name) as course_count
       FROM categories 
       ORDER BY name
     `

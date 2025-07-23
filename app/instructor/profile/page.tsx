@@ -1,15 +1,21 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useState, useEffect, useRef } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Camera,
   Edit3,
@@ -34,155 +40,172 @@ import {
   Star,
   Users,
   DollarSign,
-} from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
-import { toast } from "sonner"
-import { InstructorLayout } from "@/components/instructor/instructor-layout"
+} from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { toast } from "sonner";
+import { InstructorLayout } from "@/components/instructor/instructor-layout";
 
 interface InstructorProfile {
-  id: string
-  name: string
-  email: string
-  phone: string
-  position: string
-  bio: string
-  profile_picture: string
-  cover_photo: string
-  specialization: string
-  experience_years: number
-  location: string
-  specialties: string[]
-  certifications: string[]
-  achievements: string[]
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  position: string;
+  bio: string;
+  profile_picture: string;
+  cover_photo: string;
+  specialization: string;
+  experience_years: number;
+  location: string;
+  specialties: string[];
+  certifications: string[];
+  achievements: string[];
   social_links: {
-    email?: string
-    instagram?: string
-    facebook?: string
-    linkedin?: string
-    twitter?: string
-  }
+    email?: string;
+    instagram?: string;
+    facebook?: string;
+    linkedin?: string;
+    twitter?: string;
+  };
   stats: {
-    total_courses: number
-    total_students: number
-    average_rating: number
-    total_earnings: number
-  }
+    total_courses: number;
+    total_students: number;
+    average_rating: number;
+    total_earnings: number;
+  };
 }
 
 export default function InstructorProfilePage() {
-  const [profile, setProfile] = useState<InstructorProfile | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [editing, setEditing] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [formData, setFormData] = useState<Partial<InstructorProfile>>({})
-  const [newSpecialty, setNewSpecialty] = useState("")
-  const [newCertification, setNewCertification] = useState("")
-  const [newAchievement, setNewAchievement] = useState("")
+  const [profile, setProfile] = useState<InstructorProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState<Partial<InstructorProfile>>({});
+  const [newSpecialty, setNewSpecialty] = useState("");
+  const [newCertification, setNewCertification] = useState("");
+  const [newAchievement, setNewAchievement] = useState("");
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
-  })
+  });
   const [showPasswords, setShowPasswords] = useState({
     current: false,
     new: false,
     confirm: false,
-  })
-  const [changingPassword, setChangingPassword] = useState(false)
-  const [uploadingImage, setUploadingImage] = useState<"profile" | "cover" | null>(null)
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState<
+    "profile" | "cover" | null
+  >(null);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  const profileImageRef = useRef<HTMLInputElement>(null)
-  const coverImageRef = useRef<HTMLInputElement>(null)
-  const { user } = useAuth()
+  const profileImageRef = useRef<HTMLInputElement>(null);
+  const coverImageRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
-    fetchProfile()
-  }, [])
+    fetchProfile();
+  }, []);
 
   const fetchProfile = async () => {
     try {
-      const token = localStorage.getItem("auth_token") // Fixed: using correct token key
+      const token = localStorage.getItem("auth_token"); // Fixed: using correct token key
       if (!token) {
-        toast.error("No authentication token found")
-        return
+        toast.error("No authentication token found");
+        return;
       }
 
       const response = await fetch("/api/instructor/profile", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
+      });
 
       if (response.ok) {
-        const data = await response.json()
-        console.log("Profile data:", data) // Debug log
-        setProfile(data)
-        setFormData(data)
+        const data = await response.json();
+        console.log("Profile data:", data); // Debug log
+        setProfile(data);
+        setFormData(data);
       } else {
-        const errorData = await response.json()
-        console.error("Profile fetch error:", errorData)
-        toast.error(errorData.error || "Failed to load profile")
+        const errorData = await response.json();
+        console.error("Profile fetch error:", errorData);
+        toast.error(errorData.error || "Failed to load profile");
       }
     } catch (error) {
-      console.error("Error fetching profile:", error)
-      toast.error("Failed to load profile")
+      console.error("Error fetching profile:", error);
+      toast.error("Failed to load profile");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const validateForm = () => {
-    const errors: Record<string, string> = {}
+    const errors: Record<string, string> = {};
 
     if (!formData.name?.trim()) {
-      errors.name = "Full name is required"
+      errors.name = "Full name is required";
     }
 
     if (!formData.position?.trim()) {
-      errors.position = "Position/title is required"
+      errors.position = "Position/title is required";
     }
 
     if (!formData.bio?.trim()) {
-      errors.bio = "Biography is required"
+      errors.bio = "Biography is required";
     } else if (formData.bio.length < 50) {
-      errors.bio = "Biography should be at least 50 characters"
+      errors.bio = "Biography should be at least 50 characters";
     }
 
-    if (formData.experience_years !== undefined && formData.experience_years < 0) {
-      errors.experience_years = "Experience years cannot be negative"
+    if (
+      formData.experience_years !== undefined &&
+      formData.experience_years < 0
+    ) {
+      errors.experience_years = "Experience years cannot be negative";
     }
 
     // Validate social media URLs
-    const urlPattern = /^https?:\/\/.+/
-    if (formData.social_links?.instagram && !urlPattern.test(formData.social_links.instagram)) {
-      errors.instagram = "Please enter a valid Instagram URL"
+    const urlPattern = /^https?:\/\/.+/;
+    if (
+      formData.social_links?.instagram &&
+      !urlPattern.test(formData.social_links.instagram)
+    ) {
+      errors.instagram = "Please enter a valid Instagram URL";
     }
-    if (formData.social_links?.facebook && !urlPattern.test(formData.social_links.facebook)) {
-      errors.facebook = "Please enter a valid Facebook URL"
+    if (
+      formData.social_links?.facebook &&
+      !urlPattern.test(formData.social_links.facebook)
+    ) {
+      errors.facebook = "Please enter a valid Facebook URL";
     }
-    if (formData.social_links?.linkedin && !urlPattern.test(formData.social_links.linkedin)) {
-      errors.linkedin = "Please enter a valid LinkedIn URL"
+    if (
+      formData.social_links?.linkedin &&
+      !urlPattern.test(formData.social_links.linkedin)
+    ) {
+      errors.linkedin = "Please enter a valid LinkedIn URL";
     }
-    if (formData.social_links?.twitter && !urlPattern.test(formData.social_links.twitter)) {
-      errors.twitter = "Please enter a valid Twitter URL"
+    if (
+      formData.social_links?.twitter &&
+      !urlPattern.test(formData.social_links.twitter)
+    ) {
+      errors.twitter = "Please enter a valid Twitter URL";
     }
 
-    setFormErrors(errors)
-    return Object.keys(errors).length === 0
-  }
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSave = async () => {
     if (!validateForm()) {
-      toast.error("Please fix the form errors before saving")
-      return
+      toast.error("Please fix the form errors before saving");
+      return;
     }
 
     try {
-      setSaving(true)
-      const token = localStorage.getItem("auth_token") // Fixed: using correct token key
+      setSaving(true);
+      const token = localStorage.getItem("auth_token"); // Fixed: using correct token key
 
-      console.log("Saving profile data:", formData) // Debug log
+      console.log("Saving profile data:", formData); // Debug log
 
       const response = await fetch("/api/instructor/profile", {
         method: "PUT",
@@ -191,52 +214,52 @@ export default function InstructorProfilePage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
-      })
+      });
 
-      const responseData = await response.json()
-      console.log("Save response:", responseData) // Debug log
+      const responseData = await response.json();
+      console.log("Save response:", responseData); // Debug log
 
       if (response.ok) {
-        toast.success("Profile updated successfully")
-        setEditing(false)
-        setFormErrors({})
-        await fetchProfile() // Refresh the profile data
+        toast.success("Profile updated successfully");
+        setEditing(false);
+        setFormErrors({});
+        await fetchProfile(); // Refresh the profile data
       } else {
-        console.error("Save error:", responseData)
-        toast.error(responseData.error || "Failed to update profile")
+        console.error("Save error:", responseData);
+        toast.error(responseData.error || "Failed to update profile");
       }
     } catch (error) {
-      console.error("Error updating profile:", error)
-      toast.error("Failed to update profile")
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const handleImageUpload = async (type: "profile" | "cover", file: File) => {
-    if (!file) return
+    if (!file) return;
 
     // Validate file type
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"]
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
     if (!allowedTypes.includes(file.type)) {
-      toast.error("Please select a valid image file (JPEG, PNG, or GIF)")
-      return
+      toast.error("Please select a valid image file (JPEG, PNG, or GIF)");
+      return;
     }
 
     // Validate file size (5MB max)
-    const maxSize = 5 * 1024 * 1024
+    const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      toast.error("Image size must be less than 5MB")
-      return
+      toast.error("Image size must be less than 5MB");
+      return;
     }
 
     try {
-      setUploadingImage(type)
-      const token = localStorage.getItem("auth_token") // Fixed: using correct token key
+      setUploadingImage(type);
+      const token = localStorage.getItem("auth_token"); // Fixed: using correct token key
 
-      const formData = new FormData()
-      formData.append("image", file)
-      formData.append("type", type)
+      const formData = new FormData();
+      formData.append("image", file);
+      formData.append("type", type);
 
       const response = await fetch("/api/instructor/upload-image", {
         method: "POST",
@@ -244,18 +267,21 @@ export default function InstructorProfilePage() {
           Authorization: `Bearer ${token}`,
         },
         body: formData,
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (response.ok) {
-        toast.success(`${type === "profile" ? "Profile" : "Cover"} photo updated successfully`)
+        toast.success(
+          `${type === "profile" ? "Profile" : "Cover"} photo updated successfully`
+        );
 
         // Update the form data with the new image URL
         setFormData((prev) => ({
           ...prev,
-          [type === "profile" ? "profile_picture" : "cover_photo"]: result.imageUrl,
-        }))
+          [type === "profile" ? "profile_picture" : "cover_photo"]:
+            result.imageUrl,
+        }));
 
         // If not in editing mode, also update the profile state
         if (!editing) {
@@ -263,50 +289,52 @@ export default function InstructorProfilePage() {
             prev
               ? {
                   ...prev,
-                  [type === "profile" ? "profile_picture" : "cover_photo"]: result.imageUrl,
+                  [type === "profile" ? "profile_picture" : "cover_photo"]:
+                    result.imageUrl,
                 }
-              : null,
-          )
+              : null
+          );
         }
       } else {
-        toast.error(result.error || "Failed to upload image")
+        toast.error(result.error || "Failed to upload image");
       }
     } catch (error) {
-      console.error("Error uploading image:", error)
-      toast.error("Failed to upload image")
+      console.error("Error uploading image:", error);
+      toast.error("Failed to upload image");
     } finally {
-      setUploadingImage(null)
+      setUploadingImage(null);
     }
-  }
+  };
 
   const handlePasswordChange = async () => {
     // Validate passwords
     if (!passwordData.currentPassword) {
-      toast.error("Current password is required")
-      return
+      toast.error("Current password is required");
+      return;
     }
 
     if (!passwordData.newPassword) {
-      toast.error("New password is required")
-      return
+      toast.error("New password is required");
+      return;
     }
 
     if (passwordData.newPassword.length < 8) {
-      toast.error("New password must be at least 8 characters long")
-      return
+      toast.error("New password must be at least 8 characters long");
+      return;
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error("New passwords do not match")
-      return
+      toast.error("New passwords do not match");
+      return;
     }
 
     try {
-      setChangingPassword(true)
-      const token = localStorage.getItem("auth_token") // Fixed: using correct token key
+      setChangingPassword(true);
+      const token = localStorage.getItem("auth_token"); // Fixed: using correct token key
 
       const response = await fetch("/api/instructor/change-password", {
-        method: "POST",
+        // method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -315,78 +343,82 @@ export default function InstructorProfilePage() {
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword,
         }),
-      })
+      });
 
-      const responseData = await response.json()
+      const responseData = await response.json();
 
       if (response.ok) {
-        toast.success("Password changed successfully")
+        toast.success("Password changed successfully");
         setPasswordData({
           currentPassword: "",
           newPassword: "",
           confirmPassword: "",
-        })
+        });
       } else {
-        toast.error(responseData.error || "Failed to change password")
+        toast.error(responseData.error || "Failed to change password");
       }
     } catch (error) {
-      console.error("Error changing password:", error)
-      toast.error("Failed to change password")
+      console.error("Error changing password:", error);
+      toast.error("Failed to change password");
     } finally {
-      setChangingPassword(false)
+      setChangingPassword(false);
     }
-  }
+  };
 
   const addSpecialty = () => {
     if (newSpecialty.trim()) {
       setFormData({
         ...formData,
         specialties: [...(formData.specialties || []), newSpecialty.trim()],
-      })
-      setNewSpecialty("")
+      });
+      setNewSpecialty("");
     }
-  }
+  };
 
   const removeSpecialty = (index: number) => {
     setFormData({
       ...formData,
       specialties: formData.specialties?.filter((_, i) => i !== index) || [],
-    })
-  }
+    });
+  };
 
   const addCertification = () => {
     if (newCertification.trim()) {
       setFormData({
         ...formData,
-        certifications: [...(formData.certifications || []), newCertification.trim()],
-      })
-      setNewCertification("")
+        certifications: [
+          ...(formData.certifications || []),
+          newCertification.trim(),
+        ],
+      });
+      setNewCertification("");
     }
-  }
+  };
 
   const removeCertification = (index: number) => {
     setFormData({
       ...formData,
-      certifications: formData.certifications?.filter((_, i) => i !== index) || [],
-    })
-  }
+      certifications:
+        formData.certifications?.filter((_, i) => i !== index) || [],
+    });
+  };
 
   const addAchievement = () => {
     if (newAchievement.trim()) {
       setFormData({
         ...formData,
         achievements: [...(formData.achievements || []), newAchievement.trim()],
-      })
-      setNewAchievement("")
+      });
+      setNewAchievement("");
     }
-  }
+  };
 
   const removeAchievement = (index: number) => {
     setFormData({
       ...formData,
       achievements: formData.achievements?.filter((_, i) => i !== index) || [],
-    })
-  }
+    });
+  };
 
   if (loading) {
     return (
@@ -407,7 +439,7 @@ export default function InstructorProfilePage() {
           </div>
         </div>
       </InstructorLayout>
-    )
+    );
   }
 
   if (!profile) {
@@ -417,7 +449,7 @@ export default function InstructorProfilePage() {
           <p className="text-muted-foreground">Failed to load profile</p>
         </div>
       </InstructorLayout>
-    )
+    );
   }
 
   return (
@@ -426,7 +458,9 @@ export default function InstructorProfilePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Profile Management</h1>
-            <p className="text-muted-foreground">Manage your instructor profile and settings</p>
+            <p className="text-muted-foreground">
+              Manage your instructor profile and settings
+            </p>
           </div>
           <div className="flex gap-2">
             {editing ? (
@@ -434,9 +468,9 @@ export default function InstructorProfilePage() {
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setEditing(false)
-                    setFormData(profile)
-                    setFormErrors({})
+                    setEditing(false);
+                    setFormData(profile);
+                    setFormErrors({});
                   }}
                   disabled={saving}
                 >
@@ -464,7 +498,10 @@ export default function InstructorProfilePage() {
             <div className="h-48 bg-gradient-to-r from-blue-500 to-purple-600 rounded-t-lg relative overflow-hidden">
               {(editing ? formData.cover_photo : profile.cover_photo) && (
                 <img
-                  src={(editing ? formData.cover_photo : profile.cover_photo) || "/placeholder.svg"}
+                  src={
+                    (editing ? formData.cover_photo : profile.cover_photo) ||
+                    "/placeholder.svg"
+                  }
                   alt="Cover"
                   className="w-full h-full object-cover"
                 />
@@ -497,8 +534,8 @@ export default function InstructorProfilePage() {
                 accept="image/*"
                 className="hidden"
                 onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) handleImageUpload("cover", file)
+                  const file = e.target.files?.[0];
+                  if (file) handleImageUpload("cover", file);
                 }}
               />
             </div>
@@ -508,9 +545,15 @@ export default function InstructorProfilePage() {
               <div className="relative">
                 <Avatar className="h-32 w-32 border-4 border-background">
                   <AvatarImage
-                    src={(editing ? formData.profile_picture : profile.profile_picture) || "/placeholder.svg"}
+                    src={
+                      (editing
+                        ? formData.profile_picture
+                        : profile.profile_picture) || "/placeholder.svg"
+                    }
                   />
-                  <AvatarFallback className="text-2xl">{profile.name.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="text-2xl">
+                    {profile.name.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
                 <Button
                   size="sm"
@@ -532,8 +575,8 @@ export default function InstructorProfilePage() {
                   accept="image/*"
                   className="hidden"
                   onChange={(e) => {
-                    const file = e.target.files?.[0]
-                    if (file) handleImageUpload("profile", file)
+                    const file = e.target.files?.[0];
+                    if (file) handleImageUpload("profile", file);
                   }}
                 />
               </div>
@@ -547,7 +590,9 @@ export default function InstructorProfilePage() {
                   <h2 className="text-2xl font-bold">{profile.name}</h2>
                   <p className="text-muted-foreground flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
-                    {profile.position || profile.specialization || "Beauty Instructor"}
+                    {profile.position ||
+                      profile.specialization ||
+                      "Beauty Instructor"}
                   </p>
                   <p className="text-muted-foreground flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
@@ -562,24 +607,32 @@ export default function InstructorProfilePage() {
                 {/* Stats */}
                 {/* <div className="grid grid-cols-2 gap-4 text-center"> */}
                 <div className="grid grid-cols-3 gap-4 text-center">
-  <div className="flex flex-col items-center p-3 bg-blue-50 rounded-lg">
-    <BookOpen className="h-6 w-6 text-blue-600 mb-1" />
-    <div className="text-2xl font-bold text-blue-600">{profile.stats.total_courses}</div>
-    <div className="text-sm text-muted-foreground">Courses</div>
-  </div>
-  <div className="flex flex-col items-center p-3 bg-green-50 rounded-lg">
-    <Users className="h-6 w-6 text-green-600 mb-1" />
-    <div className="text-2xl font-bold text-green-600">{profile.stats.total_students}</div>
-    <div className="text-sm text-muted-foreground">Students</div>
-  </div>
-  <div className="flex flex-col items-center p-3 bg-yellow-50 rounded-lg">
-    <Star className="h-6 w-6 text-yellow-600 mb-1" />
-    <div className="text-2xl font-bold text-yellow-600">{profile.stats.average_rating}</div>
-    <div className="text-sm text-muted-foreground">Rating</div>
-  </div>
-</div>
+                  <div className="flex flex-col items-center p-3 bg-blue-50 rounded-lg">
+                    <BookOpen className="h-6 w-6 text-blue-600 mb-1" />
+                    <div className="text-2xl font-bold text-blue-600">
+                      {profile.stats.total_courses}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Courses</div>
+                  </div>
+                  <div className="flex flex-col items-center p-3 bg-green-50 rounded-lg">
+                    <Users className="h-6 w-6 text-green-600 mb-1" />
+                    <div className="text-2xl font-bold text-green-600">
+                      {profile.stats.total_students}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Students
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-center p-3 bg-yellow-50 rounded-lg">
+                    <Star className="h-6 w-6 text-yellow-600 mb-1" />
+                    <div className="text-2xl font-bold text-yellow-600">
+                      {profile.stats.average_rating}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Rating</div>
+                  </div>
+                </div>
 
-                  {/* <div className="flex flex-col items-center p-3 bg-purple-50 rounded-lg">
+                {/* <div className="flex flex-col items-center p-3 bg-purple-50 rounded-lg">
                     <DollarSign className="h-6 w-6 text-purple-600 mb-1" />
                     <div className="text-2xl font-bold text-purple-600">
                       ${profile.stats.total_earnings.toLocaleString()}
@@ -598,7 +651,10 @@ export default function InstructorProfilePage() {
               <User className="h-4 w-4" />
               Personal
             </TabsTrigger>
-            <TabsTrigger value="professional" className="flex items-center gap-2">
+            <TabsTrigger
+              value="professional"
+              className="flex items-center gap-2"
+            >
               <Award className="h-4 w-4" />
               Professional
             </TabsTrigger>
@@ -616,7 +672,9 @@ export default function InstructorProfilePage() {
             <Card>
               <CardHeader>
                 <CardTitle>Personal Information</CardTitle>
-                <CardDescription>Update your personal details and contact information</CardDescription>
+                <CardDescription>
+                  Update your personal details and contact information
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid gap-4 md:grid-cols-2">
@@ -625,17 +683,29 @@ export default function InstructorProfilePage() {
                     <Input
                       id="name"
                       value={editing ? formData.name || "" : profile.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
                       disabled={!editing}
                       className={formErrors.name ? "border-red-500" : ""}
                     />
-                    {formErrors.name && <p className="text-sm text-red-500">{formErrors.name}</p>}
+                    {formErrors.name && (
+                      <p className="text-sm text-red-500">{formErrors.name}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" value={profile.email} disabled className="bg-muted" />
-                    <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={profile.email}
+                      disabled
+                      className="bg-muted"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Email cannot be changed
+                    </p>
                   </div>
 
                   <div className="space-y-2">
@@ -643,7 +713,9 @@ export default function InstructorProfilePage() {
                     <Input
                       id="phone"
                       value={editing ? formData.phone || "" : profile.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, phone: e.target.value })
+                      }
                       disabled={!editing}
                       placeholder="+1 (555) 123-4567"
                     />
@@ -653,21 +725,35 @@ export default function InstructorProfilePage() {
                     <Label htmlFor="position">Position/Title *</Label>
                     <Input
                       id="position"
-                      value={editing ? formData.position || "" : profile.position || ""}
-                      onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                      value={
+                        editing
+                          ? formData.position || ""
+                          : profile.position || ""
+                      }
+                      onChange={(e) =>
+                        setFormData({ ...formData, position: e.target.value })
+                      }
                       disabled={!editing}
                       placeholder="e.g., Senior Beauty Instructor"
                       className={formErrors.position ? "border-red-500" : ""}
                     />
-                    {formErrors.position && <p className="text-sm text-red-500">{formErrors.position}</p>}
+                    {formErrors.position && (
+                      <p className="text-sm text-red-500">
+                        {formErrors.position}
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="location">Location</Label>
                     <Input
                       id="location"
-                      value={editing ? formData.location || "" : profile.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      value={
+                        editing ? formData.location || "" : profile.location
+                      }
+                      onChange={(e) =>
+                        setFormData({ ...formData, location: e.target.value })
+                      }
                       disabled={!editing}
                       placeholder="e.g., New York, NY"
                     />
@@ -678,15 +764,28 @@ export default function InstructorProfilePage() {
                     <Input
                       id="experience"
                       type="number"
-                      value={editing ? formData.experience_years || "" : profile.experience_years}
-                      onChange={(e) => setFormData({ ...formData, experience_years: Number(e.target.value) })}
+                      value={
+                        editing
+                          ? formData.experience_years || ""
+                          : profile.experience_years
+                      }
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          experience_years: Number(e.target.value),
+                        })
+                      }
                       disabled={!editing}
                       min="0"
                       max="50"
-                      className={formErrors.experience_years ? "border-red-500" : ""}
+                      className={
+                        formErrors.experience_years ? "border-red-500" : ""
+                      }
                     />
                     {formErrors.experience_years && (
-                      <p className="text-sm text-red-500">{formErrors.experience_years}</p>
+                      <p className="text-sm text-red-500">
+                        {formErrors.experience_years}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -696,15 +795,21 @@ export default function InstructorProfilePage() {
                   <Textarea
                     id="bio"
                     value={editing ? formData.bio || "" : profile.bio}
-                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, bio: e.target.value })
+                    }
                     disabled={!editing}
                     className={`min-h-[120px] ${formErrors.bio ? "border-red-500" : ""}`}
                     placeholder="Tell us about yourself, your experience, and what makes you passionate about teaching... (minimum 50 characters)"
                   />
                   <div className="flex justify-between items-center">
-                    {formErrors.bio && <p className="text-sm text-red-500">{formErrors.bio}</p>}
+                    {formErrors.bio && (
+                      <p className="text-sm text-red-500">{formErrors.bio}</p>
+                    )}
                     <p className="text-xs text-muted-foreground ml-auto">
-                      {(editing ? formData.bio?.length : profile.bio?.length) || 0} characters
+                      {(editing ? formData.bio?.length : profile.bio?.length) ||
+                        0}{" "}
+                      characters
                     </p>
                   </div>
                 </div>
@@ -717,27 +822,38 @@ export default function InstructorProfilePage() {
             <Card>
               <CardHeader>
                 <CardTitle>Specialties & Expertise</CardTitle>
-                <CardDescription>Areas where you have specialized knowledge and skills</CardDescription>
+                <CardDescription>
+                  Areas where you have specialized knowledge and skills
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex flex-wrap gap-2">
-                  {(editing ? formData.specialties : profile.specialties)?.map((specialty, index) => (
-                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                      {specialty}
-                      {editing && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
-                          onClick={() => removeSpecialty(index)}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </Badge>
-                  ))}
-                  {(!editing ? profile.specialties : formData.specialties)?.length === 0 && (
-                    <p className="text-muted-foreground">No specialties added yet</p>
+                  {(editing ? formData.specialties : profile.specialties)?.map(
+                    (specialty, index) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                      >
+                        {specialty}
+                        {editing && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-4 w-4 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                            onClick={() => removeSpecialty(index)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </Badge>
+                    )
+                  )}
+                  {(!editing ? profile.specialties : formData.specialties)
+                    ?.length === 0 && (
+                    <p className="text-muted-foreground">
+                      No specialties added yet
+                    </p>
                   )}
                 </div>
                 {editing && (
@@ -748,12 +864,16 @@ export default function InstructorProfilePage() {
                       onChange={(e) => setNewSpecialty(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
-                          e.preventDefault()
-                          addSpecialty()
+                          e.preventDefault();
+                          addSpecialty();
                         }
                       }}
                     />
-                    <Button size="sm" onClick={addSpecialty} disabled={!newSpecialty.trim()}>
+                    <Button
+                      size="sm"
+                      onClick={addSpecialty}
+                      disabled={!newSpecialty.trim()}
+                    >
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
@@ -765,23 +885,38 @@ export default function InstructorProfilePage() {
             <Card>
               <CardHeader>
                 <CardTitle>Certifications</CardTitle>
-                <CardDescription>Professional certifications and qualifications</CardDescription>
+                <CardDescription>
+                  Professional certifications and qualifications
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  {(editing ? formData.certifications : profile.certifications)?.map((cert, index) => (
-                    <div key={index} className="flex items-center gap-2 p-3 border rounded-lg bg-yellow-50">
+                  {(editing
+                    ? formData.certifications
+                    : profile.certifications
+                  )?.map((cert, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 p-3 border rounded-lg bg-yellow-50"
+                    >
                       <Award className="h-4 w-4 text-yellow-600 flex-shrink-0" />
                       <span className="flex-1">{cert}</span>
                       {editing && (
-                        <Button size="sm" variant="ghost" onClick={() => removeCertification(index)}>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => removeCertification(index)}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
                   ))}
-                  {(!editing ? profile.certifications : formData.certifications)?.length === 0 && (
-                    <p className="text-muted-foreground">No certifications added yet</p>
+                  {(!editing ? profile.certifications : formData.certifications)
+                    ?.length === 0 && (
+                    <p className="text-muted-foreground">
+                      No certifications added yet
+                    </p>
                   )}
                 </div>
                 {editing && (
@@ -792,12 +927,16 @@ export default function InstructorProfilePage() {
                       onChange={(e) => setNewCertification(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
-                          e.preventDefault()
-                          addCertification()
+                          e.preventDefault();
+                          addCertification();
                         }
                       }}
                     />
-                    <Button size="sm" onClick={addCertification} disabled={!newCertification.trim()}>
+                    <Button
+                      size="sm"
+                      onClick={addCertification}
+                      disabled={!newCertification.trim()}
+                    >
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
@@ -809,23 +948,38 @@ export default function InstructorProfilePage() {
             <Card>
               <CardHeader>
                 <CardTitle>Achievements</CardTitle>
-                <CardDescription>Notable accomplishments and recognition</CardDescription>
+                <CardDescription>
+                  Notable accomplishments and recognition
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  {(editing ? formData.achievements : profile.achievements)?.map((achievement, index) => (
-                    <div key={index} className="flex items-center gap-2 p-3 border rounded-lg bg-blue-50">
+                  {(editing
+                    ? formData.achievements
+                    : profile.achievements
+                  )?.map((achievement, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 p-3 border rounded-lg bg-blue-50"
+                    >
                       <Award className="h-4 w-4 text-blue-600 flex-shrink-0" />
                       <span className="flex-1">{achievement}</span>
                       {editing && (
-                        <Button size="sm" variant="ghost" onClick={() => removeAchievement(index)}>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => removeAchievement(index)}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
                   ))}
-                  {(!editing ? profile.achievements : formData.achievements)?.length === 0 && (
-                    <p className="text-muted-foreground">No achievements added yet</p>
+                  {(!editing ? profile.achievements : formData.achievements)
+                    ?.length === 0 && (
+                    <p className="text-muted-foreground">
+                      No achievements added yet
+                    </p>
                   )}
                 </div>
                 {editing && (
@@ -836,12 +990,16 @@ export default function InstructorProfilePage() {
                       onChange={(e) => setNewAchievement(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
-                          e.preventDefault()
-                          addAchievement()
+                          e.preventDefault();
+                          addAchievement();
                         }
                       }}
                     />
-                    <Button size="sm" onClick={addAchievement} disabled={!newAchievement.trim()}>
+                    <Button
+                      size="sm"
+                      onClick={addAchievement}
+                      disabled={!newAchievement.trim()}
+                    >
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
@@ -855,13 +1013,17 @@ export default function InstructorProfilePage() {
               <CardHeader>
                 <CardTitle>Social Media Links</CardTitle>
                 <CardDescription>
-                  Connect your social media profiles to showcase your work and connect with students
+                  Connect your social media profiles to showcase your work and
+                  connect with students
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email-link" className="flex items-center gap-2">
+                    <Label
+                      htmlFor="email-link"
+                      className="flex items-center gap-2"
+                    >
                       <Mail className="h-4 w-4" />
                       Contact Email
                     </Label>
@@ -869,11 +1031,18 @@ export default function InstructorProfilePage() {
                       id="email-link"
                       type="email"
                       placeholder="your.contact@example.com"
-                      value={editing ? formData.social_links?.email || "" : profile.social_links?.email || ""}
+                      value={
+                        editing
+                          ? formData.social_links?.email || ""
+                          : profile.social_links?.email || ""
+                      }
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          social_links: { ...formData.social_links, email: e.target.value },
+                          social_links: {
+                            ...formData.social_links,
+                            email: e.target.value,
+                          },
                         })
                       }
                       disabled={!editing}
@@ -881,87 +1050,143 @@ export default function InstructorProfilePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="instagram" className="flex items-center gap-2">
+                    <Label
+                      htmlFor="instagram"
+                      className="flex items-center gap-2"
+                    >
                       <Instagram className="h-4 w-4" />
                       Instagram
                     </Label>
                     <Input
                       id="instagram"
                       placeholder="https://instagram.com/yourusername"
-                      value={editing ? formData.social_links?.instagram || "" : profile.social_links?.instagram || ""}
+                      value={
+                        editing
+                          ? formData.social_links?.instagram || ""
+                          : profile.social_links?.instagram || ""
+                      }
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          social_links: { ...formData.social_links, instagram: e.target.value },
+                          social_links: {
+                            ...formData.social_links,
+                            instagram: e.target.value,
+                          },
                         })
                       }
                       disabled={!editing}
                       className={formErrors.instagram ? "border-red-500" : ""}
                     />
-                    {formErrors.instagram && <p className="text-sm text-red-500">{formErrors.instagram}</p>}
+                    {formErrors.instagram && (
+                      <p className="text-sm text-red-500">
+                        {formErrors.instagram}
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="facebook" className="flex items-center gap-2">
+                    <Label
+                      htmlFor="facebook"
+                      className="flex items-center gap-2"
+                    >
                       <Facebook className="h-4 w-4" />
                       Facebook
                     </Label>
                     <Input
                       id="facebook"
                       placeholder="https://facebook.com/yourusername"
-                      value={editing ? formData.social_links?.facebook || "" : profile.social_links?.facebook || ""}
+                      value={
+                        editing
+                          ? formData.social_links?.facebook || ""
+                          : profile.social_links?.facebook || ""
+                      }
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          social_links: { ...formData.social_links, facebook: e.target.value },
+                          social_links: {
+                            ...formData.social_links,
+                            facebook: e.target.value,
+                          },
                         })
                       }
                       disabled={!editing}
                       className={formErrors.facebook ? "border-red-500" : ""}
                     />
-                    {formErrors.facebook && <p className="text-sm text-red-500">{formErrors.facebook}</p>}
+                    {formErrors.facebook && (
+                      <p className="text-sm text-red-500">
+                        {formErrors.facebook}
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="linkedin" className="flex items-center gap-2">
+                    <Label
+                      htmlFor="linkedin"
+                      className="flex items-center gap-2"
+                    >
                       <Linkedin className="h-4 w-4" />
                       LinkedIn
                     </Label>
                     <Input
                       id="linkedin"
                       placeholder="https://linkedin.com/in/yourusername"
-                      value={editing ? formData.social_links?.linkedin || "" : profile.social_links?.linkedin || ""}
+                      value={
+                        editing
+                          ? formData.social_links?.linkedin || ""
+                          : profile.social_links?.linkedin || ""
+                      }
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          social_links: { ...formData.social_links, linkedin: e.target.value },
+                          social_links: {
+                            ...formData.social_links,
+                            linkedin: e.target.value,
+                          },
                         })
                       }
                       disabled={!editing}
                       className={formErrors.linkedin ? "border-red-500" : ""}
                     />
-                    {formErrors.linkedin && <p className="text-sm text-red-500">{formErrors.linkedin}</p>}
+                    {formErrors.linkedin && (
+                      <p className="text-sm text-red-500">
+                        {formErrors.linkedin}
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="twitter" className="flex items-center gap-2">
+                    <Label
+                      htmlFor="twitter"
+                      className="flex items-center gap-2"
+                    >
                       <Twitter className="h-4 w-4" />
                       Twitter
                     </Label>
                     <Input
                       id="twitter"
                       placeholder="https://twitter.com/yourusername"
-                      value={editing ? formData.social_links?.twitter || "" : profile.social_links?.twitter || ""}
+                      value={
+                        editing
+                          ? formData.social_links?.twitter || ""
+                          : profile.social_links?.twitter || ""
+                      }
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          social_links: { ...formData.social_links, twitter: e.target.value },
+                          social_links: {
+                            ...formData.social_links,
+                            twitter: e.target.value,
+                          },
                         })
                       }
                       disabled={!editing}
                       className={formErrors.twitter ? "border-red-500" : ""}
                     />
-                    {formErrors.twitter && <p className="text-sm text-red-500">{formErrors.twitter}</p>}
+                    {formErrors.twitter && (
+                      <p className="text-sm text-red-500">
+                        {formErrors.twitter}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -969,8 +1194,9 @@ export default function InstructorProfilePage() {
                   <Alert>
                     <Mail className="h-4 w-4" />
                     <AlertDescription>
-                      Social media links help students connect with you and see your work. Make sure your profiles are
-                      professional and showcase your expertise.
+                      Social media links help students connect with you and see
+                      your work. Make sure your profiles are professional and
+                      showcase your expertise.
                     </AlertDescription>
                   </Alert>
                 )}
@@ -982,7 +1208,9 @@ export default function InstructorProfilePage() {
             <Card>
               <CardHeader>
                 <CardTitle>Change Password</CardTitle>
-                <CardDescription>Update your account password for security</CardDescription>
+                <CardDescription>
+                  Update your account password for security
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -992,7 +1220,12 @@ export default function InstructorProfilePage() {
                       id="current-password"
                       type={showPasswords.current ? "text" : "password"}
                       value={passwordData.currentPassword}
-                      onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                      onChange={(e) =>
+                        setPasswordData({
+                          ...passwordData,
+                          currentPassword: e.target.value,
+                        })
+                      }
                       placeholder="Enter your current password"
                     />
                     <Button
@@ -1000,9 +1233,18 @@ export default function InstructorProfilePage() {
                       variant="ghost"
                       size="sm"
                       className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
+                      onClick={() =>
+                        setShowPasswords({
+                          ...showPasswords,
+                          current: !showPasswords.current,
+                        })
+                      }
                     >
-                      {showPasswords.current ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showPasswords.current ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -1014,7 +1256,12 @@ export default function InstructorProfilePage() {
                       id="new-password"
                       type={showPasswords.new ? "text" : "password"}
                       value={passwordData.newPassword}
-                      onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                      onChange={(e) =>
+                        setPasswordData({
+                          ...passwordData,
+                          newPassword: e.target.value,
+                        })
+                      }
                       placeholder="Enter your new password"
                     />
                     <Button
@@ -1022,9 +1269,18 @@ export default function InstructorProfilePage() {
                       variant="ghost"
                       size="sm"
                       className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
+                      onClick={() =>
+                        setShowPasswords({
+                          ...showPasswords,
+                          new: !showPasswords.new,
+                        })
+                      }
                     >
-                      {showPasswords.new ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showPasswords.new ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -1036,7 +1292,12 @@ export default function InstructorProfilePage() {
                       id="confirm-password"
                       type={showPasswords.confirm ? "text" : "password"}
                       value={passwordData.confirmPassword}
-                      onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                      onChange={(e) =>
+                        setPasswordData({
+                          ...passwordData,
+                          confirmPassword: e.target.value,
+                        })
+                      }
                       placeholder="Confirm your new password"
                     />
                     <Button
@@ -1044,9 +1305,18 @@ export default function InstructorProfilePage() {
                       variant="ghost"
                       size="sm"
                       className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
+                      onClick={() =>
+                        setShowPasswords({
+                          ...showPasswords,
+                          confirm: !showPasswords.confirm,
+                        })
+                      }
                     >
-                      {showPasswords.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showPasswords.confirm ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -1061,11 +1331,13 @@ export default function InstructorProfilePage() {
                       !passwordData.confirmPassword
                     }
                   >
-                    {changingPassword ? "Changing Password..." : "Change Password"}
+                    {changingPassword
+                      ? "Changing Password..."
+                      : "Change Password"}
                   </Button>
                 </div>
 
-                <Alert>
+                {/* <Alert>
                   <Shield className="h-4 w-4" />
                   <AlertDescription>
                     <strong>Password requirements:</strong>
@@ -1076,12 +1348,12 @@ export default function InstructorProfilePage() {
                       <li>Include at least one special character</li>
                     </ul>
                   </AlertDescription>
-                </Alert>
+                </Alert> */}
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
       </div>
     </InstructorLayout>
-  )
+  );
 }
