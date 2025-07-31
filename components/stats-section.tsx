@@ -8,7 +8,7 @@ import { Users, Award, BookOpen, TrendingUp } from "lucide-react"
 const stats = [
   {
     icon: Users,
-    value: 500,
+    value: 4500,
     label: "Students Trained",
     description: "Successful graduates working in the beauty industry",
   },

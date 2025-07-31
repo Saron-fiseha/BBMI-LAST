@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
         s.id,
         s.title,
         s.description,
-        i.name AS instructor_name,
+        i.full_name,
         s.instructor_id,
         c.name AS category,
         s.scheduled_at,
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (instructor && instructor !== "all") {
-      query = sql`${query} AND i.name = ${instructor}`;
+      query = sql`${query} AND i.full_name = ${instructor}`;
     }
 
     if (search) {
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
         AND (
           s.title ILIKE ${pattern} OR
           s.description ILIKE ${pattern} OR
-          i.name ILIKE ${pattern} OR
+          i.full_name ILIKE ${pattern} OR
           c.name ILIKE ${pattern}
         )
       `;

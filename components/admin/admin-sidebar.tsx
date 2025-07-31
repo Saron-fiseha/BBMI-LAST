@@ -14,6 +14,7 @@ import {
   UserX,
   Settings,
   Home,
+  Briefcase, // 1. Import the Briefcase icon
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
@@ -62,6 +63,11 @@ const sidebarItems = [
     title: "Instructors",
     href: "/admin/instructors",
     icon: UserX,
+  },
+  {
+    title: "Portfolio",
+    href: "/admin/portfolio",
+    icon: Briefcase,
   },
   {
     title: "Profile",

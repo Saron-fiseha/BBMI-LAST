@@ -24,6 +24,9 @@ export function SiteFooter() {
         <p className="text-white leading-relaxed">
           Transforming lives through professional beauty education. Join our community of successful beauty professionals.
         </p>
+        <p>
+          "One Brushstroke at a Time."
+        </p>
         <div className="flex space-x-4">
           <Link href="#" className="text-white hover:text-gray-400 transition-colors">
             <Facebook className="w-5 h-5" />
@@ -31,13 +34,13 @@ export function SiteFooter() {
           <Link href="#" className="text-white hover:text-gray-400 transition-colors">
             <Twitter className="w-5 h-5" />
           </Link>
-          <Link href="#" className="text-white hover:text-gray-400 transition-colors">
+          <Link href="https://www.instagram.com/brushedbybetty?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" className="text-white hover:text-gray-400 transition-colors">
             <Instagram className="w-5 h-5" />
           </Link>
-          <Link href="#" className="text-white hover:text-gray-400 transition-colors">
+          <Link href="https://youtube.com/@brushedbybetty?si=KkLOHRhAI7xoyUzE" className="text-white hover:text-gray-400 transition-colors">
             <Youtube className="w-5 h-5" />
           </Link>
-          <Link href="#" className="text-white hover:text-gray-400 transition-colors">
+          <Link href="https://vm.tiktok.com/ZMSTy5jY2/" className="text-white hover:text-gray-400 transition-colors">
             <TikTokIcon />
           </Link>
         </div>
@@ -47,6 +50,11 @@ export function SiteFooter() {
       <div className="space-y-4">
         <h4 className="text-lg font-semibold">Quick Links</h4>
         <ul className="space-y-2">
+          {/* <li>
+            <Link href="/" className="text-white hover:text-gray-400 transition-colors">
+              Home
+            </Link>
+          </li> */}
           <li>
             <Link href="/about" className="text-white hover:text-gray-400 transition-colors">
               About Us
@@ -60,6 +68,11 @@ export function SiteFooter() {
           <li>
             <Link href="/instructors" className="text-white hover:text-gray-400 transition-colors">
               Instructors
+            </Link>
+          </li>
+          <li>
+            <Link href="/portfolio" className="text-white hover:text-gray-400 transition-colors">
+              Portfolio
             </Link>
           </li>
           <li>
@@ -103,19 +116,23 @@ export function SiteFooter() {
         <div className="space-y-3">
           <div className="flex items-center space-x-3">
             <MapPin className="w-5 h-5 text-white" />
-            <span className="text-white">123 Beauty Street</span>
+            <span className="text-white">22 round about noah city point building 5th floor </span>
           </div>
           <div className="flex items-center space-x-3">
             <MapPin className="w-5 h-5 text-white" />
-            <span className="text-white">Newyork, NY 100001</span>
+            <span className="text-white"> lebu mati building 3rd floor</span>
+          </div>
+           <div className="flex items-center space-x-3">
+            <MapPin className="w-5 h-5 text-white" />
+            <span className="text-white">  summit yetebaberut, Africa convention center</span>
           </div>
           <div className="flex items-center space-x-3">
             <Phone className="w-5 h-5 text-white" />
-            <span className="text-white">(555) 123-4567</span>
+            <span className="text-white">0913218888/ 0912158143</span>
           </div>
           <div className="flex items-center space-x-3">
             <Mail className="w-5 h-5 text-white" />
-            <span className="text-white">info@bbmi.edu</span>
+            <span className="text-white">brushedbybetty@gmail.com</span>
           </div>
         </div>
       </div>

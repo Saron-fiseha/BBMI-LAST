@@ -793,14 +793,17 @@ export default function InstructorsPage() {
             <div className="block sm:hidden">
               <div className="space-y-4 p-4">
                 {instructors.length === 0 ? (
-                  <div className="text-center py-8 text-deep-purple">
-                    {error
-                      ? "Error loading instructors. Please try again."
-                      : "No instructors found. Click 'Add Instructor' to create your first instructor."}
-                  </div>
-                ) : (
-                  instructors.map((instructor) => (
-                    <div key={instructor.id} className="border border-mustard/10 rounded-lg p-4 space-y-3 bg-white">
+  <div className="text-center py-8 text-deep-purple">
+    {error
+      ? "Error loading instructors. Please try again."
+      : "No instructors found. Click 'Add Instructor' to create your first instructor."}
+  </div>
+) : (
+  instructors.map((instructor) => (
+    <div 
+      key={`mobile-${instructor.id}`} // Added prefix for extra uniqueness
+      className="border border-mustard/10 rounded-lg p-4 space-y-3 bg-white"
+    >
                       <div className="flex justify-between items-start">
                         <div>
                           <h4 className="font-medium text-charcoal">{instructor.name}</h4>
@@ -890,21 +893,21 @@ export default function InstructorsPage() {
                       <TableHead className="text-charcoal font-semibold">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
-                  <TableBody>
-                    {instructors.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={10} className="text-center py-8 text-deep-purple">
-                          {error
-                            ? "Error loading instructors. Please try again."
-                            : "No instructors found. Click 'Add Instructor' to create your first instructor."}
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      instructors.map((instructor, index) => (
-                        <TableRow
-                          key={instructor.id}
-                          className="border-mustard/10 hover:bg-mustard/5 transition-colors duration-200"
-                        >
+                 <TableBody>
+  {instructors.length === 0 ? (
+    <TableRow>
+      <TableCell colSpan={10} className="text-center py-8 text-deep-purple">
+        {error
+          ? "Error loading instructors. Please try again."
+          : "No instructors found. Click 'Add Instructor' to create your first instructor."}
+      </TableCell>
+    </TableRow>
+  ) : (
+    instructors.map((instructor, index) => (
+      <TableRow
+        key={`desktop-${instructor.id}-${index}`} // Added prefix and index for extra uniqueness
+        className="border-mustard/10 hover:bg-mustard/5 transition-colors duration-200"
+      >
                           <TableCell className="font-medium text-charcoal">
                             {(pagination.page - 1) * pagination.limit + index + 1}
                           </TableCell>

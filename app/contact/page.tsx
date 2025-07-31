@@ -124,15 +124,15 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-charcoal text-ivory">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-pink-50 via-white to-purple-50 text-ivory">
       <SiteHeader />
       <main className="flex-1">
         {/* Hero Section */}
-        <div className="bg-charcoal py-12">
+        <div className="bg-white py-12">
           <div className="container">
             <div className="text-center">
-              <h1 className="text-4xl font-bold mb-4 text-ivory">Contact Us</h1>
-              <p className="text-xl text-ivory max-w-2xl mx-auto">
+              <h1 className="text-4xl font-bold mb-4 text-black">Contact Us</h1>
+              <p className="text-xl text-black max-w-2xl mx-auto">
                 Have questions about our courses or need support? We're here to help!
               </p>
             </div>
@@ -140,20 +140,21 @@ export default function ContactPage() {
         </div>
 
         {/* Contact Information */}
-        <div className="container py-12 bg-charcoal">
+        <div className="container py-12 bg-gradient-to-br from-pink-50 via-white to-purple-50">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             <BlurFade delay={0.1}>
               <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
                 <CardContent className="p-6 text-center">
                   <MapPin className="h-8 w-8 mx-auto mb-4 text-mustard" />
                   <h3 className="font-bold mb-2 text-charcoal">
-                    <AnimatedGradientText text="Address" />
+                    Address
                   </h3>
-                  <p className="text-gray-700">
-                    <AnimatedShinyText text="123 Beauty Street" />
-                    <br />
-                    <AnimatedShinyText text="New York, NY 10001" />
-                  </p>
+                  <div className="text-gray-700">
+                    <p className="mb-3"> Branch 1: 22 round about noah city point building 5th floor </p>
+                    <p className="mb-3"> Branch 2: lebu mati building 3rd floor</p>
+                    <p> Branch 3: summit yetebaberut, Africa convention center </p>
+
+                  </div>
                 </CardContent>
               </Card>
             </BlurFade>
@@ -162,10 +163,16 @@ export default function ContactPage() {
                 <CardContent className="p-6 text-center">
                   <Phone className="h-8 w-8 mx-auto mb-4 text-mustard" />
                   <h3 className="font-bold mb-2 text-charcoal">
-                    <AnimatedGradientText text="Phone" />
+                    Phone
                   </h3>
+                  <p className="text-gray-700 mb-3">
+                   +251 913218888
+                  </p>
+                  <p className="text-gray-700 mb-3">
+                    +251 912158143
+                  </p>
                   <p className="text-gray-700">
-                    <AnimatedShinyText text="(123) 456-7890" />
+                   +251 969222888
                   </p>
                 </CardContent>
               </Card>
@@ -175,10 +182,10 @@ export default function ContactPage() {
                 <CardContent className="p-6 text-center">
                   <Mail className="h-8 w-8 mx-auto mb-4 text-mustard" />
                   <h3 className="font-bold mb-2 text-charcoal">
-                    <AnimatedGradientText text="Email" />
+                   Email
                   </h3>
-                  <p className="text-gray-700">
-                    <AnimatedShinyText text="info@glamouracademy.com" />
+                  <p className="text-gray-700 mt-8">
+                   brushedbybetty@gmail.com
                   </p>
                 </CardContent>
               </Card>
@@ -188,13 +195,12 @@ export default function ContactPage() {
                 <CardContent className="p-6 text-center">
                   <Clock className="h-8 w-8 mx-auto mb-4 text-mustard" />
                   <h3 className="font-bold mb-2 text-charcoal">
-                    <AnimatedGradientText text="Hours" />
+                  Hours
                   </h3>
-                  <p className="text-gray-700">
-                    <AnimatedShinyText text="Mon-Fri: 9AM-6PM" />
-                    <br />
-                    <AnimatedShinyText text="Sat-Sun: 10AM-4PM" />
-                  </p>
+                  <div className="text-gray-700 mt-5">
+                    <p> Mon-Fri: 9AM-6Pr </p>
+                    <p> Sat-Sun: 10AM-4PM </p>
+                  </div>
                 </CardContent>
               </Card>
             </BlurFade>
@@ -206,7 +212,7 @@ export default function ContactPage() {
               <ShineBorder className="w-full">
                 <Card className="w-full border-0 shadow-xl bg-white/80 backdrop-blur-sm">
                   <CardHeader className="space-y-1 text-center">
-                    <CardTitle className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+                    <CardTitle className="text-3xl font-bold bg-gradient-to-r from-amber-600 via-amber-700 to-amber-900 bg-clip-text text-transparent">
                       Send us a Message
                     </CardTitle>
                     <CardDescription className="text-gray-600">
@@ -273,7 +279,7 @@ export default function ContactPage() {
                       </div>
                       <Button
                         type="submit"
-                        className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white"
+                        className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white"
                         disabled={isSubmitting}
                       >
                         {isSubmitting ? (
@@ -295,7 +301,7 @@ export default function ContactPage() {
             <div>
               <Card className="h-full border-0 shadow-xl bg-white/80 backdrop-blur-sm">
                 <CardHeader className="space-y-1 text-center">
-                  <CardTitle className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+                  <CardTitle className="text-3xl font-bold bg-gradient-to-r from-amber-600 via-amber-700 to-amber-900 bg-clip-text text-transparent">
                     Frequently Asked Questions
                   </CardTitle>
                   <CardDescription className="text-gray-600">

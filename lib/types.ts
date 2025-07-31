@@ -9,6 +9,8 @@ export interface User {
 }
 
 export interface Course {
+  max_trainees: number
+  duration: number
    id: string
   title: string
   description: string

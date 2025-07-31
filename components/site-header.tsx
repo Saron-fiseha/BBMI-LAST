@@ -61,6 +61,10 @@ export function SiteHeader() {
           <Link href="/about" className="text-charcoal hover:text-amber-600 transition-colors">
             About
           </Link>
+          {/* New Portfolio Link */}
+          <Link href="/portfolio" className="text-charcoal hover:text-amber-600 transition-colors">
+            Portfolio
+          </Link>
           <Link href="/contact" className="text-charcoal hover:text-amber-600 transition-colors">
             Contact
           </Link>
@@ -124,7 +128,7 @@ export function SiteHeader() {
                 <Link href="/login">Login</Link>
               </Button>
               <ShinyButton>
-                <Link 
+                <Link
                   href="/register"
                   className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
                 >
@@ -173,6 +177,14 @@ export function SiteHeader() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 About
+              </Link>
+              {/* New Portfolio Link */}
+              <Link
+                href="/portfolio"
+                className="text-charcoal hover:text-amber-600 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Portfolio
               </Link>
               <Link
                 href="/contact"
@@ -225,8 +237,8 @@ export function SiteHeader() {
                   </Link>
                 </Button>
                 <ShinyButton className="w-full">
-                  <Link 
-                    href="/register" 
+                  <Link
+                    href="/register"
                     onClick={() => setIsMenuOpen(false)}
                     className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
                   >

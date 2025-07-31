@@ -562,6 +562,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Users, CheckCircle, Gift } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { ShinyButton } from "@/components/magicui/shiny-button";
 
 // Disable static generation and caching
 export const dynamic = "force-dynamic";
@@ -823,7 +824,7 @@ export default function TrainingPage({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <Badge className="mb-0">{training.level}</Badge>
+                  <Badge className=" mb-0 bg-amber-700 text-white " >{training.level}</Badge>
                   {isFree && (
                     <Badge
                       variant="secondary"
@@ -915,7 +916,7 @@ export default function TrainingPage({
                       <Badge variant="outline">{training.level}</Badge>
                     </div>
 
-                    <Button
+                    <ShinyButton
                       onClick={handleEnrollClick}
                       disabled={checkingEnrollment || enrolling}
                       className="w-full mb-4"
@@ -930,7 +931,7 @@ export default function TrainingPage({
                             : isFree
                               ? "Start Learning Free"
                               : "Enroll Now"}
-                    </Button>
+                    </ShinyButton>
 
                     <ul className="space-y-2 text-sm">
                       <li className="flex items-center">

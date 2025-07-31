@@ -10,7 +10,7 @@ import { AnimatedShinyText } from "@/components/magicui/animated-shiny-text"
 
 export function CTASection() {
   return (
-    <section className="relative py-20 bg-gradient-to-br from-purple-900 via-pink-900 to-red-900 text-white overflow-hidden">
+    <section className="relative py-20 bg-gradient-to-br from-slate-800 via-slate-600 to-slate-900 text-white overflow-hidden">
       <Meteors number={30} />
 
       <div className="container mx-auto px-4 relative z-10">

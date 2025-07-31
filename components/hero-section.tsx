@@ -33,7 +33,7 @@ export function HeroSection() {
                 href="/register"
                 variant="outline"
                 size="lg"
-                className="text-lg px-8 py-4 border-0 border-golden-500 text-black-600 hover:bg-slate-800 hover:text-black-200"
+                className="text-lg px-8 py-4 border-0 border-golden-500 text-black-600 hover:bg-slate-800 hover:text-white"
               >
                 Join Now
               </InteractiveHoverButton>
@@ -41,7 +41,7 @@ export function HeroSection() {
 
             <div className="flex items-center gap-8 pt-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-indigo-600">500+</div>
+                <div className="text-3xl font-bold text-indigo-600">4500+</div>
                 <div className="text-sm text-gray-600">Students Trained</div>
               </div>
               <div className="text-center">
@@ -56,10 +56,10 @@ export function HeroSection() {
           </div>
 
           <div className="relative">
-            <AuroraText text="Beauty Mastery Awaits" className="text-2xl md:text-3xl font-bold mb-6 text-center" />
+            {/* <AuroraText text="Beauty Mastery Awaits" className="text-2xl md:text-3xl font-bold mb-6 text-center" /> */}
             <div className="relative rounded-2xl overflow-hidden shadow-2xl">
               <Image
-                src="/placeholder.svg?height=600&width=500"
+                src="https://i.pinimg.com/736x/17/ca/e8/17cae895e1f4356f774df5548c404af0.jpg"
                 alt="Beauty training at BBMI"
                 width={500}
                 height={600}
