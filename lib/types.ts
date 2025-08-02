@@ -21,6 +21,9 @@ export interface Course {
   discount?: number | null //  NEW  – percentage (0-100)
   average_rating?: number | null //  Already stored by triggers, may be NULL
   students?: number | null //  Optional: populated by a VIEW or join
+  created_at?: string // 👈 Add this
+  updated_at?: string // (optional) if you use it later
+  
 }
 
 export interface Lesson {

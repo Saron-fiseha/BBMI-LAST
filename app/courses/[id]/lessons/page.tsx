@@ -911,6 +911,13 @@ export default function ModulesPage({
   }, [params, isAuthenticated, router]);
 
   const getYouTubeVideoId = (url: string): string => {
+    const trimmed = url.trim();
+
+    // If it's exactly 11 characters and matches YouTube video ID pattern, return as-is
+    if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
+      return trimmed;
+    }
+    // Else, try to extract from full or short YouTube URL
     const regex =
       /(?:youtube\.com\/(?:[^/\n\s]+\/\S+\/|(?:v|embed|shorts)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
     const match = url.match(regex);
@@ -1172,7 +1179,7 @@ export default function ModulesPage({
                       ) : (
                         <>
                           <Download className="h-4 w-4 mr-2" />
-                          View Certificate
+                          Download Certificate
                         </>
                       )}
                     </Button>
