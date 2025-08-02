@@ -7,6 +7,7 @@ const sql = neon(process.env.DATABASE_URL!)
 export const dynamic = "force-dynamic"
 
 // GET - Fetch instructors from users table with instructor role and real-time counts
+// route.ts - Updated GET handler
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -16,88 +17,44 @@ export async function GET(request: NextRequest) {
     const limit = Number.parseInt(searchParams.get("limit") || "10");
     const offset = (page - 1) * limit;
 
-    // Get total count using tagged template literal
-    let totalQuery = sql`
-      SELECT COUNT(DISTINCT u.id) as total
-      FROM users u
-      LEFT JOIN instructors i ON u.id = i.user_id
-      WHERE u.role = 'instructor'
-    `;
+    // First verify database connection
+    await sql`SELECT 1`;
+    console.log("✅ Database connection verified");
 
-    if (search && status !== "all") {
-      totalQuery = sql`
-        ${totalQuery}
-        AND (u.full_name ILIKE ${`%${search}%`} OR u.email ILIKE ${`%${search}%`})
-        AND COALESCE(i.status, 'active') = ${status}
-      `;
-    } else if (search) {
-      totalQuery = sql`
-        ${totalQuery}
-        AND (u.full_name ILIKE ${`%${search}%`} OR u.email ILIKE ${`%${search}%`})
-      `;
-    } else if (status !== "all") {
-      totalQuery = sql`
-        ${totalQuery}
-        AND COALESCE(i.status, 'active') = ${status}
-      `;
+    // Get total count
+    let totalQuery = sql`SELECT COUNT(*) as total FROM users WHERE role = 'instructor'`;
+    if (search) {
+      totalQuery = sql`${totalQuery} AND (full_name ILIKE ${`%${search}%`} OR email ILIKE ${`%${search}%`})`;
     }
-
     const totalResult = await totalQuery;
-    const total = Number.parseInt(totalResult[0].total);
+    const total = Number(totalResult[0]?.total) || 0;
     const totalPages = Math.ceil(total / limit);
 
-    // Main query using tagged template literal
-    let mainQuery = sql`
+    // Get instructors data
+    let query = sql`
       SELECT 
-        u.id as user_id,
-        u.full_name as name,
-        u.email,
-        u.phone,
-        u.created_at,
-        u.updated_at,
-        COALESCE(i.id, u.id) as id,
-        COALESCE(i.experience, 0) as experience,
-        COALESCE(i.status, 'active') as status,
-        COALESCE(i.specialization, '') as specialization,
-        COALESCE(i.trainings_count, 0) as courses_teaching,
-        COALESCE(i.students_count, 0) as total_students,
-        TO_CHAR(u.created_at, 'YYYY-MM-DD') as join_date,
-        COUNT(DISTINCT s.id) as upcoming_sessions
-      FROM users u
-      LEFT JOIN instructors i ON u.id = i.user_id
-      LEFT JOIN instructor_sessions s ON i.id = s.instructor_id 
-        AND s.session_date >= CURRENT_DATE 
-        AND s.status = 'scheduled'
-      WHERE u.role = 'instructor'
+        id as user_id,
+        full_name as name,
+        email,
+        phone,
+        'active' as status,
+        '' as specialization,
+        0 as experience,
+        0 as trainings_count,
+        0 as students_count,
+        TO_CHAR(created_at, 'YYYY-MM-DD') as join_date,
+        0 as upcoming_sessions
+      FROM users 
+      WHERE role = 'instructor'
     `;
 
-    if (search && status !== "all") {
-      mainQuery = sql`
-        ${mainQuery}
-        AND (u.full_name ILIKE ${`%${search}%`} OR u.email ILIKE ${`%${search}%`})
-        AND COALESCE(i.status, 'active') = ${status}
-      `;
-    } else if (search) {
-      mainQuery = sql`
-        ${mainQuery}
-        AND (u.full_name ILIKE ${`%${search}%`} OR u.email ILIKE ${`%${search}%`})
-      `;
-    } else if (status !== "all") {
-      mainQuery = sql`
-        ${mainQuery}
-        AND COALESCE(i.status, 'active') = ${status}
-      `;
+    if (search) {
+      query = sql`${query} AND (full_name ILIKE ${`%${search}%`} OR email ILIKE ${`%${search}%`})`;
     }
 
-    // Add pagination
-    mainQuery = sql`
-      ${mainQuery}
-      GROUP BY u.id, i.id, i.trainings_count, i.students_count, i.experience, i.status, i.specialization
-      ORDER BY u.created_at DESC
-      LIMIT ${limit} OFFSET ${offset}
-    `;
+    query = sql`${query} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
 
-    const instructors = await mainQuery;
+    const instructors = await query;
 
     return NextResponse.json({
       instructors,
@@ -111,8 +68,14 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("❌ Error fetching instructors:", error);
-    return NextResponse.json({ error: "Failed to fetch instructors" }, { status: 500 });
+    console.error("❌ Detailed error:", error);
+    return NextResponse.json(
+      { 
+        error: "Failed to fetch instructors",
+        details: error instanceof Error ? error.message : String(error)
+      }, 
+      { status: 500 }
+    );
   }
 }
 
@@ -139,7 +102,7 @@ export async function POST(request: NextRequest) {
     // Create instructor record linked to user
     const instructor = await sql`
       INSERT INTO instructors (
-        user_id, name, email, phone, specialization, experience, 
+        user_id, full_name, email, phone, specialization, experience, 
         status, password_hash, trainings_count, students_count,
         created_at, updated_at
       )
@@ -206,7 +169,7 @@ export async function PUT(request: NextRequest) {
     if (passwordHash) {
       instructor = await sql`
         UPDATE instructors 
-        SET name = ${name}, email = ${email}, phone = ${phone}, specialization = ${specialization}, 
+        SET full_name = ${name}, email = ${email}, phone = ${phone}, specialization = ${specialization}, 
             experience = ${experience}, status = ${status}, password_hash = ${passwordHash}, 
             updated_at = CURRENT_TIMESTAMP
         WHERE id = ${id}
@@ -215,7 +178,7 @@ export async function PUT(request: NextRequest) {
     } else {
       instructor = await sql`
         UPDATE instructors 
-        SET name = ${name}, email = ${email}, phone = ${phone}, specialization = ${specialization}, 
+        SET full_name = ${name}, email = ${email}, phone = ${phone}, specialization = ${specialization}, 
             experience = ${experience}, status = ${status}, updated_at = CURRENT_TIMESTAMP
         WHERE id = ${id}
         RETURNING *

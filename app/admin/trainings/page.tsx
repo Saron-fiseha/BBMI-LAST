@@ -84,6 +84,9 @@ export default function TrainingsPage() {
     hasPrev: false,
   })
 
+  const [uploadingFile, setUploadingFile] = useState(false)
+  const [uploadingEditFile, setUploadingEditFile] = useState(false)
+
   const [newTraining, setNewTraining] = useState({
     name: "",
     description: "",
@@ -250,7 +253,6 @@ export default function TrainingsPage() {
   } catch (error) {
     console.error("❌ Network error fetching instructors:", error);
     setInstructors([]); // Fallback to empty array
-    // Consider adding user feedback here (toast, alert, etc.)
   }
 };
 
@@ -291,6 +293,61 @@ export default function TrainingsPage() {
     fetchCategories()
     fetchInstructors()
   }, [searchParams])
+
+  const handleFileUpload = async (file: File, isEdit = false) => {
+    try {
+      if (isEdit) {
+        setUploadingEditFile(true)
+      } else {
+        setUploadingFile(true)
+      }
+
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const response = await fetch("/api/admin/trainings/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to upload file")
+      }
+
+      if (isEdit && editingTraining) {
+        setEditingTraining({
+          ...editingTraining,
+          image_url: data.filePath,
+        })
+      } else {
+        setNewTraining({
+          ...newTraining,
+          image_url: data.filePath,
+        })
+      }
+
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully",
+      })
+    } catch (error) {
+      console.error("Error uploading file:", error)
+      const errorMessage = error instanceof Error ? error.message : "Failed to upload file"
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      })
+    } finally {
+      if (isEdit) {
+        setUploadingEditFile(false)
+      } else {
+        setUploadingFile(false)
+      }
+    }
+  }
 
   const handleCreateTraining = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -1037,14 +1094,65 @@ export default function TrainingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-charcoal mb-1">Image URL</label>
-                  <Input
-                    value={newTraining.image_url}
-                    onChange={(e) => setNewTraining({ ...newTraining, image_url: e.target.value })}
-                    placeholder="Enter image URL"
-                    className="border-mustard/20 focus:border-mustard"
-                    disabled={submitting}
-                  />
+                  <label className="block text-sm font-medium text-charcoal mb-1">Training Image</label>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="file"
+                        id="file-upload"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            handleFileUpload(file)
+                          }
+                        }}
+                        className="hidden"
+                        disabled={submitting || uploadingFile}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById("file-upload")?.click()}
+                        disabled={submitting || uploadingFile}
+                        className="border-mustard/20 text-mustard hover:bg-mustard hover:text-ivory"
+                      >
+                        {uploadingFile ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Upload Image
+                          </>
+                        )}
+                      </Button>
+                      <span className="text-sm text-deep-purple">Images only (Max 10MB)</span>
+                    </div>
+
+                    {newTraining.image_url && (
+                      <div className="relative w-32 h-32 border border-mustard/20 rounded-md overflow-hidden">
+                        <Image
+                          src={newTraining.image_url || "/placeholder.svg"}
+                          alt="Preview"
+                          fill
+                          className="object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setNewTraining({ ...newTraining, image_url: "" })}
+                          className="absolute top-1 right-1 h-6 w-6 p-0 bg-white/80 hover:bg-white"
+                          disabled={submitting}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -1259,15 +1367,66 @@ export default function TrainingsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-charcoal mb-1">Image URL</label>
-                    <Input
-                      value={editingTraining.image_url}
-                      onChange={(e) => setEditingTraining({ ...editingTraining, image_url: e.target.value })}
-                      placeholder="Enter image URL"
-                      className="border-mustard/20 focus:border-mustard"
-                      disabled={submitting}
-                    />
+                  <label className="block text-sm font-medium text-charcoal mb-1">Training Image</label>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="file"
+                        id="file-upload-edit"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            handleFileUpload(file, true)
+                          }
+                        }}
+                        className="hidden"
+                        disabled={submitting || uploadingEditFile}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById("file-upload-edit")?.click()}
+                        disabled={submitting || uploadingEditFile}
+                        className="border-mustard/20 text-mustard hover:bg-mustard hover:text-ivory"
+                      >
+                        {uploadingEditFile ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Upload New Image
+                          </>
+                        )}
+                      </Button>
+                      <span className="text-sm text-deep-purple">Images only (Max 10MB)</span>
+                    </div>
+
+                    {editingTraining.image_url && (
+                      <div className="relative w-32 h-32 border border-mustard/20 rounded-md overflow-hidden">
+                        <Image
+                          src={editingTraining.image_url || "/placeholder.svg"}
+                          alt="Preview"
+                          fill
+                          className="object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingTraining({ ...editingTraining, image_url: "" })}
+                          className="absolute top-1 right-1 h-6 w-6 p-0 bg-white/80 hover:bg-white"
+                          disabled={submitting}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
+                </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>

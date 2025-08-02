@@ -52,7 +52,7 @@ export default function AboutPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
                 <TextAnimate
-                  text="About Glamour Academy"
+                  text="About BBMI Academy"
                   className="text-4xl md:text-5xl font-bold mb-6"
                 />
                 <TextAnimate
@@ -76,7 +76,7 @@ export default function AboutPage() {
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-pink-300 to-purple-300 dark:from-pink-900 dark:to-purple-900 opacity-20 rounded-lg"></div>
                 <img
-                  src="/placeholder.svg?height=400&width=600"
+                  src="/about.jpg"
                   alt="Glamour Academy campus"
                   className="rounded-lg w-full h-auto relative z-10"
                 />
@@ -92,36 +92,36 @@ export default function AboutPage() {
               <div className="max-w-3xl mx-auto text-center mb-12">
                 <TextAnimate text="Our Story" className="text-3xl font-bold mb-4" />
                 <TextAnimate
-                  text="Founded in 2015, Glamour Academy began with a simple mission: to provide accessible, high-quality education for aspiring beauty professionals."
+                  text="Founded by Betelhem Eskinder in 2019 as a beauty salon, Brushed By Betty Makeup Academy began with a simple mission: to deliver world-class beauty education through hands-on training, expert instructors, and a curriculum aligned with the latest trends and best practices in the global beauty industry."
                   className="text-muted-foreground"
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div>
                   <TextAnimate
-                    className="mb-4"
-                    text="What started as a small training center with just two instructors has grown into a comprehensive beauty education platform with over 25 specialized courses and more than 5,000 graduates worldwide."
+                    className="mb-2"
+                    text="BBMI Makeup Academy is a premier beauty training institution specializing in professional courses for makeup, nail care, and eyelash extensions. Founded by Betelhem Eskinder in 2019 as a beauty salon."
                   />
                   <TextAnimate
-                    className="mb-4"
-                    text="Our founder, Jennifer Wilson, recognized a gap in the beauty education market – most programs were either prohibitively expensive or lacked the practical, hands-on training needed to succeed in the industry."
+                    className="mb-2"
+                    text="It was officially licensed in 2021 by the Addis Ababa City Administration Education and Training Quality Regulation Authority (ETQRA) as Brushed by Betty Makeup Institution Starting with just sixteen students, the academy has grown significantly and now has the capacity to train over 300 students per session."
                   />
                   <TextAnimate
-                    text="Today, Glamour Academy combines the flexibility of online learning with intensive practical training, ensuring our students graduate with both the knowledge and skills needed to excel in their beauty careers."
+                    text="BBMI Makeup Academy is dedicated to empowering individuals with technical skills and entrepreneurial knowledge to succeed in the rapidly growing beauty industry. Our training programs are designed to meet both local and international beauty standards, fostering a new generation of qualified beauty professionals."
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-muted p-6 rounded-lg text-center transition-transform duration-300 hover:-translate-y-2">
-                    <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-primary/20 text-primary mb-4">
+                    <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-primary/20 text-amber-600 mb-4">
                       <Users className="h-6 w-6" />
                     </div>
                     <h3 className="text-2xl font-bold mb-2">
-                      <NumberTicker value={5000} />+
+                      <NumberTicker value={4500} />+
                     </h3>
                     <p className="text-muted-foreground">Graduates</p>
                   </div>
                   <div className="bg-muted p-6 rounded-lg text-center transition-transform duration-300 hover:-translate-y-2">
-                    <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-primary/20 text-primary mb-4">
+                    <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-primary/20 text-amber-600 mb-4">
                       <BookOpen className="h-6 w-6" />
                     </div>
                     <h3 className="text-2xl font-bold mb-2">
@@ -130,7 +130,7 @@ export default function AboutPage() {
                     <p className="text-muted-foreground">Courses</p>
                   </div>
                   <div className="bg-muted p-6 rounded-lg text-center transition-transform duration-300 hover:-translate-y-2">
-                    <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-primary/20 text-primary mb-4">
+                    <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-primary/20 text-amber-600 mb-4">
                       <Award className="h-6 w-6" />
                     </div>
                     <h3 className="text-2xl font-bold mb-2">
@@ -139,7 +139,7 @@ export default function AboutPage() {
                     <p className="text-muted-foreground">Industry Awards</p>
                   </div>
                   <div className="bg-muted p-6 rounded-lg text-center transition-transform duration-300 hover:-translate-y-2">
-                    <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-primary/20 text-primary mb-4">
+                    <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-primary/20 text-amber-600 mb-4">
                       <Clock className="h-6 w-6" />
                     </div>
                     <h3 className="text-2xl font-bold mb-2">
@@ -167,7 +167,7 @@ export default function AboutPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <Card className="transition-transform duration-300 hover:-translate-y-2">
                   <CardContent className="pt-6">
-                    <div className="mb-4 h-12 w-12 flex items-center justify-center rounded-full bg-primary/20 text-primary">
+                    <div className="mb-4 h-12 w-12 flex items-center justify-center rounded-full bg-primary/20 text-amber-600">
                       <Award className="h-6 w-6" />
                     </div>
                     <TextAnimate text="Excellence" className="text-xl font-bold mb-2" />
@@ -179,7 +179,7 @@ export default function AboutPage() {
                 </Card>
                 <Card className="transition-transform duration-300 hover:-translate-y-2">
                   <CardContent className="pt-6">
-                    <div className="mb-4 h-12 w-12 flex items-center justify-center rounded-full bg-primary/20 text-primary">
+                    <div className="mb-4 h-12 w-12 flex items-center justify-center rounded-full bg-primary/20 text-amber-600">
                       <Users className="h-6 w-6" />
                     </div>
                     <TextAnimate text="Inclusivity" className="text-xl font-bold mb-2" />
@@ -191,7 +191,7 @@ export default function AboutPage() {
                 </Card>
                 <Card className="transition-transform duration-300 hover:-translate-y-2">
                   <CardContent className="pt-6">
-                    <div className="mb-4 h-12 w-12 flex items-center justify-center rounded-full bg-primary/20 text-primary">
+                    <div className="mb-4 h-12 w-12 flex items-center justify-center rounded-full bg-primary/20 text-amber-600">
                       <CheckCircle className="h-6 w-6" />
                     </div>
                     <TextAnimate text="Integrity" className="text-xl font-bold mb-2" />
@@ -261,7 +261,7 @@ export default function AboutPage() {
                   href="/register"
                   variant="outline"
                   size="lg"
-                  className="border-white text-white hover:bg-white hover:text-black"
+                  className="border-white text-black hover:bg-white hover:text-black"
                 >
                   Register Now
                 </InteractiveHoverButton>

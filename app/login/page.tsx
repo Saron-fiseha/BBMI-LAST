@@ -171,7 +171,6 @@ import { Loader2, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-
 export default function LoginPage() {
   const { login } = useAuth();
   const [formData, setFormData] = useState({
@@ -181,7 +180,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -206,7 +204,6 @@ export default function LoginPage() {
       [e.target.name]: e.target.value,
     });
   };
-
   // const fillDemoCredentials = (role: "admin" | "instructor" | "student") => {
   //   const credentials = {
   //     admin: { email: "admin@bbmi.com", password: "Admin123!" },
@@ -237,7 +234,6 @@ export default function LoginPage() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-
               {/* Demo Credentials
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Demo Accounts:</Label>
@@ -253,7 +249,6 @@ export default function LoginPage() {
                   </Button>
                 </>
               </div> */}
-
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -303,7 +298,6 @@ export default function LoginPage() {
                   Forgot password?
                 </Link>
               </div>
-
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? (
                   <>
@@ -314,7 +308,6 @@ export default function LoginPage() {
                   "Sign In"
                 )}
               </Button>
-
               <div className="text-center text-sm">
                 Don't have an account?{" "}
                 <Link href="/register" className="text-mustard hover:underline">

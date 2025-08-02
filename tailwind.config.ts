@@ -26,6 +26,9 @@ const config: Config = {
     },
     extend: {
       colors: {
+         'milk-cream': '#FFFEF2',
+        'soft-cream': '#FFF9E6',
+        'warm-brown': '#5C4033',
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

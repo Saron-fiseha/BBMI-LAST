@@ -76,6 +76,7 @@ export function FeaturedCourses() {
     fetchCourses();
   }, []);
 
+  // --- Loading and Error states remain the same ---
   if (loading) {
     return (
       <section className="py-20 bg-gray-50 flex justify-center items-center min-h-[400px]">

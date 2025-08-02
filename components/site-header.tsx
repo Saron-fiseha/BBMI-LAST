@@ -75,6 +75,13 @@ export function SiteHeader() {
           >
             About
           </Link>
+          {/* New Portfolio Link */}
+          <Link
+            href="/portfolio"
+            className="text-charcoal hover:text-amber-600 transition-colors"
+          >
+            Portfolio
+          </Link>
           <Link
             href="/contact"
             className="text-charcoal hover:text-amber-600 transition-colors"
@@ -210,6 +217,14 @@ export function SiteHeader() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 About
+              </Link>
+              {/* New Portfolio Link */}
+              <Link
+                href="/portfolio"
+                className="text-charcoal hover:text-amber-600 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Portfolio
               </Link>
               <Link
                 href="/contact"

@@ -3,6 +3,7 @@ import { FeaturedCourses } from "@/components/featured-courses"
 import { StatsSection } from "@/components/stats-section"
 import { TrustedPartners } from "@/components/trusted-partners" 
 import { Testimonials } from "@/components/testimonials"
+import FAQSection from "@/components/faq-section"
 import { CTASection } from "@/components/cta-section"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
@@ -21,6 +22,7 @@ export default function HomePage() {
          <TrustedPartners />
          <StatsSection />
          <Testimonials />
+        <FAQSection />
          <CTASection />
        </main>
        <SiteFooter />
