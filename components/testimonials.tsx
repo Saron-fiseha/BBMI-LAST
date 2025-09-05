@@ -66,7 +66,7 @@ export function Testimonials() {
             <CardContent className="p-8">
               <div className="flex items-center mb-4">
                 {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-amber-700 text-amber-700" />
+                  <Star key={i} className="w-5 h-5 fill-custom-tan text-custom-tan" />
                 ))}
               </div>
 
@@ -75,7 +75,7 @@ export function Testimonials() {
               </blockquote>
 
               <div className="flex items-center">
-                <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4 ring-4 ring-amber-700">
+                <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4 ring-4 ring-custom-tan">
                   <Image
                     src={testimonial.image || "/placeholder.svg"}
                     alt={testimonial.name}
@@ -88,7 +88,7 @@ export function Testimonials() {
                   <h4 className="font-semibold text-gray-900 text-lg">
                     <AnimatedGradientText text={testimonial.name} />
                   </h4>
-                  <p className="text-amber-700 font-medium">
+                  <p className="text-custom-tan font-medium">
                     {testimonial.role}
                   </p>
                 </div>

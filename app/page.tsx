@@ -9,6 +9,9 @@ import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 
 import { PersistentAuthWrapper } from "@/components/persistent-auth-wrapper"
+import { AuthorSection } from "@/components/AuthorSection"
+import { VideoBanner } from "@/components/VideoBanner"
+import { AnnouncementsSection } from "@/components/AnnouncementsSection"
 
 export default function HomePage() {
   return (
@@ -18,9 +21,12 @@ export default function HomePage() {
        <SiteHeader />
        <main className="flex-1">
          <HeroSection />
+         <AuthorSection />
          <FeaturedCourses />
-         <TrustedPartners />
+         <VideoBanner />
+         {/* <TrustedPartners /> */}
          <StatsSection />
+        <AnnouncementsSection />
          <Testimonials />
         <FAQSection />
          <CTASection />

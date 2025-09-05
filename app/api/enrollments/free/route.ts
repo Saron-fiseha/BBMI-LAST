@@ -2,6 +2,10 @@
 // import { sql } from "@/lib/db"
 // import { getUserFromToken } from "@/lib/auth"
 
+// import { type NextRequest, NextResponse } from "next/server"
+// import { sql } from "@/lib/db"
+// import { getUserFromToken } from "@/lib/auth"
+
 // export async function POST(request: NextRequest) {
 //   try {
 //     // Get user from token
@@ -243,12 +247,14 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { getUserFromToken } from "@/lib/auth";
+import { createEnrollmentNotification } from "@/lib/notification-service"
+
 
 export async function POST(request: NextRequest) {
   try {
     // --- Get user from token ---
     const authHeader = request.headers.get("authorization");
-    const token = authHeader?.replace(/^Bearer\s+/i, "") || "";
+    const token = (authHeader?.replace(/^Bearer\s+/i, "") || "").trim();
     const user = await getUserFromToken(token);
     if (!user) {
       return NextResponse.json(
@@ -297,9 +303,12 @@ export async function POST(request: NextRequest) {
     let alreadyEnrolled = false;
     const now = new Date();
 
+      // --- THE FIX: Create a notification after all database operations are successful ---
+    await createEnrollmentNotification(user.id, trainingData.id, trainingData.name);
+    
     if (existingEnrollments.length > 0) {
       enrollment = existingEnrollments[0];
-      if (enrollment.access_expires_at < now) {
+      if (new Date(enrollment.access_expires_at) < now) {
         // Expired → extend access
         const updated = await sql`
           UPDATE enrollments
@@ -384,3 +393,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

@@ -2,7 +2,7 @@
 
 import { NumberTicker } from "@/components/magicui/number-ticker"
 import { FlipText } from "@/components/magicui/flip-text"
-import { AnimatedShinyText } from "@/components/magicui/animated-shiny-text"
+// Removed the import for AnimatedShinyText
 import { Users, Award, BookOpen, TrendingUp } from "lucide-react"
 
 const stats = [
@@ -34,14 +34,14 @@ const stats = [
 
 export function StatsSection() {
   return (
-    <section className="py-20 bg-gradient-to-br from-pink-50 via-white to-purple-50 text-black">
+    <section className="py-20 bg-[#F5F1E9] text-black">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <FlipText text="Why Choose BBMI?" className="text-4xl md:text-5xl font-bold mb-4" />
-          <AnimatedShinyText
-            text="Join thousands of successful beauty professionals who started their journey with us"
-            className="text-lg text-black-500 max-w-2xl mx-auto"
-          />
+          {/* Replaced AnimatedShinyText with a standard <p> tag */}
+          <p className="text-lg text-black-500 max-w-2xl mx-auto">
+            Join thousands of successful beauty professionals who started their journey with us
+          </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -50,7 +50,7 @@ export function StatsSection() {
             return (
               <div key={index} className="text-center group">
                 <div className="mb-4 flex justify-center">
-                  <div className="p-4 bg-rose-300 rounded-full group-hover:bg-rose-300 transition-colors duration-300">
+                  <div className="p-4 bg-gradient-to-r from-custom-copper to-custom-tan rounded-full group-hover:bg-gradient-to-r from-custom-copper to-custom-tan transition-colors duration-300">
                     <IconComponent className="w-8 h-8 text-grey-500" />
                   </div>
                 </div>
@@ -63,12 +63,14 @@ export function StatsSection() {
                   {stat.label.includes("Courses") && <span className="text-4xl md:text-5xl font-bold">+</span>}
                 </div>
 
-                <h3 className="text-xl font-semibold mb-2 text-grey-200">
-                  <AnimatedShinyText text={stat.label} />
+                {/* Removed AnimatedShinyText wrapper from the label */}
+                <h3 className="text-xl font-semibold mb-2 text-custom-tan">
+                  {stat.label}
                 </h3>
 
-                <p className="text-grey-100 text-sm">
-                  <AnimatedShinyText text={stat.description} />
+                {/* Removed AnimatedShinyText wrapper from the description */}
+                <p className="text-custom-tan text-sm">
+                  {stat.description}
                 </p>
               </div>
             )

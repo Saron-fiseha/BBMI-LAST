@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { useToast } from "@/components/ui/use-toast"
-import { MapPin, Phone, Mail, Clock, ChevronDown, ChevronUp, Loader2 } from "lucide-react"
+import { MapPin, Phone, Mail, ChevronDown, ChevronUp, Loader2, Share2, Instagram, Youtube, Facebook } from "lucide-react"
 import { BlurFade } from "@/components/magicui/blur-fade"
 import { AnimatedShinyText } from "@/components/magicui/animated-shiny-text"
 import { AnimatedGradientText } from "@/components/magicui/animated-gradient-text"
@@ -61,6 +61,12 @@ const faqs = [
       "Yes, we offer special pricing for groups of 5 or more students. Contact us directly to discuss group enrollment options and pricing.",
   },
 ]
+
+const TikTokIcon = (props: React.ComponentProps<"svg">) => (
+  <svg {...props} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
+  </svg>
+)
 
 
 export default function ContactPage() {
@@ -124,11 +130,11 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-pink-50 via-white to-purple-50 text-ivory">
+    <div className="flex min-h-screen flex-col bg-[#F5F1E9] text-ivory">
       <SiteHeader />
       <main className="flex-1">
         {/* Hero Section */}
-        <div className="bg-white py-12">
+        <div className="bg-[#F5F1E9] py-12">
           <div className="container">
             <div className="text-center">
               <h1 className="text-4xl font-bold mb-4 text-black">Contact Us</h1>
@@ -140,12 +146,12 @@ export default function ContactPage() {
         </div>
 
         {/* Contact Information */}
-        <div className="container py-12 bg-gradient-to-br from-pink-50 via-white to-purple-50">
+        <div className="container py-12 bg-[#F5F1E9]">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             <BlurFade delay={0.1}>
               <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
                 <CardContent className="p-6 text-center">
-                  <MapPin className="h-8 w-8 mx-auto mb-4 text-mustard" />
+                  <MapPin className="h-8 w-8 mx-auto mb-4 text-custom-khaki" />
                   <h3 className="font-bold mb-2 text-charcoal">
                     Address
                   </h3>
@@ -161,7 +167,7 @@ export default function ContactPage() {
             <BlurFade delay={0.2}>
               <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
                 <CardContent className="p-6 text-center">
-                  <Phone className="h-8 w-8 mx-auto mb-4 text-mustard" />
+                  <Phone className="h-8 w-8 mx-auto mb-4 text-custom-khaki" />
                   <h3 className="font-bold mb-2 text-charcoal">
                     Phone
                   </h3>
@@ -178,32 +184,65 @@ export default function ContactPage() {
               </Card>
             </BlurFade>
             <BlurFade delay={0.3}>
-              <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-                <CardContent className="p-6 text-center">
-                  <Mail className="h-8 w-8 mx-auto mb-4 text-mustard" />
-                  <h3 className="font-bold mb-2 text-charcoal">
-                   Email
-                  </h3>
-                  <p className="text-gray-700 mt-8">
-                   brushedbybetty@gmail.com
-                  </p>
-                </CardContent>
-              </Card>
-            </BlurFade>
+  <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+    <CardContent className="p-6 text-center">
+      <Mail className="h-8 w-8 mx-auto mb-4 text-custom-khaki" />
+      <h3 className="font-bold mb-2 text-charcoal">
+        Email
+      </h3>
+      {/* --- THE FIX --- */}
+      {/* Wrapped the email address in an <a> tag with a mailto: link */}
+      <a 
+        href="mailto:brushedbybetty@gmail.com" 
+        className="text-gray-700 mt-8 inline-block hover:text-custom-copper hover:underline transition-colors"
+      >
+        brushedbybetty@gmail.com
+      </a>
+    </CardContent>
+  </Card>
+</BlurFade>
             <BlurFade delay={0.4}>
-              <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-                <CardContent className="p-6 text-center">
-                  <Clock className="h-8 w-8 mx-auto mb-4 text-mustard" />
-                  <h3 className="font-bold mb-2 text-charcoal">
-                  Hours
-                  </h3>
-                  <div className="text-gray-700 mt-5">
-                    <p> Mon-Fri: 9AM-6Pr </p>
-                    <p> Sat-Sun: 10AM-4PM </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </BlurFade>
+  <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+    <CardContent className="p-6 text-center">
+      <Share2 className="h-8 w-8 mx-auto mb-4 text-custom-khaki" />
+      <h3 className="font-bold mb-6 text-charcoal">
+        Follow Us
+      </h3>
+      {/* --- THE FIX --- */}
+      {/* 
+        This div is now the main container for the links.
+        - `flex flex-col`: Creates a vertical stack.
+        - `items-start`: Aligns all links to the left edge of the container.
+        - `w-fit mx-auto`: Makes the container only as wide as its content and centers it.
+        - `space-y-4`: Adds consistent vertical spacing between each link.
+      */}
+      <div className="flex flex-col items-start w-fit mx-auto space-y-4 text-gray-700">
+        
+        {/* Each link is now a flex container for perfect icon-text alignment */}
+        <a href="#" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-custom-copper transition-colors">
+          <Facebook className="h-5 w-5" />
+          <span className="font-medium">Facebook</span>
+        </a>
+        
+        <a href="https://www.instagram.com/brushedbybetty?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDcОMzIxNw==" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-custom-copper transition-colors">
+          <Instagram className="h-5 w-5" />
+          <span className="font-medium">Instagram</span>
+        </a>
+        
+        <a href="https://youtube.com/@brushedbybetty?si=KkLOHRhAI7xoyUzE" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-custom-copper transition-colors">
+          <Youtube className="h-5 w-5" />
+          <span className="font-medium">YouTube</span>
+        </a>
+        
+        <a href="https://vm.tiktok.com/ZMSTy5jY2/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-custom-copper transition-colors">
+          <TikTokIcon className="h-5 w-5" />
+          <span className="font-medium">TikTok</span>
+        </a>
+        
+      </div>
+    </CardContent>
+  </Card>
+</BlurFade>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -212,7 +251,7 @@ export default function ContactPage() {
               <ShineBorder className="w-full">
                 <Card className="w-full border-0 shadow-xl bg-white/80 backdrop-blur-sm">
                   <CardHeader className="space-y-1 text-center">
-                    <CardTitle className="text-3xl font-bold bg-gradient-to-r from-amber-600 via-amber-700 to-amber-900 bg-clip-text text-transparent">
+                    <CardTitle className="text-3xl font-bold bg-custom-tan bg-clip-text text-transparent">
                       Send us a Message
                     </CardTitle>
                     <CardDescription className="text-gray-600">
@@ -232,7 +271,7 @@ export default function ContactPage() {
                             value={formData.name}
                             onChange={handleChange}
                             required
-                            className="border-pink-200 focus:border-pink-500"
+                            className="border-custom-browny focus:border-warm-rose"
                           />
                         </div>
                         <div className="space-y-2">
@@ -246,7 +285,7 @@ export default function ContactPage() {
                             value={formData.email}
                             onChange={handleChange}
                             required
-                            className="border-pink-200 focus:border-pink-500"
+                            className="border-custom-browny focus:border-warm-rose"
                           />
                         </div>
                       </div>
@@ -260,7 +299,7 @@ export default function ContactPage() {
                           value={formData.subject}
                           onChange={handleChange}
                           required
-                          className="border-pink-200 focus:border-pink-500"
+                          className="border-custom-browny focus:border-warm-rose"
                         />
                       </div>
                       <div className="space-y-2">
@@ -274,12 +313,12 @@ export default function ContactPage() {
                           value={formData.message}
                           onChange={handleChange}
                           required
-                          className="border-pink-200 focus:border-pink-500"
+                          className="border-custom-browny focus:border-warm-rose"
                         />
                       </div>
                       <Button
                         type="submit"
-                        className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white"
+                        className="w-full bg-gradient-to-r from-custom-copper to-custom-tan hover:bg-warm-brown text-white"
                         disabled={isSubmitting}
                       >
                         {isSubmitting ? (
@@ -301,7 +340,7 @@ export default function ContactPage() {
             <div>
               <Card className="h-full border-0 shadow-xl bg-white/80 backdrop-blur-sm">
                 <CardHeader className="space-y-1 text-center">
-                  <CardTitle className="text-3xl font-bold bg-gradient-to-r from-amber-600 via-amber-700 to-amber-900 bg-clip-text text-transparent">
+                  <CardTitle className="text-3xl font-bold bg-custom-tan bg-clip-text text-transparent">
                     Frequently Asked Questions
                   </CardTitle>
                   <CardDescription className="text-gray-600">
@@ -313,12 +352,12 @@ export default function ContactPage() {
                     {faqs.map((faq, index) => (
                       <BlurFade key={index} delay={index * 0.1}>
                         <Collapsible open={openFaq === index} onOpenChange={() => toggleFaq(index)}>
-                          <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-4 text-left hover:bg-muted/50 border-mustard text-charcoal">
+                          <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-4 text-left hover:bg-muted/50 border-custom-browny text-charcoal">
                             <span className="font-medium">{faq.question}</span>
                             {openFaq === index ? (
-                              <ChevronUp className="h-4 w-4 text-mustard" />
+                              <ChevronUp className="h-4 w-4 text-custom-browny" />
                             ) : (
-                              <ChevronDown className="h-4 w-4 text-mustard" />
+                              <ChevronDown className="h-4 w-4 text-custom-browny" />
                             )}
                           </CollapsibleTrigger>
                           <CollapsibleContent className="px-4 pb-4 text-gray-700">

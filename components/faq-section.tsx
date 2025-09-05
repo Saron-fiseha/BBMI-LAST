@@ -21,36 +21,36 @@ const BlurFade = ({ children, delay = 0 }: { children: React.ReactNode; delay?: 
 
 const faqs = [
   {
-    question: "What courses do you offer?",
+    question: "What courses do you offer at BBMI?",
     answer:
-      "We offer a wide range of courses including web development, mobile app development, data science, machine learning, and digital marketing. All our courses are designed by industry experts and updated regularly to match current market demands.",
+      "BBMI offers a comprehensive range of courses including Professional Makeup Artistry, Skincare Fundamentals, Bridal & Editorial Makeup, Special Effects (SFX) Makeup, and Nail Technology. All our programs are designed by leading industry experts to meet the latest beauty trends and professional standards.",
   },
   {
     question: "How long are the courses?",
     answer:
-      "Course duration varies depending on the subject and depth of content. Most of our courses range from 4-12 weeks, with flexible scheduling options including part-time and full-time tracks to accommodate different learning preferences.",
+      "Course duration varies based on the program's intensity. Our intensive certification programs typically range from 4 to 12 weeks, while specialized workshops may be a few days. We offer flexible scheduling with both full-time weekday and part-time weekend classes to fit your lifestyle.",
   },
   {
-    question: "Do you provide certificates?",
+    question: "Do you provide certificates upon completion?",
     answer:
-      "Yes, we provide industry-recognized certificates upon successful completion of each course. Our certificates are valued by employers and can help boost your career prospects in the tech industry.",
+      "Yes, upon successful completion of any of our certification programs, BBMI provides an industry-recognized certificate. Our qualifications are highly respected and can help you launch or advance your career as a professional in the beauty industry.",
   },
   {
-    question: "What is your refund policy?",
+    question: "What is your enrollment and refund policy?",
     answer:
-      "We offer a 30-day money-back guarantee for all our courses. If you're not satisfied with the course content or teaching quality within the first 30 days, you can request a full refund with no questions asked.",
+      "To enroll, a registration fee is required to secure your spot. Our refund policy is detailed in the enrollment agreement, but generally, a partial refund can be requested before the second week of class begins. The registration fee is non-refundable.",
   },
   {
-    question: "Do you offer job placement assistance?",
+    question: "Do you offer career or job placement support?",
     answer:
-      "We provide comprehensive job placement assistance including resume building, interview preparation, portfolio development, and direct connections with our hiring partners. Our career support team works with you until you land your dream job.",
+      "Absolutely. We are committed to our students' success beyond the classroom. BBMI offers extensive career support, including professional portfolio development, interview coaching, and networking opportunities with our industry partners, which include top salons, beauty brands, and media production houses.",
   },
   {
-    question: "Can I access course materials after completion?",
+    question: "Will I have access to course materials after I graduate?",
     answer:
-      "Yes, you get lifetime access to all course materials, including video lectures, assignments, and resources. You can revisit the content anytime and also receive updates when we add new materials to the course.",
+      "Yes, all BBMI graduates receive 1 year access to our online student portal. This includes all course notes, video tutorials, and resource lists. You can refresh your skills anytime and will also get updates on new techniques and materials.",
   },
-]
+];
 
 export default function FAQSection() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
@@ -75,7 +75,7 @@ export default function FAQSection() {
             {faqs.map((faq, index) => (
               <BlurFade key={index} delay={index * 0.1}>
                 <Collapsible open={openFaq === index} onOpenChange={() => toggleFaq(index)}>
-                  <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-4 text-left hover:bg-muted/50 border-mustard text-charcoal mb-3">
+                  <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-4 text-left hover:bg-muted/50 border-custom-copper text-charcoal mb-3">
                     <span className="font-medium">{faq.question}</span>
                     {openFaq === index ? (
                       <ChevronUp className="h-4 w-4 text-mustard" />

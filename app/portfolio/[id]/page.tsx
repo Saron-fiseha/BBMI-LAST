@@ -150,7 +150,7 @@ export default function PortfolioDetailPage() {
           <div className="flex justify-end mb-6">
              <Button
                 onClick={() => router.push("/portfolio")}
-                className="bg-amber-500 hover:bg-amber-600 text-white"
+                className="bg-gradient-to-r from-custom-copper to-custom-tan hover:bg-warm-brown"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Portfolio
@@ -178,26 +178,26 @@ export default function PortfolioDetailPage() {
     <div className="min-h-screen bg-white">
         <SiteHeader />
         {/* --- Start of Corrected Header --- */}
-        <div className="bg-gradient-to-r from-milk-cream to-soft-cream text-warm-brown">
+        <div className="bg-[#F5F1E9] text-warm-brown">
             <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-start mb-4">
                 {/* Title now on the left */}
                 <h1 className="text-3xl md:text-5xl font-bold">{portfolioItem.title}</h1>
                 {/* Button moved to the right */}
-                <Button
+                {/* <Button
                     onClick={() => router.push("/portfolio")}
-                    className="bg-mustard-500 hover:bg-amber-600 text-white flex-shrink-0"
+                    className="bg-gradient-to-r from-custom-copper to-custom-tan hover:bg-warm-brown text-white flex-shrink-0"
                 >
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to Portfolio
-                </Button>
+                </Button> */}
             </div>
 
             {/* Meta-info (Category, Featured, Date) now below the title */}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                 <Badge className={getCategoryColor(portfolioItem.category)}>{portfolioItem.category}</Badge>
                 {portfolioItem.featured && (
-                <div className="bg-mustard text-ivory px-2 py-1 rounded-full flex items-center text-sm font-medium">
+                <div className="bg-gradient-to-r from-custom-copper to-custom-tan hover:bg-warm-brown text-white px-2 py-1 rounded-full flex items-center text-sm font-medium">
                     <Star className="h-4 w-4 mr-1.5 fill-current" />
                     Featured
                 </div>
@@ -255,7 +255,7 @@ export default function PortfolioDetailPage() {
             {/* Description */}
             <div className="bg-white rounded-lg shadow-lg p-6 border border-mustard/10">
               <h2 className="text-xl font-bold text-charcoal mb-4">Description</h2>
-              <p className="text-deep-purple leading-relaxed whitespace-pre-wrap">{portfolioItem.description}</p>
+              <p className="text-warm-brown leading-relaxed whitespace-pre-wrap">{portfolioItem.description}</p>
             </div>
 
             {/* Share Section */}
@@ -267,7 +267,7 @@ export default function PortfolioDetailPage() {
               <div className="grid grid-cols-2 gap-3">
                 <Button
                   onClick={() => handleShare("facebook")}
-                  className="bg-[#1877F2] hover:bg-[#1877F2]/90 text-white"
+                  className="bg-custom-browny hover:bg-custom-browny/90 text-white"
                   size="sm"
                 >
                   <Facebook className="h-4 w-4 mr-2" />
@@ -275,7 +275,7 @@ export default function PortfolioDetailPage() {
                 </Button>
                 <Button
                   onClick={() => handleShare("twitter")}
-                  className="bg-[#1DA1F2] hover:bg-[#1DA1F2]/90 text-white"
+                  className="bg-custom-lavender hover:bg-custom-lavender/90 text-white"
                   size="sm"
                 >
                   <Twitter className="h-4 w-4 mr-2" />
@@ -283,7 +283,7 @@ export default function PortfolioDetailPage() {
                 </Button>
                 <Button
                   onClick={() => handleShare("instagram")}
-                  className="bg-gradient-to-r from-[#E4405F] to-[#5B51D8] hover:opacity-90 text-white"
+                  className="bg-light-rose hover:bg-light-rose/-90 text-white"
                   size="sm"
                 >
                   <Instagram className="h-4 w-4 mr-2" />
@@ -291,7 +291,7 @@ export default function PortfolioDetailPage() {
                 </Button>
                 <Button
                   onClick={() => handleShare("linkedin")}
-                  className="bg-[#0A66C2] hover:bg-[#0A66C2]/90 text-white"
+                  className="bg-charcoal-gray hover:bg-charcoal-gray/90 text-white"
                   size="sm"
                 >
                   <Linkedin className="h-4 w-4 mr-2" />
@@ -300,7 +300,7 @@ export default function PortfolioDetailPage() {
                 <Button
                   onClick={() => handleShare("copy")}
                   variant="outline"
-                  className="col-span-2 border-mustard/20 text-charcoal hover:bg-mustard/10"
+                  className="col-span-2 border-custom-tan text-charcoal hover:bg-custom-tan hover:text-white"
                   size="sm"
                 >
                   {copied ? (
@@ -321,20 +321,20 @@ export default function PortfolioDetailPage() {
             {/* Contact Section */}
             <div className="bg-white rounded-lg shadow-lg p-6 border border-mustard/10">
               <h2 className="text-xl font-bold text-charcoal mb-4">Interested in Our Services?</h2>
-              <p className="text-deep-purple mb-4">
+              <p className="text-warm-brown mb-4">
                 Get in touch with Brushed By Betty to learn more about our training programs and services.
               </p>
               <div className="space-y-3">
                 <Button
                   onClick={() => router.push("/contact")}
-                  className="w-full bg-mustard hover:bg-mustard/90 text-ivory"
+                  className="w-full bg-custom-tan hover:bg-custom-tan/90 text-ivory"
                 >
                   Contact Us
                 </Button>
                 <Button
                   onClick={() => router.push("/courses")}
                   variant="outline"
-                  className="w-full border-mustard/20 text-mustard hover:bg-mustard hover:text-ivory"
+                  className="w-full border-custom-tan/20 text-custom-tan hover:bg-custom-tan hover:text-ivory"
                 >
                   View Courses
                 </Button>
