@@ -603,6 +603,8 @@ import { SignJWT, jwtVerify } from "jose"
 import { sql } from "@/lib/db"
 import { Resend } from "resend"
 import {jwtDecode} from "jwt-decode" // ✅ Add this
+import { type NextRequest } from "next/server"; // <-- ADD THIS IMPORT AT THE TOP
+
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production"
 
@@ -834,4 +836,16 @@ export function decodeTokenLocally(token: string): Partial<User> | null {
     console.error("Client-side token decode error:", err)
     return null
   }
+}
+
+
+export async function getAuth(request: NextRequest): Promise<{ user: User | null }> {
+  const token = request.headers.get("authorization")?.split(" ")[1];
+
+  if (!token) {
+    return { user: null };
+  }
+
+  const user = await getUserFromToken(token);
+  return { user };
 }

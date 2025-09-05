@@ -121,3 +121,17 @@
     border-color: #6b2d5c;
   }
 }
+
+.ytp-chrome-bottom,
+.ytp-chrome-top,
+.ytp-watermark,
+.ytp-pause-overlay,
+.ytp-title {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* globals.css or a relevant CSS file */
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}

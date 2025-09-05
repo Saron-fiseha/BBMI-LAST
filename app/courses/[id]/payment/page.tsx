@@ -1,591 +1,297 @@
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import { useRouter } from "next/navigation";
-// import { useAuth } from "@/hooks/use-auth";
-// import { SiteHeader } from "@/components/site-header";
-// import { SiteFooter } from "@/components/site-footer";
-// import { Button } from "@/components/ui/button";
-// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// import { Badge } from "@/components/ui/badge";
-// import { Separator } from "@/components/ui/separator";
-// import { useToast } from "@/hooks/use-toast";
-// import {
-//   CreditCard,
-//   Shield,
-//   Clock,
-//   CheckCircle,
-//   AlertCircle,
-//   Loader2,
-//   ArrowLeft,
-// } from "lucide-react";
-// import Link from "next/link";
-
-// interface Training {
-//   id: string;
-//   name: string;
-//   description: string;
-//   price: number;
-//   duration: number;
-//   level: string;
-//   image_url: string;
-//   instructor_name: string;
-//   discount: number;
-//   modules: number;
-// }
-
-// export default function PaymentPage({
-//   params,
-// }: {
-//   params: Promise<{ id: string }>;
-// }) {
-//   const [training, setTraining] = useState<Training | null>(null);
-//   const [loading, setLoading] = useState(true);
-//   const [processing, setProcessing] = useState(false);
-//   const [error, setError] = useState<string | null>(null);
-//   const [paymentId, setPaymentId] = useState<string | null>(null);
-//   const [verificationAttempts, setVerificationAttempts] = useState(0);
-
-//   const { user, isAuthenticated } = useAuth();
-//   const router = useRouter();
-//   const { toast } = useToast();
-
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       try {
-//         if (!isAuthenticated) {
-//           router.push("/login");
-//           return;
-//         }
-
-//         const resolvedParams = await params;
-//         const response = await fetch(`/api/courses/${resolvedParams.id}`);
-
-//         if (!response.ok) {
-//           throw new Error("Failed to fetch training");
-//         }
-
-//         const data = await response.json();
-//         setTraining(data.training);
-//       } catch (err) {
-//         setError(
-//           err instanceof Error ? err.message : "Failed to load training"
-//         );
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchData();
-//   }, [params, isAuthenticated, router]);
-
-//   const handlePayment = async () => {
-//     if (!training || !user) return;
-
-//     setProcessing(true);
-//     setError(null);
-
-//     try {
-//       // Initiate payment
-//       const response = await fetch("/api/payments/initiate", {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-//         },
-//         body: JSON.stringify({
-//           trainingId: training.id,
-//         }),
-//       });
-
-//       const data = await response.json();
-
-//       if (data.success) {
-//         setPaymentId(data.paymentId);
-
-//         // Redirect to Telebirr payment page
-//         if (data.paymentUrl) {
-//           window.location.href = data.paymentUrl;
-//         } else {
-//           // Start verification polling if no redirect URL
-//           startPaymentVerification(data.paymentId);
-//         }
-//       } else {
-//         throw new Error(data.message || "Payment initiation failed");
-//       }
-//     } catch (err) {
-//       setError(err instanceof Error ? err.message : "Payment failed");
-//       setProcessing(false);
-//     }
-//   };
-
-//   const startPaymentVerification = (paymentId: string) => {
-//     const maxAttempts = 30; // 5 minutes with 10-second intervals
-
-//     const verifyPayment = async () => {
-//       try {
-//         const response = await fetch("/api/payments/verify", {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "application/json",
-//             Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-//           },
-//           body: JSON.stringify({ paymentId }),
-//         });
-
-//         const data = await response.json();
-
-//         if (data.success && data.status === "completed") {
-//           toast({
-//             title: "Payment Successful!",
-//             description: "You have been enrolled in the training.",
-//           });
-//           if (training) {
-//             router.push(`/courses/${training.id}?enrolled=true`);
-//           }
-//           return;
-//         }
-
-//         if (data.status === "failed" || data.status === "cancelled") {
-//           throw new Error(data.message || "Payment failed");
-//         }
-
-//         // Continue polling if still processing
-//         if (verificationAttempts < maxAttempts) {
-//           setVerificationAttempts((prev) => prev + 1);
-//           setTimeout(verifyPayment, 10000); // Check again in 10 seconds
-//         } else {
-//           throw new Error("Payment verification timeout");
-//         }
-//       } catch (err) {
-//         setError(
-//           err instanceof Error ? err.message : "Payment verification failed"
-//         );
-//         setProcessing(false);
-//       }
-//     };
-
-//     verifyPayment();
-//   };
-
-//   if (loading) {
-//     return (
-//       <div className="min-h-screen flex flex-col">
-//         <SiteHeader />
-//         <main className="flex-1 flex items-center justify-center">
-//           <div className="flex items-center space-x-2">
-//             <Loader2 className="h-6 w-6 animate-spin" />
-//             <span>Loading payment details...</span>
-//           </div>
-//         </main>
-//         <SiteFooter />
-//       </div>
-//     );
-//   }
-
-//   if (error || !training) {
-//     return (
-//       <div className="min-h-screen flex flex-col">
-//         <SiteHeader />
-//         <main className="flex-1 flex items-center justify-center">
-//           <Card className="w-full max-w-md">
-//             <CardContent className="pt-6">
-//               <div className="flex items-center space-x-2 text-red-600">
-//                 <AlertCircle className="h-5 w-5" />
-//                 <span>{error || "Training not found"}</span>
-//               </div>
-//               <Button asChild className="w-full mt-4">
-//                 <Link href="/courses">Back to Courses</Link>
-//               </Button>
-//             </CardContent>
-//           </Card>
-//         </main>
-//         <SiteFooter />
-//       </div>
-//     );
-//   }
-
-//   const discountedPrice =
-//     training.discount > 0
-//       ? training.price * (1 - training.discount / 100)
-//       : training.price;
-
-//   return (
-//     <div className="min-h-screen flex flex-col">
-//       <SiteHeader />
-//       <main className="flex-1 container mx-auto px-4 py-8">
-//         <div className="max-w-4xl mx-auto">
-//           {/* Back Button */}
-//           <Button variant="ghost" asChild className="mb-6">
-//             <Link href={`/courses/${training.id}`}>
-//               <ArrowLeft className="h-4 w-4 mr-2" />
-//               Back to Course
-//             </Link>
-//           </Button>
-
-//           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-//             {/* Training Details */}
-//             <Card>
-//               <CardHeader>
-//                 <CardTitle>Training Details</CardTitle>
-//               </CardHeader>
-//               <CardContent className="space-y-4">
-//                 <div className="aspect-video relative rounded-lg overflow-hidden">
-//                   <img
-//                     src={
-//                       training.image_url ||
-//                       "/placeholder.svg?height=200&width=300"
-//                     }
-//                     alt={training.name}
-//                     className="w-full h-full object-cover"
-//                   />
-//                 </div>
-
-//                 <div>
-//                   <h3 className="text-xl font-semibold mb-2">
-//                     {training.name}
-//                   </h3>
-//                   <p className="text-gray-600 mb-4">{training.description}</p>
-
-//                   <div className="flex flex-wrap gap-2 mb-4">
-//                     <Badge variant="secondary">{training.level}</Badge>
-//                     <Badge variant="outline">
-//                       <Clock className="h-3 w-3 mr-1" />
-//                       {Math.floor(training.duration / 60)}h{" "}
-//                       {training.duration % 60}m
-//                     </Badge>
-//                     <Badge variant="outline">{training.modules} modules</Badge>
-//                   </div>
-
-//                   <p className="text-sm text-gray-600">
-//                     Instructor: {training.instructor_name}
-//                   </p>
-//                 </div>
-//               </CardContent>
-//             </Card>
-
-//             {/* Payment Details */}
-//             <Card>
-//               <CardHeader>
-//                 <CardTitle className="flex items-center">
-//                   <CreditCard className="h-5 w-5 mr-2" />
-//                   Payment Summary
-//                 </CardTitle>
-//               </CardHeader>
-//               <CardContent className="space-y-6">
-//                 {/* Price Breakdown */}
-//                 <div className="space-y-3">
-//                   <div className="flex justify-between">
-//                     <span>Course Price</span>
-//                     <span>
-//                       ETB{" "}
-//                       {training.price != null
-//                         ? Number(training.price).toFixed(2)
-//                         : "N/A"}
-//                     </span>
-//                   </div>
-
-//                   {training.discount > 0 && (
-//                     <div className="flex justify-between text-green-600">
-//                       <span>Discount ({training.discount}%)</span>
-//                       <span>
-//                         -ETB{" "}
-//                         {((training.price * training.discount) / 100).toFixed(
-//                           2
-//                         )}
-//                       </span>
-//                     </div>
-//                   )}
-
-//                   <Separator />
-
-//                   <div className="flex justify-between text-lg font-semibold">
-//                     <span>Total Amount</span>
-//                     <span>ETB {(Number(discountedPrice) || 0).toFixed(2)}</span>
-//                   </div>
-//                 </div>
-
-//                 {/* Payment Method */}
-//                 <div className="space-y-3">
-//                   <h4 className="font-medium">Payment Method</h4>
-//                   <div className="border rounded-lg p-3 bg-blue-50">
-//                     <div className="flex items-center space-x-3">
-//                       <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-//                         <span className="text-white text-xs font-bold">T</span>
-//                       </div>
-//                       <div>
-//                         <p className="font-medium">Telebirr</p>
-//                         <p className="text-sm text-gray-600">
-//                           Secure mobile payment
-//                         </p>
-//                       </div>
-//                     </div>
-//                   </div>
-//                 </div>
-
-//                 {/* Security Notice */}
-//                 <div className="bg-gray-50 rounded-lg p-4">
-//                   <div className="flex items-start space-x-2">
-//                     <Shield className="h-5 w-5 text-green-600 mt-0.5" />
-//                     <div className="text-sm">
-//                       <p className="font-medium text-gray-900">
-//                         Secure Payment
-//                       </p>
-//                       <p className="text-gray-600">
-//                         Your payment is processed securely through Telebirr's
-//                         encrypted system.
-//                       </p>
-//                     </div>
-//                   </div>
-//                 </div>
-
-//                 {/* What's Included */}
-//                 <div className="space-y-3">
-//                   <h4 className="font-medium">What's Included</h4>
-//                   <div className="space-y-2">
-//                     <div className="flex items-center space-x-2 text-sm">
-//                       <CheckCircle className="h-4 w-4 text-green-600" />
-//                       <span>Full access to all course materials</span>
-//                     </div>
-//                     <div className="flex items-center space-x-2 text-sm">
-//                       <CheckCircle className="h-4 w-4 text-green-600" />
-//                       <span>Progress tracking and certificates</span>
-//                     </div>
-//                     <div className="flex items-center space-x-2 text-sm">
-//                       <CheckCircle className="h-4 w-4 text-green-600" />
-//                       <span>Lifetime access to content</span>
-//                     </div>
-//                     <div className="flex items-center space-x-2 text-sm">
-//                       <CheckCircle className="h-4 w-4 text-green-600" />
-//                       <span>Instructor support</span>
-//                     </div>
-//                   </div>
-//                 </div>
-
-//                 {/* Error Display */}
-//                 {error && (
-//                   <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-//                     <div className="flex items-center space-x-2 text-red-600">
-//                       <AlertCircle className="h-5 w-5" />
-//                       <span className="text-sm">{error}</span>
-//                     </div>
-//                   </div>
-//                 )}
-
-//                 {/* Payment Button */}
-//                 <Button
-//                   onClick={handlePayment}
-//                   disabled={processing}
-//                   className="w-full"
-//                   size="lg"
-//                 >
-//                   {processing ? (
-//                     <>
-//                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-//                       {paymentId ? "Verifying Payment..." : "Processing..."}
-//                     </>
-//                   ) : (
-//                     <>
-//                       <CreditCard className="h-4 w-4 mr-2" />
-//                       Pay ETB {(Number(discountedPrice) || 0).toFixed(2)}
-//                     </>
-//                   )}
-//                 </Button>
-
-//                 {processing && paymentId && (
-//                   <div className="text-center text-sm text-gray-600">
-//                     <p>Please complete your payment in the Telebirr app</p>
-//                     <p>Verification attempt: {verificationAttempts}/30</p>
-//                   </div>
-//                 )}
-//               </CardContent>
-//             </Card>
-//           </div>
-//         </div>
-//       </main>
-//       <SiteFooter />
-//     </div>
-//   );
-// }
-
+// C:\Users\Hp\Documents\BBMI-LMS\app\courses\[id]\payment\page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useRef } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import {
-  CreditCard,
-  Shield,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  Loader2,
-  ArrowLeft,
-} from "lucide-react";
-import Link from "next/link";
 
+// Define the Training interface here for clarity and type safety
 interface Training {
   id: string;
   name: string;
   description: string;
   price: number;
-  duration: number;
-  level: string;
-  image_url: string;
-  instructor_name: string;
-  discount: number;
-  modules: number;
 }
 
-export default function PaymentPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const [training, setTraining] = useState<Training | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [paymentId, setPaymentId] = useState<string | null>(null);
-  const [verificationAttempts, setVerificationAttempts] = useState(0);
-
-  const { user, isAuthenticated } = useAuth();
+export default function PaymentPage() {
+  const { id } = useParams();
   const router = useRouter();
+  const rawSearchParams = useSearchParams();
+  const [training, setTraining] = useState<Training | null>(null);
+  const [trainingLoading, setTrainingLoading] = useState(true);
+
+  const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
   const { toast } = useToast();
 
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
+
+  const verifyAttempted = useRef(false);
+
+  // Effect to fetch training details
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchTrainingDetails = async () => {
       try {
-        if (!isAuthenticated) {
-          router.push("/login");
-          return;
+        setTrainingLoading(true);
+        const res = await fetch(`/api/courses/${id}`, { cache: "no-store" });
+        if (!res.ok) {
+          throw new Error(
+            "Failed to fetch training details: " + res.statusText
+          );
         }
-
-        const resolvedParams = await params;
-        const response = await fetch(`/api/courses/${resolvedParams.id}`);
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch training");
+        const data = await res.json();
+        if (data && data.training) {
+          setTraining(data.training);
+        } else {
+          console.error("API response missing 'training' data:", data);
+          setTraining(null);
         }
-
-        const data = await response.json();
-        setTraining(data.training);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load training"
-        );
+      } catch (err: any) {
+        console.error("Error fetching training details:", err);
+        setTraining(null);
       } finally {
-        setLoading(false);
+        setTrainingLoading(false);
       }
     };
+    fetchTrainingDetails();
+  }, [id]);
 
-    fetchData();
-  }, [params, isAuthenticated, router]);
+  // Effect to handle payment status from URL query parameters AND trigger verification
+  useEffect(() => {
+    const rawQueryString = window.location.search;
+    const correctedQueryString = rawQueryString.replace(/&amp;/g, "&");
+    const searchParams = new URLSearchParams(correctedQueryString);
 
-  const handlePayment = async () => {
-    if (!training || !user) return;
+    const statusParam = searchParams.get("status");
+    const txRefParam = searchParams.get("tx_ref");
 
-    setProcessing(true);
-    setError(null);
+    // Only proceed if payment is marked completed, tx_ref is present, user/training is loaded, and verification hasn't been attempted
+    if (
+      statusParam === "completed" &&
+      txRefParam &&
+      user?.id &&
+      training?.id &&
+      !verifyAttempted.current
+    ) {
+      setPaymentStatus("processing"); // Show processing state to user
+      verifyAttempted.current = true; // Mark verification as attempted to prevent re-runs
+
+      const finalizePayment = async () => {
+        try {
+          const verifyRes = await fetch(
+            `/api/chapa/verify?tx_ref=${txRefParam}&courseId=${training.id}&userId=${user.id}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          const verifyData = await verifyRes.json();
+          console.log("Client-side verify API response:", verifyData);
+
+          if (verifyData.success) {
+            toast({
+              title: "Payment Successful! 🎉",
+              description: "Your enrollment has been confirmed.",
+            });
+            console.log(
+              "Attempting redirect to:",
+              `/courses/${training.id}?enrolled=true`
+            );
+            router.replace(`/courses/${training.id}?enrolled=true`); // This should redirect
+          } else {
+            toast({
+              title: "Payment Failed",
+              description:
+                verifyData.message || "Could not confirm enrollment.",
+              variant: "destructive",
+            });
+            router.replace(`/courses/${training.id}?paymentFailed=true`);
+          }
+        } catch (error) {
+          console.error("Error during client-side verification:", error);
+          toast({
+            title: "Payment Error",
+            description: "An unexpected error occurred during verification.",
+            variant: "destructive",
+          });
+          router.replace(
+            `/courses/${training.id}?paymentError=client_verify_failed`
+          );
+        } finally {
+          // Clean up URL parameters after verification attempt, regardless of success/failure
+          const newSearchParams = new URLSearchParams(
+            rawSearchParams.toString()
+          ); // Use rawSearchParams for consistency
+          newSearchParams.delete("status");
+          newSearchParams.delete("tx_ref");
+          // Only replace if parameters were actually present in the original URL
+          if (rawSearchParams.has("status") || rawSearchParams.has("tx_ref")) {
+            router.replace(
+              `${window.location.pathname}?${newSearchParams.toString()}`,
+              { scroll: false }
+            );
+          }
+        }
+      };
+
+      // Only run finalizePayment if authentication and training data are fully loaded
+      if (!authLoading && !trainingLoading) {
+        finalizePayment();
+      }
+    } else if (statusParam === "completed" && !txRefParam) {
+      // Fallback for unexpected missing tx_ref, should be less common now
+      toast({
+        title: "Payment Error",
+        description:
+          "Missing transaction reference for verification. (No tx_ref in URL after cleaning)",
+        variant: "destructive",
+      });
+      router.replace(
+        `/courses/${training?.id || ""}?paymentError=missing_tx_ref`
+      );
+      const newSearchParams = new URLSearchParams(rawSearchParams.toString());
+      newSearchParams.delete("status");
+      router.replace(
+        `${window.location.pathname}?${newSearchParams.toString()}`,
+        { scroll: false }
+      );
+    } else {
+      setPaymentStatus(null); // Clear status if not present or not 'completed'
+    }
+  }, [
+    rawSearchParams,
+    router,
+    user,
+    training,
+    authLoading,
+    trainingLoading,
+    toast,
+  ]);
+
+  const handlePayNow = async () => {
+    if (authLoading) {
+      alert("Loading user session. Please try again in a moment.");
+      return;
+    }
+    if (
+      !isAuthenticated ||
+      !user ||
+      !user.email ||
+      !user.full_name ||
+      !user.id
+    ) {
+      alert(
+        "You must be logged in with complete profile information to make a payment."
+      );
+      router.push("/login");
+      return;
+    }
+    if (!training) {
+      alert("Training details are not loaded. Cannot proceed with payment.");
+      return;
+    }
 
     try {
-      // Initiate payment
-      const response = await fetch("/api/payments/initiate", {
+      const amountToSend = parseFloat(training.price.toString());
+      if (isNaN(amountToSend) || amountToSend <= 0) {
+        alert("Chapa Error: Invalid amount for payment.");
+        return;
+      }
+
+      const userEmail = user.email;
+      const fullNameParts = user.full_name.split(" ");
+      const userFirstName = fullNameParts[0] || "Guest";
+      const userLastName = fullNameParts.slice(1).join(" ") || "User";
+
+      const res = await fetch("/api/chapa/checkout", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          trainingId: training.id,
+          amount: amountToSend,
+          currency: "ETB",
+          email: userEmail,
+          first_name: userFirstName,
+          last_name: userLastName,
+          courseId: training.id,
+          userId: user.id,
         }),
       });
 
-      const data = await response.json();
+      const data = await res.json();
 
-      if (data.success) {
-        setPaymentId(data.paymentId);
-
-        // Redirect to Telebirr payment page
-        if (data.paymentUrl) {
-          window.location.href = data.paymentUrl;
-        } else {
-          // Start verification polling if no redirect URL
-          startPaymentVerification(data.paymentId);
-        }
+      if (data.data?.checkout_url) {
+        window.location.href = data.data.checkout_url;
       } else {
-        throw new Error(data.message || "Payment initiation failed");
+        alert(
+          `Chapa Error: ${
+            typeof data.error === "object"
+              ? JSON.stringify(data.error, null, 2)
+              : data.error || "Unknown error"
+          }`
+        );
+        console.error("Chapa Error Details:", data);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Payment failed");
-      setProcessing(false);
+      alert("Something went wrong. Check console for details.");
+      console.error(err);
     }
   };
 
-  const startPaymentVerification = (paymentId: string) => {
-    const maxAttempts = 30; // 5 minutes with 10-second intervals
+  // --- Conditional Rendering Logic ---
 
-    const verifyPayment = async () => {
-      try {
-        const response = await fetch("/api/payments/verify", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-          },
-          body: JSON.stringify({ paymentId }),
-        });
-
-        const data = await response.json();
-
-        if (data.success && data.status === "completed") {
-          toast({
-            title: "Payment Successful!",
-            description: "You have been enrolled in the training.",
-          });
-          if (training) {
-            router.push(`/courses/${training.id}?enrolled=true`);
-          }
-          return;
-        }
-
-        if (data.status === "failed" || data.status === "cancelled") {
-          throw new Error(data.message || "Payment failed");
-        }
-
-        // Continue polling if still processing
-        if (verificationAttempts < maxAttempts) {
-          setVerificationAttempts((prev) => prev + 1);
-          setTimeout(verifyPayment, 10000); // Check again in 10 seconds
-        } else {
-          throw new Error("Payment verification timeout");
-        }
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Payment verification failed"
-        );
-        setProcessing(false);
-      }
-    };
-
-    verifyPayment();
-  };
-
-  if (loading) {
+  if (trainingLoading || authLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="flex min-h-screen flex-col">
         <SiteHeader />
         <main className="flex-1 flex items-center justify-center">
-          <div className="flex items-center space-x-2">
-            <Loader2 className="h-6 w-6 animate-spin" />
-            <span>Loading payment details...</span>
+          <p>Loading training details and user session...</p>
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
+
+  if (!training) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <SiteHeader />
+        <main className="flex-1 flex items-center justify-center">
+          <p>Training not found or failed to load.</p>
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !user || !user.email || !user.full_name) {
+    return (
+      <div className="flex min-h-screen flex-col bg-white">
+        <SiteHeader />
+        <main className="flex-1 py-12">
+          <div className="container max-w-2xl">
+            <h1 className="text-2xl font-bold mb-4">
+              Payment for {training.name}
+            </h1>
+            <p className="text-lg text-red-500 mb-6">
+              Please log in with complete profile information to proceed with
+              the payment.
+            </p>
+            <Button onClick={() => router.push("/login")} className="w-full">
+              Go to Login
+            </Button>
+            <Button
+              className="mt-4 w-full"
+              variant="outline"
+              onClick={() => router.back()}
+            >
+              Cancel
+            </Button>
           </div>
         </main>
         <SiteFooter />
@@ -593,219 +299,56 @@ export default function PaymentPage({
     );
   }
 
-  if (error || !training) {
+  if (paymentStatus === "processing") {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="flex min-h-screen flex-col bg-white">
         <SiteHeader />
-        <main className="flex-1 flex items-center justify-center">
-          <Card className="w-full max-w-md">
-            <CardContent className="pt-6">
-              <div className="flex items-center space-x-2 text-red-600">
-                <AlertCircle className="h-5 w-5" />
-                <span>{error || "Training not found"}</span>
-              </div>
-              <Button asChild className="w-full mt-4">
-                <Link href="/courses">Back to Courses</Link>
-              </Button>
-            </CardContent>
-          </Card>
+        <main className="flex-1 py-12">
+          <div className="container max-w-2xl text-center">
+            <h1 className="text-3xl font-bold text-green-600 mb-4">
+              Payment Confirmed!
+            </h1>
+            <p className="text-lg mb-6">
+              Finalizing enrollment. Please wait...
+            </p>
+          </div>
         </main>
         <SiteFooter />
       </div>
     );
   }
-
-  const discountedPrice =
-    training.discount > 0
-      ? training.price * (1 - training.discount / 100)
-      : training.price;
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex min-h-screen flex-col bg-white">
       <SiteHeader />
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          {/* Back Button */}
-          <Button variant="ghost" asChild className="mb-6">
-            <Link href={`/courses/${training.id}`}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Course
-            </Link>
+      <main className="flex-1 py-12">
+        <div className="container max-w-2xl">
+          <h1 className="text-2xl font-bold mb-4">
+            Payment for {training.name}
+          </h1>
+          <p className="text-lg mb-2">
+            Price: <span className="font-semibold">${training.price}</span>
+          </p>
+          <p className="text-sm text-gray-600 mb-6">
+            Paying as:{" "}
+            <span className="font-medium">
+              {user?.email} ({user?.full_name})
+            </span>
+          </p>
+          <Button
+            className="bg-amber-600 hover:bg-amber-700 text-white font-bold w-full"
+            size="lg"
+            onClick={handlePayNow}
+          >
+            Pay Now with Chapa
           </Button>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Training Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Training Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="aspect-video relative rounded-lg overflow-hidden">
-                  <img
-                    src={
-                      training.image_url ||
-                      "/placeholder.svg?height=200&width=300"
-                    }
-                    alt={training.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">
-                    {training.name}
-                  </h3>
-                  <p className="text-gray-600 mb-4">{training.description}</p>
-
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    <Badge variant="secondary">{training.level}</Badge>
-                    <Badge variant="outline">
-                      <Clock className="h-3 w-3 mr-1" />
-                      {Math.floor(training.duration / 60)}h{" "}
-                      {training.duration % 60}m
-                    </Badge>
-                    <Badge variant="outline">{training.modules} modules</Badge>
-                  </div>
-
-                  <p className="text-sm text-gray-600">
-                    Instructor: {training.instructor_name}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Payment Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <CreditCard className="h-5 w-5 mr-2" />
-                  Payment Summary
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Price Breakdown */}
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span>Course Price</span>
-                    <span>ETB {Number(training?.price ?? 0).toFixed(2)}</span>
-                  </div>
-
-                  {training.discount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>Discount ({training.discount}%)</span>
-                      <span>
-                        -ETB{" "}
-                        {((training.price * training.discount) / 100).toFixed(
-                          2
-                        )}
-                      </span>
-                    </div>
-                  )}
-
-                  <Separator />
-
-                  <div className="flex justify-between text-lg font-semibold">
-                    <span>Total Amount</span>
-                    <span>ETB {Number(discountedPrice ?? 0).toFixed(2)}</span>
-                  </div>
-                </div>
-
-                {/* Payment Method */}
-                <div className="space-y-3">
-                  <h4 className="font-medium">Payment Method</h4>
-                  <div className="border rounded-lg p-3 bg-blue-50">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">T</span>
-                      </div>
-                      <div>
-                        <p className="font-medium">Telebirr</p>
-                        <p className="text-sm text-gray-600">
-                          Secure mobile payment
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Security Notice */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-start space-x-2">
-                    <Shield className="h-5 w-5 text-green-600 mt-0.5" />
-                    <div className="text-sm">
-                      <p className="font-medium text-gray-900">
-                        Secure Payment
-                      </p>
-                      <p className="text-gray-600">
-                        Your payment is processed securely through Telebirr's
-                        encrypted system.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* What's Included */}
-                <div className="space-y-3">
-                  <h4 className="font-medium">What's Included</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2 text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span>Full access to all course materials</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span>Progress tracking and certificates</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span>Lifetime access to content</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span>Instructor support</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Error Display */}
-                {error && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <div className="flex items-center space-x-2 text-red-600">
-                      <AlertCircle className="h-5 w-5" />
-                      <span className="text-sm">{error}</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Payment Button */}
-                <Button
-                  onClick={handlePayment}
-                  disabled={processing}
-                  className="w-full"
-                  size="lg"
-                >
-                  {processing ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      {paymentId ? "Verifying Payment..." : "Processing..."}
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="h-4 w-4 mr-2" />
-                      Pay ETB {Number(discountedPrice ?? 0).toFixed(2)}
-                    </>
-                  )}
-                </Button>
-
-                {processing && paymentId && (
-                  <div className="text-center text-sm text-gray-600">
-                    <p>Please complete your payment in the Telebirr app</p>
-                    <p>Verification attempt: {verificationAttempts}/30</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+          <Button
+            className="mt-4 w-full"
+            variant="outline"
+            onClick={() => router.back()}
+          >
+            Cancel
+          </Button>
         </div>
       </main>
       <SiteFooter />

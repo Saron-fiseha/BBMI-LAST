@@ -121,4 +121,66 @@ export const NewCourseSchema = z.object({
   discount: z.number().min(0).max(100).optional().default(0),
 })
 
+
+// // Add the following interfaces to the BOTTOM of your existing lib/types.ts file
+
+// // --- Types for Training Detail Page ---
+
+// export interface TrainingDetailsInstructor {
+//   id: string;
+//   name: string;
+//   title: string | null;
+//   bio: string;
+//   experience: number;
+//   instructor_rating: number;
+//   total_students: number;
+//   image_url: string;
+// }
+
+// export interface TrainingDetailsLesson {
+//   id: string;
+//   title: string;
+//   duration: number;
+// }
+
+// export interface TrainingDetailsModule {
+//   id: string;
+//   name: string;
+//   description: string;
+//   lessons: TrainingDetailsLesson[];
+// }
+
+// export interface TrainingDetailsReview {
+//   id: string;
+//   rating: number;
+//   comment: string;
+//   created_at: string;
+//   user_name: string;
+//   user_image_url: string;
+// }
+
+// export interface TrainingDetailsData {
+//   training: {
+//     id: string;
+//     name: string;
+//     description: string;
+//     overview: string;
+//     what_you_will_learn: string[];
+//     requirements: string[];
+//     price: number;
+//     duration: number;
+//     level: string;
+//     image_url: string;
+//     discount: number | null;
+//     student_count: number;
+//     lessons_count: number;
+//     category_name: string;
+//   };
+//   instructor: TrainingDetailsInstructor | null;
+//   modules: TrainingDetailsModule[];
+//   reviews: TrainingDetailsReview[];
+// }
+
+
+
 export type NewCourseInput = z.infer<typeof NewCourseSchema>

@@ -186,214 +186,451 @@ export async function getCertificateByUserAndTraining(userId: number, trainingId
 
 // PDF Generation using HTML/CSS (simpler approach)
 export function generateCertificateHTML(data: CertificateData): string {
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>BBMI Certificate</title>
-        <style>
-            @page {
-                size: A4 landscape;
-                margin: 0;
-            }
-            body {
-                margin: 0;
-                padding: 20px;
-                font-family: 'Times New Roman', serif;
-                background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
-                width: 100%;
-                height: 100vh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .certificate {
-                width: 800px;
-                height: 600px;
-                border: 8px solid #B8860B;
-                border-radius: 20px;
-                padding: 40px;
-                background: white;
-                position: relative;
-                box-shadow: 0 0 30px rgba(0,0,0,0.1);
-            }
-            .header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 30px;
-            }
-            .logo {
-                width: 80px;
-                height: 80px;
-                border: 3px solid #B8860B;
-                border-radius: 10px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-                color: #B8860B;
-                font-size: 12px;
-            }
-            .institute-name {
-                font-size: 14px;
-                color: #333;
-                margin-left: 20px;
-            }
-            .seal {
-                width: 100px;
-                height: 100px;
-                border-radius: 50%;
-                background: radial-gradient(circle, #FFD700 0%, #B8860B 100%);
-                border: 4px solid #B8860B;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                color: #B8860B;
-                font-weight: bold;
-                font-size: 10px;
-            }
-            .title {
-                text-align: center;
-                margin: 40px 0;
-            }
-            .title h1 {
-                font-size: 48px;
-                color: #2D5490;
-                margin: 0;
-                font-weight: bold;
-            }
-            .title h2 {
-                font-size: 20px;
-                color: #2D5490;
-                margin: 5px 0 0 0;
-                font-weight: normal;
-            }
-            .presented-to {
-                text-align: center;
-                font-size: 16px;
-                color: #333;
-                margin: 30px 0 10px 0;
-            }
-            .recipient-name {
-                text-align: center;
-                font-size: 36px;
-                color: #B8860B;
-                font-style: italic;
-                font-weight: bold;
-                margin: 20px 0;
-                border-bottom: 2px solid #B8860B;
-                padding-bottom: 10px;
-                display: inline-block;
-                width: 100%;
-            }
-            .description {
-                text-align: center;
-                font-size: 14px;
-                color: #333;
-                line-height: 1.6;
-                margin: 30px 0;
-                max-width: 600px;
-                margin-left: auto;
-                margin-right: auto;
-            }
-            .signature-section {
-                text-align: center;
-                margin-top: 50px;
-            }
-            .signature-line {
-                width: 200px;
-                height: 1px;
-                background: #333;
-                margin: 0 auto 10px auto;
-            }
-            .signature-name {
-                font-size: 16px;
-                font-style: italic;
-                color: #333;
-                margin-bottom: 5px;
-            }
-            .signature-title {
-                font-size: 14px;
-                font-weight: bold;
-                color: #2D5490;
-                margin-bottom: 5px;
-            }
-            .signature-company {
-                font-size: 12px;
-                color: #666;
-            }
-            .certificate-details {
-                position: absolute;
-                bottom: 20px;
-                left: 40px;
-                right: 40px;
-                display: flex;
-                justify-content: space-between;
-                font-size: 10px;
-                color: #888;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="certificate">
-            <div class="header">
-                <div style="display: flex; align-items: center;">
-                    <div class="logo">
-                        BBMI<br>LOGO
-                    </div>
-                    <div class="institute-name">
-                        <div>BRUSHED BY</div>
-                        <div>BETTY MAKEUP</div>
-                        <div>INSTITUTE</div>
-                    </div>
-                </div>
-                <div class="seal">
-                    <div>CERTIFIED</div>
-                    <div>COMPLETION</div>
-                </div>
-            </div>
+//   return `
+//     <!DOCTYPE html>
+//     <html>
+//     <head>
+//         <meta charset="UTF-8">
+//         <title>BBMI Certificate</title>
+//         <style>
+//             @page {
+//                 size: A4 landscape;
+//                 margin: 0;
+//             }
+//             body {
+//                 margin: 0;
+//                 padding: 20px;
+//                 font-family: 'Times New Roman', serif;
+//                 background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+//                 width: 100%;
+//                 height: 100vh;
+//                 display: flex;
+//                 align-items: center;
+//                 justify-content: center;
+//             }
+//             .certificate {
+//                 width: 800px;
+//                 height: 600px;
+//                 border: 8px solid #B8860B;
+//                 border-radius: 20px;
+//                 padding: 40px;
+//                 background: white;
+//                 position: relative;
+//                 box-shadow: 0 0 30px rgba(0,0,0,0.1);
+//             }
+//             .header {
+//                 display: flex;
+//                 justify-content: space-between;
+//                 align-items: center;
+//                 margin-bottom: 30px;
+//             }
+//             .logo {
+//                 width: 80px;
+//                 height: 80px;
+//                 border: 3px solid #B8860B;
+//                 border-radius: 10px;
+//                 display: flex;
+//                 align-items: center;
+//                 justify-content: center;
+//                 font-weight: bold;
+//                 color: #B8860B;
+//                 font-size: 12px;
+//             }
+//             .institute-name {
+//                 font-size: 14px;
+//                 color: #333;
+//                 margin-left: 20px;
+//             }
+//             .seal {
+//                 width: 100px;
+//                 height: 100px;
+//                 border-radius: 50%;
+//                 background: radial-gradient(circle, #FFD700 0%, #B8860B 100%);
+//                 border: 4px solid #B8860B;
+//                 display: flex;
+//                 flex-direction: column;
+//                 align-items: center;
+//                 justify-content: center;
+//                 color: #B8860B;
+//                 font-weight: bold;
+//                 font-size: 10px;
+//             }
+//             .title {
+//                 text-align: center;
+//                 margin: 40px 0;
+//             }
+//             .title h1 {
+//                 font-size: 48px;
+//                 color: #2D5490;
+//                 margin: 0;
+//                 font-weight: bold;
+//             }
+//             .title h2 {
+//                 font-size: 20px;
+//                 color: #2D5490;
+//                 margin: 5px 0 0 0;
+//                 font-weight: normal;
+//             }
+//             .presented-to {
+//                 text-align: center;
+//                 font-size: 16px;
+//                 color: #333;
+//                 margin: 30px 0 10px 0;
+//             }
+//             .recipient-name {
+//                 text-align: center;
+//                 font-size: 36px;
+//                 color: #B8860B;
+//                 font-style: italic;
+//                 font-weight: bold;
+//                 margin: 20px 0;
+//                 border-bottom: 2px solid #B8860B;
+//                 padding-bottom: 10px;
+//                 display: inline-block;
+//                 width: 100%;
+//             }
+//             .description {
+//                 text-align: center;
+//                 font-size: 14px;
+//                 color: #333;
+//                 line-height: 1.6;
+//                 margin: 30px 0;
+//                 max-width: 600px;
+//                 margin-left: auto;
+//                 margin-right: auto;
+//             }
+//             .signature-section {
+//                 text-align: center;
+//                 margin-top: 50px;
+//             }
+//             .signature-line {
+//                 width: 200px;
+//                 height: 1px;
+//                 background: #333;
+//                 margin: 0 auto 10px auto;
+//             }
+//             .signature-name {
+//                 font-size: 16px;
+//                 font-style: italic;
+//                 color: #333;
+//                 margin-bottom: 5px;
+//             }
+//             .signature-title {
+//                 font-size: 14px;
+//                 font-weight: bold;
+//                 color: #2D5490;
+//                 margin-bottom: 5px;
+//             }
+//             .signature-company {
+//                 font-size: 12px;
+//                 color: #666;
+//             }
+//             .certificate-details {
+//                 position: absolute;
+//                 bottom: 20px;
+//                 left: 40px;
+//                 right: 40px;
+//                 display: flex;
+//                 justify-content: space-between;
+//                 font-size: 10px;
+//                 color: #888;
+//             }
+//         </style>
+//     </head>
+//     <body>
+//         <div class="certificate">
+//             <div class="header">
+//                 <div style="display: flex; align-items: center;">
+//                     <div class="logo">
+//                         BBMI<br>LOGO
+//                     </div>
+//                     <div class="institute-name">
+//                         <div>BRUSHED BY</div>
+//                         <div>BETTY MAKEUP</div>
+//                         <div>INSTITUTE</div>
+//                     </div>
+//                 </div>
+//                 <div class="seal">
+//                     <div>CERTIFIED</div>
+//                     <div>COMPLETION</div>
+//                 </div>
+//             </div>
             
-            <div class="title">
-                <h1>CERTIFICATE</h1>
-                <h2>OF COMPLETION</h2>
-            </div>
+//             <div class="title">
+//                 <h1>CERTIFICATE</h1>
+//                 <h2>OF COMPLETION</h2>
+//             </div>
             
-            <div class="presented-to">
-                THIS CERTIFICATE IS PRESENTED TO
-            </div>
+//             <div class="presented-to">
+//                 THIS CERTIFICATE IS PRESENTED TO
+//             </div>
             
-            <div class="recipient-name">
-                ${data.userName}
-            </div>
+//             <div class="recipient-name">
+//                 ${data.userName}
+//             </div>
             
-            <div class="description">
-                In recognition of exceptional skill in ${data.trainingTitle.toLowerCase()}, including<br>
-                professional techniques, client consultation, and personalized beauty enhancement.<br>
-                Proudly awarded by BBMI on ${data.completionDate}.
-            </div>
+//             <div class="description">
+//                 In recognition of exceptional skill in ${data.trainingTitle.toLowerCase()}, including<br>
+//                 professional techniques, client consultation, and personalized beauty enhancement.<br>
+//                 Proudly awarded by BBMI on ${data.completionDate}.
+//             </div>
             
-            <div class="signature-section">
-                <div class="signature-line"></div>
-                <div class="signature-name">Ms Betelhem</div>
-                <div class="signature-title">MS BETELHEM</div>
-                <div class="signature-company">CEO, BBMI</div>
-            </div>
+//             <div class="signature-section">
+//                 <div class="signature-line"></div>
+//                 <div class="signature-name">Ms Betelhem</div>
+//                 <div class="signature-title">MS BETELHEM</div>
+//                 <div class="signature-company">CEO, BBMI</div>
+//             </div>
             
-            <div class="certificate-details">
-                <div>
-                    Certificate Number: ${data.certificateNumber}<br>
-                    Verification Code: ${data.verificationCode}
-                </div>
-                <div>
-                    Verify at: bbmi-institute.com/verify<br>
-                    Issue Date: ${data.completionDate}
-                </div>
-            </div>
-        </div>
-    </body>
-    </html>
-  `
+//             <div class="certificate-details">
+//                 <div>
+//                     Certificate Number: ${data.certificateNumber}<br>
+//                     Verification Code: ${data.verificationCode}
+//                 </div>
+//                 <div>
+//                     Verify at: bbmi-institute.com/verify<br>
+//                     Issue Date: ${data.completionDate}
+//                 </div>
+//             </div>
+//         </div>
+//     </body>
+//     </html>
+//   `
+// }
+return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>BBMI Certificate</title>
+  <style>
+    @page {
+      size: A4 landscape;
+      margin: 0;
+    }
+    body {
+      margin: 0;
+      padding: 40px;
+      font-family: 'Georgia', serif;
+      background: radial-gradient(circle at center, #ffffff 0%, #f4f4f4 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .certificate {
+      width: 1000px;
+      height: 700px;
+      background: #f7ebd5;
+      border: 12px double #B8860B;
+      border-radius: 12px;
+      padding: 60px;
+      position: relative;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .certificate::before,
+    .certificate::after {
+      content: "";
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      border: 5px solid #B8860B;
+    }
+    .certificate::before {
+      top: 20px;
+      left: 20px;
+      border-right: none;
+      border-bottom: none;
+    }
+    .certificate::after {
+      bottom: 20px;
+      right: 20px;
+      border-left: none;
+      border-top: none;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+      .certificate-header {
+  display: flex;
+  align-items: center;   /* vertically align logo + text */
+  justify-content: center; /* center the whole block */
+  margin-bottom: 20px;   /* space below header */
 }
+
+    .logo {
+  max-width: 80px;   /* smaller so it pairs nicely with text */
+  margin-right: 12px;  /* space between logo and name */
+}
+
+.logo img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.institute-name {
+  font-size: 20px;
+  color: #2D2D2D;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+  
+    .title {
+      text-align: center;
+      margin: 40px 0 20px 0;
+    }
+    .title h1 {
+      font-size: 54px;
+      color: #2D5490;
+      margin: 0;
+      font-weight: bold;
+      letter-spacing: 5px;
+    }
+    .title h2 {
+      font-size: 22px;
+      color: #555;
+      margin: 5px 0 0 0;
+      font-weight: normal;
+      letter-spacing: 3px;
+    }
+
+    .presented-to {
+      text-align: center;
+      font-size: 18px;
+      color: #333;
+      margin: 40px 0 10px 0;
+      letter-spacing: 2px;
+    }
+
+    /* ✅ Recipient name centered with underline directly beneath */
+    .recipient-name {
+      display: inline-block;
+      text-align: center;
+      font-size: 40px;
+      color: #B8860B;
+      font-style: italic;
+      font-weight: bold;
+      margin: 10px auto 30px auto;
+      padding-bottom: 8px;
+      border-bottom: 3px solid #B8860B;
+    }
+    .recipient-wrapper {
+      text-align: center;
+    }
+
+    .description {
+      text-align: center;
+      font-size: 16px;
+      color: #444;
+      line-height: 1.8;
+      margin: 30px auto;
+      max-width: 700px;
+    }
+
+    .signature-section {
+      text-align: center;
+      margin-top: 60px;
+    }
+    .signature-line {
+      width: 220px;
+      height: 2px;
+      background: #333;
+      margin: 0 auto 12px auto;
+    }
+    .signature-name {
+      font-size: 18px;
+      font-style: italic;
+      color: #333;
+    }
+    .signature-title {
+      font-size: 15px;
+      font-weight: bold;
+      color: #2D5490;
+    }
+    .signature-company {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .certificate-details {
+      position: absolute;
+      bottom: 20px;
+      left: 40px;
+      right: 40px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #555;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="certificate">
+    <div class="header">
+      
+      <div class="certificate-header">
+           <div class="logo">
+    <img src="/logo.png" alt="BBMI Logo">
+          </div>
+  <div class="institute-name">
+  <div>BRUSHED BY</div>
+  <div>BETTY MAKEUP</div>
+  <div>INSTITUTE</div>
+  </div>
+           </div>
+    </div>
+    
+    <div class="title">
+      <h1>CERTIFICATE</h1>
+      <h2>OF COMPLETION</h2>
+    </div>
+    
+    <div class="presented-to">This Certificate is Proudly Presented To</div>
+    
+    <!-- ✅ Centered name + underline -->
+    <div class="recipient-wrapper">
+      <div class="recipient-name">
+        ${data.userName}
+      </div>
+    </div>
+    
+    <div class="description">
+      In recognition of successfully completing the <b>${data.trainingTitle}</b> Course,<br> 
+      demonstrating mastery of essential beauty techniques, client care, and creative application skills.<br>
+      This certificate is awarded on ${data.completionDate} as a testament to ${data.userName}'s dedication,<br>
+      artistry, and commitment to excellence in the field of professional makeup.
+    </div>
+    
+    <div class="signature-section">
+      <div class="signature-line"></div>
+      <div class="signature-name">Ms Betelhem</div>
+      <div class="signature-title">CEO, BBMI</div>
+      <div class="signature-company">Brushed by Betty Makeup Institute</div>
+    </div>
+    
+    <div class="certificate-details">
+      <div>
+        Certificate No: ${data.certificateNumber}<br>
+        Verification Code: ${data.verificationCode}
+      </div>
+      <div>
+        Verify at: <b>bbmi-institute.com/verify</b><br>
+        Date: ${data.completionDate}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
+
+`
+ }
