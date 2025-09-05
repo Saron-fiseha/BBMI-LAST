@@ -13,6 +13,7 @@ export async function GET(request: NextRequest) {
       JOIN courses c ON e.course_id = c.id
       LEFT JOIN users u ON c.instructor_id = u.id
     `
+
     const params: any[] = []
     const conditions: string[] = []
 
