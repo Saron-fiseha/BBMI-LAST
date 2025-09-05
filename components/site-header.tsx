@@ -48,24 +48,24 @@ export function SiteHeader() {
         </Link>
 
         {/* Desktop Navigation - Center */}
-        <nav className="hidden md:flex items-center space-x-8">
-          <Link href="/" className="text-charcoal hover:text-amber-600 transition-colors">
+        <nav className="hidden md:flex items-center space-x-10">
+          <Link href="/" className="text-charcoal hover:text-custom-tan transition-colors">
             Home
           </Link>
-          <Link href="/courses" className="text-charcoal hover:text-amber-600 transition-colors">
+          <Link href="/courses" className="text-charcoal hover:text-custom-tan transition-colors">
             Courses
           </Link>
-          <Link href="/instructors" className="text-charcoal hover:text-amber-600 transition-colors">
+          {/* <Link href="/instructors" className="text-charcoal hover:text-custom-tan transition-colors">
             Instructors
-          </Link>
-          <Link href="/about" className="text-charcoal hover:text-amber-600 transition-colors">
+          </Link> */}
+          <Link href="/about" className="text-charcoal hover:text-custom-tan transition-colors">
             About
           </Link>
           {/* New Portfolio Link */}
-          <Link href="/portfolio" className="text-charcoal hover:text-amber-600 transition-colors">
+          {/* <Link href="/portfolio" className="text-charcoal hover:text-custom-tan transition-colors">
             Portfolio
-          </Link>
-          <Link href="/contact" className="text-charcoal hover:text-amber-600 transition-colors">
+          </Link> */}
+          <Link href="/contact" className="text-charcoal hover:text-custom-tan transition-colors">
             Contact
           </Link>
         </nav>
@@ -124,13 +124,13 @@ export function SiteHeader() {
             </DropdownMenu>
           ) : (
             <>
-              <Button variant="ghost" asChild>
-                <Link href="/login">Login</Link>
-              </Button>
+              <Button variant="ghost" asChild className="text-charcoal hover:text-white">
+        <Link href="/login">Login</Link>
+      </Button>
               <ShinyButton>
                 <Link
                   href="/register"
-                  className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
+                  className="bg-gradient-to-r from-custom-copper to-custom-tan hover:bg-warm-brown"
                 >
                   Register
                 </Link>
@@ -164,13 +164,13 @@ export function SiteHeader() {
               >
                 Courses
               </Link>
-              <Link
+              {/* <Link
                 href="/instructors"
                 className="text-charcoal hover:text-amber-600 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Instructors
-              </Link>
+              </Link> */}
               <Link
                 href="/about"
                 className="text-charcoal hover:text-amber-600 transition-colors"
@@ -179,13 +179,13 @@ export function SiteHeader() {
                 About
               </Link>
               {/* New Portfolio Link */}
-              <Link
+              {/* <Link
                 href="/portfolio"
                 className="text-charcoal hover:text-amber-600 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Portfolio
-              </Link>
+              </Link> */}
               <Link
                 href="/contact"
                 className="text-charcoal hover:text-amber-600 transition-colors"

@@ -65,7 +65,7 @@ export function DashboardSidebar({ open, onOpenChange, className }: DashboardSid
             <Link href="/" className="flex items-center space-x-2">
               <Image src="/logo.png" alt="Brushed by Betty" width={32} height={32} className="h-8 w-8" />
               <div className="flex flex-col">
-                <span className="font-bold text-sm bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
+                <span className="font-bold text-sm bg-gradient-to-r from-custom-copper to-custom-tan hover:bg-warm-brown bg-clip-text text-transparent">
                   Brushed by Betty
                 </span>
                 <span className="text-xs text-muted-foreground">Student Portal</span>
@@ -82,7 +82,7 @@ export function DashboardSidebar({ open, onOpenChange, className }: DashboardSid
         {/* User Info */}
         <div className="px-3 py-2 border-b">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 flex items-center justify-center text-white font-semibold">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-custom-copper to-custom-tan hover:bg-warm-brown flex items-center justify-center text-white font-semibold">
               {user?.full_name?.charAt(0) || "S"}
             </div>
             <div className="flex-1 min-w-0">
@@ -99,7 +99,7 @@ export function DashboardSidebar({ open, onOpenChange, className }: DashboardSid
               asChild
               variant="ghost"
               size="sm"
-              className="w-full justify-start text-muted-foreground hover:text-foreground"
+              className="w-full justify-start text-muted-foreground hover:text-white"
             >
               <Link href="/">
                 <Home className="mr-2 h-4 w-4" />
@@ -120,7 +120,7 @@ export function DashboardSidebar({ open, onOpenChange, className }: DashboardSid
                 className={cn(
                   "w-full justify-start",
                   pathname === item.href
-                    ? "bg-amber-100 text-amber-900 hover:bg-amber-100 dark:bg-amber-900 dark:text-amber-100"
+                    ? "bg-soft-cream text-custom-tan-100 hover:bg-soft-cream dark:bg-soft-cream dark:text-amber-100"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted",
                 )}
               >

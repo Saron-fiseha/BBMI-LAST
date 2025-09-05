@@ -31,7 +31,8 @@ const ShinyButton = React.forwardRef<HTMLButtonElement, ShinyButtonProps>(
             <Button
               {...props}
               className={cn(
-                "relative overflow-hidden bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold",
+                // UPDATED: Default is now a gradient, hover is the solid warm-brown color
+                "relative overflow-hidden bg-gradient-to-r from-custom-copper to-custom-tan hover:bg-warm-brown text-white font-semibold",
                 className,
               )}
               ref={ref}
@@ -48,7 +49,8 @@ const ShinyButton = React.forwardRef<HTMLButtonElement, ShinyButtonProps>(
         <Button
           {...props}
           className={cn(
-            "relative overflow-hidden bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold",
+            // UPDATED: Styles now match the link version for consistency
+            "relative overflow-hidden bg-gradient-to-r from-custom-copper to-custom-tan hover:bg-warm-brown text-white font-semibold",
             className,
           )}
           ref={ref}

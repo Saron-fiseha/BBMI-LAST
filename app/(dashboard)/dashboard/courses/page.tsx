@@ -289,6 +289,7 @@ export default function StudentCoursesPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+         "Authorization": `Bearer ${localStorage.getItem("auth_token")}`
         },
         body: JSON.stringify({
           userId: user?.id,
@@ -299,13 +300,13 @@ export default function StudentCoursesPage() {
 
       // Navigate to course or specific lesson
       if (lessonId) {
-        router.push(`/courses/${courseId}/lessons/${lessonId}`)
+      router.push(`/courses/${courseId}/lessons`);
       } else {
         router.push(`/courses/${courseId}`)
       }
     } catch (error) {
       console.error("Continue course error:", error)
-      router.push(`/courses/${courseId}`)
+      router.push(`/courses/${courseId}/lessons`);
     }
   }
 

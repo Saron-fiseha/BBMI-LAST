@@ -1,3 +1,5 @@
+"use client"
+
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { Card, CardContent } from "@/components/ui/card"
@@ -8,8 +10,41 @@ import { ShinyButton } from "@/components/magicui/shiny-button"
 import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button"
 import { BlurFade } from "@/components/magicui/blur-fade"
 import { NumberTicker } from "@/components/magicui/number-ticker"
+// --- ADDED: Import useEffect and dynamic ---
+// import { useEffect } from 'react'
+import dynamic from 'next/dynamic'
+// import { pdfjs } from "react-pdf"
+
+const CertificationsCarousel = dynamic(
+  () => import('@/components/CertificationsCarousel'), // Path to your new component
+  {
+    ssr: false, // This is still crucial for preventing server-side errors
+    loading: () => <div className="text-center p-4">Loading certificates...</div>,
+  }
+);
+
 
 export default function AboutPage() {
+  // --- UPDATED: Changed pdfSrc to imageSrc and updated file extensions to .jpg ---
+  const certificateData = [
+    {
+      id: 1,
+      imageSrc: "/certificates/sma-certificate.jpg",
+      alt: "Certificate of Attendance from SMA International Makeup Academy",
+    },
+    {
+      id: 2,
+      imageSrc: "/certificates/raphael-oliver-certificate.jpg",
+      alt: "Certificate of Specialization from Raphael Oliver",
+    },
+    {
+      id: 3,
+      imageSrc: "/certificates/taya-appreciation-certificate.jpg",
+      alt: "Certificate of Appreciation from TaYA",
+    },
+  ];
+
+
   // Mock team members with email and phone
   const teamMembers = [
     {
@@ -47,7 +82,7 @@ export default function AboutPage() {
       <SiteHeader />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="bg-muted py-16 md:py-24">
+        <section className="bg-[#F5F1E9] py-16 md:py-24">
           <div className="container">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
@@ -67,7 +102,7 @@ export default function AboutPage() {
                     href="/contact"
                     variant="outline"
                     size="lg"
-                    className="text-lg px-8 py-4 border-2 border-gray-300 text-black hover:bg-slate-200 hover:text-black"
+                    className="text-lg px-8 py-4 text-black hover:bg-black hover:text-white"
                   >
                     Contact Us
                   </InteractiveHoverButton>
@@ -112,40 +147,40 @@ export default function AboutPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-muted p-6 rounded-lg text-center transition-transform duration-300 hover:-translate-y-2">
-                    <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-primary/20 text-amber-600 mb-4">
+                    <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-primary/20 text-custom-brown mb-4">
                       <Users className="h-6 w-6" />
                     </div>
                     <h3 className="text-2xl font-bold mb-2">
                       <NumberTicker value={4500} />+
                     </h3>
-                    <p className="text-muted-foreground">Graduates</p>
+                    <p className="text-custom-copper">Graduates</p>
                   </div>
                   <div className="bg-muted p-6 rounded-lg text-center transition-transform duration-300 hover:-translate-y-2">
-                    <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-primary/20 text-amber-600 mb-4">
+                    <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-primary/20 text-custom-brown mb-4">
                       <BookOpen className="h-6 w-6" />
                     </div>
                     <h3 className="text-2xl font-bold mb-2">
                       <NumberTicker value={25} />+
                     </h3>
-                    <p className="text-muted-foreground">Courses</p>
+                    <p className="text-custom-copper">Courses</p>
                   </div>
                   <div className="bg-muted p-6 rounded-lg text-center transition-transform duration-300 hover:-translate-y-2">
-                    <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-primary/20 text-amber-600 mb-4">
+                    <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-primary/20 text-custom-brown mb-4">
                       <Award className="h-6 w-6" />
                     </div>
                     <h3 className="text-2xl font-bold mb-2">
                       <NumberTicker value={15} />+
                     </h3>
-                    <p className="text-muted-foreground">Industry Awards</p>
+                    <p className="text-custom-copper">Industry Awards</p>
                   </div>
                   <div className="bg-muted p-6 rounded-lg text-center transition-transform duration-300 hover:-translate-y-2">
-                    <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-primary/20 text-amber-600 mb-4">
+                    <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-primary/20 text-custom-brown mb-4">
                       <Clock className="h-6 w-6" />
                     </div>
                     <h3 className="text-2xl font-bold mb-2">
                       <NumberTicker value={10} />+
                     </h3>
-                    <p className="text-muted-foreground">Years of Excellence</p>
+                    <p className="text-custom-copper">Years of Excellence</p>
                   </div>
                 </div>
               </div>
@@ -154,7 +189,7 @@ export default function AboutPage() {
         </section>
 
         {/* Our Values */}
-        <section className="py-16 bg-muted">
+        <section className="py-16 bg-[#F5F1E9]">
           <BlurFade>
             <div className="container">
               <div className="max-w-3xl mx-auto text-center mb-12">
@@ -167,7 +202,7 @@ export default function AboutPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <Card className="transition-transform duration-300 hover:-translate-y-2">
                   <CardContent className="pt-6">
-                    <div className="mb-4 h-12 w-12 flex items-center justify-center rounded-full bg-primary/20 text-amber-600">
+                    <div className="mb-4 h-12 w-12 flex items-center justify-center rounded-full bg-primary/20 text-custom-brown">
                       <Award className="h-6 w-6" />
                     </div>
                     <TextAnimate text="Excellence" className="text-xl font-bold mb-2" />
@@ -179,7 +214,7 @@ export default function AboutPage() {
                 </Card>
                 <Card className="transition-transform duration-300 hover:-translate-y-2">
                   <CardContent className="pt-6">
-                    <div className="mb-4 h-12 w-12 flex items-center justify-center rounded-full bg-primary/20 text-amber-600">
+                    <div className="mb-4 h-12 w-12 flex items-center justify-center rounded-full bg-primary/20 text-custom-brown">
                       <Users className="h-6 w-6" />
                     </div>
                     <TextAnimate text="Inclusivity" className="text-xl font-bold mb-2" />
@@ -191,7 +226,7 @@ export default function AboutPage() {
                 </Card>
                 <Card className="transition-transform duration-300 hover:-translate-y-2">
                   <CardContent className="pt-6">
-                    <div className="mb-4 h-12 w-12 flex items-center justify-center rounded-full bg-primary/20 text-amber-600">
+                    <div className="mb-4 h-12 w-12 flex items-center justify-center rounded-full bg-primary/20 text-custom-brown">
                       <CheckCircle className="h-6 w-6" />
                     </div>
                     <TextAnimate text="Integrity" className="text-xl font-bold mb-2" />
@@ -206,47 +241,68 @@ export default function AboutPage() {
           </BlurFade>
         </section>
 
-        {/* Our Team */}
-        <section className="py-16">
-          <BlurFade>
-            <div className="container">
-              <div className="max-w-3xl mx-auto text-center mb-12">
-                <h2 className="text-3xl font-bold mb-4">Our Leadership Team</h2>
-                <p className="text-muted-foreground">
-                  Meet the dedicated professionals who make Glamour Academy a leader in beauty education.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                {teamMembers.map((member, index) => (
-                  <div key={index} className="text-center">
-                    <div className="mb-4 aspect-square relative overflow-hidden rounded-full">
-                      <img
-                        src={member.image || "/placeholder.svg"}
-                        alt={member.name}
-                        className="object-cover w-full h-full"
-                      />
-                    </div>
-                    <h3 className="text-xl font-bold mb-1">{member.name}</h3>
-                    <p className="text-muted-foreground">{member.role}</p>
-                    <div className="mt-2 flex justify-center items-center gap-4 text-sm text-primary">
-                      <a href={`mailto:${member.email}`} className="flex items-center gap-1 hover:underline">
-                        <Mail size={14} />
-                        Email
-                      </a>
-                      <a href={`tel:${member.phone}`} className="flex items-center gap-1 hover:underline">
-                        <Phone size={14} />
-                        Call
-                      </a>
-                    </div>
-                  </div>
-                ))}
-              </div>
+          {/* --- CERTIFICATIONS SECTION --- */}
+        <section className="bg-slate-50 py-20 sm:py-24">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12 max-w-3xl mx-auto">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+                Our Commitment to Excellence
+              </h2>
+              <p className="mt-4 text-lg text-gray-600">
+                We are dedicated to continuous learning and professional development, holding certifications from globally recognized makeup artists and institutions.
+              </p>
             </div>
-          </BlurFade>
+            <div className="w-full max-w-5xl mx-auto">
+              {/* This now passes the image data to the carousel */}
+              <CertificationsCarousel certificates={certificateData} />
+            </div>
+          </div>
         </section>
 
+
+        {/* Our Team */}
+        <section className="py-16">
+  <BlurFade>
+    <div className="container">
+      <div className="max-w-3xl mx-auto text-center mb-12">
+        <h2 className="text-3xl font-bold mb-4">Our Leadership Team</h2>
+        <p className="text-muted-foreground">
+          Meet the dedicated professionals who make Glamour Academy a leader in beauty education.
+        </p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        {teamMembers.map((member, index) => (
+          <div key={index} className="text-center">
+            <div className="mb-4 aspect-square relative overflow-hidden rounded-full">
+              <img
+                src={member.image || "/placeholder.svg"}
+                alt={member.name}
+                className="object-cover w-full h-full"
+              />
+            </div>
+            <h3 className="text-xl font-bold mb-1">{member.name}</h3>
+            <p className="text-muted-foreground">{member.role}</p>
+            {/* --- UPDATED: Changed text-primary to text-custom-brown --- */}
+            <div className="mt-2 flex justify-center items-center gap-4 text-sm text-custom-copper">
+              <a href={`mailto:${member.email}`} className="flex items-center gap-1 hover:underline">
+                <Mail size={14} />
+                Email
+              </a>
+              <a href={`tel:${member.phone}`} className="flex items-center gap-1 hover:underline">
+                <Phone size={14} />
+                Call
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </BlurFade>
+</section>
+
+
         {/* CTA */}
-        <section className="py-16 bg-slate-900 text-white">
+        <section className="py-16 bg-warm-rose text-black">
           <div className="container">
             <div className="max-w-3xl mx-auto text-center space-y-6">
               <h2 className="text-3xl font-bold">Ready to Start Your Beauty Career?</h2>
@@ -254,7 +310,7 @@ export default function AboutPage() {
                 Join Glamour Academy today and transform your passion into a successful career in the beauty industry.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <ShinyButton href="/courses" size="lg" className="bg-white text-slate-900 hover:bg-gray-200">
+                <ShinyButton href="/courses" size="lg" className="bg-white text-black hover:bg-gray-200">
                   Browse Courses
                 </ShinyButton>
                 <InteractiveHoverButton

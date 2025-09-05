@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { sql } from "@/lib/db"
 import { getUserFromToken } from "@/lib/auth"
+import { createEnrollmentNotification } from "@/lib/notification-service"
+
 
 export async function POST(request: NextRequest) {
   try {
@@ -94,6 +96,9 @@ export async function POST(request: NextRequest) {
       )
     `
 
+      // --- THE FIX: Create a notification after all database operations are successful ---
+    await createEnrollmentNotification(user.id, trainingData.id, trainingData.name);
+    
     return NextResponse.json({
       success: true,
       enrollment: {

@@ -16,7 +16,9 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
+import { useRouter } from "next/navigation"; 
+
 
 interface DashboardHeaderProps {
   heading: string
@@ -31,62 +33,105 @@ interface Notification {
   type: "info" | "success" | "warning" | "error"
   read: boolean
   created_at: string
+  related_id?: number
+  related_type?: string
+  metadata?: any
+  link?: string;
 }
 
 export function DashboardHeader({ heading, text, children }: DashboardHeaderProps) {
   const { user, logout } = useAuth()
+  const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
+  const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    fetchNotifications()
-  }, [])
+  // useEffect(() => {
+  //   fetchNotifications();
+  //   // Set up polling for new notifications every 30 seconds
+  //   const interval = setInterval(fetchNotifications, 30000)
+  //   return () => clearInterval(interval)
+  // }, [user])
 
-  const fetchNotifications = async () => {
+  // const fetchNotifications = async () => {
+  //   if (!user) return
+  const fetchNotifications = useCallback(async () => {
+    // This check is crucial. If there's no user, we don't fetch.
+    if (!user) {
+      // Clear notifications if user logs out
+      setNotifications([]);
+      setUnreadCount(0);
+      return;
+    }
+
+    setLoading(true); 
+
+
     try {
-      // Sample notifications - replace with real API call
-      const sampleNotifications: Notification[] = [
-        {
-          id: 1,
-          title: "Course Progress",
-          message: "You've completed 65% of Professional Makeup Artistry course!",
-          type: "success",
-          read: false,
-          created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: 2,
-          title: "New Assignment",
-          message: "New practice assignment available in Bridal Makeup course",
-          type: "info",
-          read: false,
-          created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: 3,
-          title: "Certificate Ready",
-          message: "Your certificate for Bridal Makeup Specialization is ready!",
-          type: "success",
-          read: true,
-          created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        },
-      ]
+      setLoading(true)
+      const token = localStorage.getItem("auth_token") // Adjust based on your auth implementation
 
-      setNotifications(sampleNotifications)
-      setUnreadCount(sampleNotifications.filter((n) => !n.read).length)
+      const response = await fetch("/api/notifications?limit=10", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setNotifications(data.notifications || [])
+        setUnreadCount(data.unreadCount || 0)
+      } else {
+        console.error("Failed to fetch notifications:", response.statusText)
+      }
     } catch (error) {
       console.error("Failed to fetch notifications:", error)
+    } finally {
+      setLoading(false)
     }
-  }
+  }, [user]);
+useEffect(() => {
+    fetchNotifications(); // Fetch immediately on load/user change
+
+    const interval = setInterval(fetchNotifications, 30000); // Poll with the fresh function
+    
+    return () => clearInterval(interval); // Cleanup
+  }, [fetchNotifications]);
+
+   const handleNotificationClick = async (notification: Notification) => {
+    // Mark as read if it's unread
+    if (!notification.read) {
+      await markAsRead(notification.id);
+    }
+    
+    // Navigate if a link exists
+    if (notification.link) {
+      router.push(notification.link);
+    }
+  };
 
   const markAsRead = async (notificationId: number) => {
-    try {
-      // Update local state
-      setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n)))
-      setUnreadCount((prev) => Math.max(0, prev - 1))
+    if (!user) return
 
-      // TODO: Make API call to mark as read
-      // await fetch(`/api/notifications/${notificationId}/read`, { method: 'POST' })
+    try {
+      const token = localStorage.getItem("auth_token") // Adjust based on your auth implementation
+
+      const response = await fetch(`/api/notifications/${notificationId}/read`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (response.ok) {
+        // Update local state
+        setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n)))
+        setUnreadCount((prev) => Math.max(0, prev - 1))
+      } else {
+        console.error("Failed to mark notification as read:", response.statusText)
+      }
     } catch (error) {
       console.error("Failed to mark notification as read:", error)
     }
@@ -136,14 +181,15 @@ export function DashboardHeader({ heading, text, children }: DashboardHeaderProp
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b">
       <div className="space-y-1">
-       
+        <h1 className="text-2xl font-bold tracking-tight">{heading}</h1>
+        {text && <p className="text-muted-foreground">{text}</p>}
       </div>
 
       <div className="flex items-center gap-4">
         {/* Notifications */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="relative">
+            <Button variant="outline" size="sm" className="relative bg-transparent" disabled={loading}>
               <Bell className="h-4 w-4" />
               {unreadCount > 0 && (
                 <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-500">
@@ -163,14 +209,17 @@ export function DashboardHeader({ heading, text, children }: DashboardHeaderProp
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <div className="max-h-64 overflow-y-auto">
-              {notifications.length > 0 ? (
+              {loading ? (
+                <div className="p-4 text-center text-sm text-muted-foreground">Loading...</div>
+              ) : notifications.length > 0 ? (
                 notifications.map((notification) => (
                   <DropdownMenuItem
                     key={notification.id}
                     className={`flex flex-col items-start p-3 cursor-pointer ${
                       !notification.read ? "bg-blue-50 dark:bg-blue-950" : ""
                     }`}
-                    onClick={() => !notification.read && markAsRead(notification.id)}
+                    // onClick={() => !notification.read && markAsRead(notification.id)}
+                     onClick={() => handleNotificationClick(notification)}
                   >
                     <div className="flex items-start gap-2 w-full">
                       <span className="text-sm">{getNotificationIcon(notification.type)}</span>
@@ -188,11 +237,11 @@ export function DashboardHeader({ heading, text, children }: DashboardHeaderProp
               )}
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
+            {/* <DropdownMenuItem asChild>
               <Link href="/dashboard/notifications" className="w-full text-center">
                 View all notifications
               </Link>
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
           </DropdownMenuContent>
         </DropdownMenu>
 

@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { neon } from "@neondatabase/serverless"
+import { getUserFromToken } from "@/lib/auth"; // Assuming you have an auth utility
+
 
 const sql = neon(process.env.DATABASE_URL!)
 
