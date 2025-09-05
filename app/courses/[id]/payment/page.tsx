@@ -340,7 +340,7 @@ export default function PaymentPage() {
             size="lg"
             onClick={handlePayNow}
           >
-            Pay Now with Chapa
+            Pay Now With Chapa
           </Button>
           <Button
             className="mt-4 w-full"
