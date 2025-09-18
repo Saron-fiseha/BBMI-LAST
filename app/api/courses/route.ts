@@ -140,6 +140,8 @@ export async function GET() {
         t.modules,
         t.course_code,
         t.status,
+        t.created_at,
+        t.updated_at,
         -- Fetch the instructor's name from the instructors table ---
         i.full_name AS instructor_name
       FROM trainings t -- Using the correct table name here

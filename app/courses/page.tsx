@@ -1106,7 +1106,7 @@ function CourseCard({ course, onEnrollClick }: CourseCardProps) {
   const hasDiscount = course.discount > 0;
 
   return (
-    <Card className="flex flex-col overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 group border border-transparent hover:border-amber-500/50">
+    <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 group border border-transparent hover:border-amber-500/50">
       {/* Image and Badges */}
       <div className="relative aspect-video">
         <img
@@ -1400,7 +1400,7 @@ export default function CoursesPage() {
         </BlurFade>
 
         {/* --- Trainings Grid --- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 grid-auto-rows-fr">
           {filteredCourses.map((course, index) => (
             <BlurFade key={course.id} delay={0.1 * index}>
               <CourseCard course={course} onEnrollClick={handleEnrollClick} />

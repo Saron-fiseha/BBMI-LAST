@@ -15,6 +15,7 @@ interface Training {
   name: string;
   description: string;
   price: number;
+  discount: number | null;
 }
 
 export default function PaymentPage() {
@@ -60,15 +61,18 @@ export default function PaymentPage() {
   }, [id]);
 
   // Effect to handle payment status from URL query parameters AND trigger verification
+
   useEffect(() => {
     const rawQueryString = window.location.search;
-    const correctedQueryString = rawQueryString.replace(/&amp;/g, "&");
+    // Decode URI component to handle robustly encoded characters like &amp;
+    const correctedQueryString = decodeURIComponent(
+      rawQueryString.replace(/&amp;/g, "&")
+    );
     const searchParams = new URLSearchParams(correctedQueryString);
 
     const statusParam = searchParams.get("status");
     const txRefParam = searchParams.get("tx_ref");
 
-    // Only proceed if payment is marked completed, tx_ref is present, user/training is loaded, and verification hasn't been attempted
     if (
       statusParam === "completed" &&
       txRefParam &&
@@ -76,8 +80,8 @@ export default function PaymentPage() {
       training?.id &&
       !verifyAttempted.current
     ) {
-      setPaymentStatus("processing"); // Show processing state to user
-      verifyAttempted.current = true; // Mark verification as attempted to prevent re-runs
+      setPaymentStatus("processing");
+      verifyAttempted.current = true;
 
       const finalizePayment = async () => {
         try {
@@ -100,10 +104,11 @@ export default function PaymentPage() {
               description: "Your enrollment has been confirmed.",
             });
             console.log(
-              "Attempting redirect to:",
-              `/courses/${training.id}?enrolled=true`
+              "Attempting redirect to lessons page:",
+              `/courses/${training.id}/lessons`
             );
-            router.replace(`/courses/${training.id}?enrolled=true`); // This should redirect
+            // This is the intended redirect
+            router.replace(`/courses/${training.id}/lessons`);
           } else {
             toast({
               title: "Payment Failed",
@@ -111,6 +116,7 @@ export default function PaymentPage() {
                 verifyData.message || "Could not confirm enrollment.",
               variant: "destructive",
             });
+            // Redirect to course details page with a failure flag
             router.replace(`/courses/${training.id}?paymentFailed=true`);
           }
         } catch (error) {
@@ -120,58 +126,41 @@ export default function PaymentPage() {
             description: "An unexpected error occurred during verification.",
             variant: "destructive",
           });
+          // Redirect to course details page with an error flag
           router.replace(
             `/courses/${training.id}?paymentError=client_verify_failed`
           );
-        } finally {
-          // Clean up URL parameters after verification attempt, regardless of success/failure
-          const newSearchParams = new URLSearchParams(
-            rawSearchParams.toString()
-          ); // Use rawSearchParams for consistency
-          newSearchParams.delete("status");
-          newSearchParams.delete("tx_ref");
-          // Only replace if parameters were actually present in the original URL
-          if (rawSearchParams.has("status") || rawSearchParams.has("tx_ref")) {
-            router.replace(
-              `${window.location.pathname}?${newSearchParams.toString()}`,
-              { scroll: false }
-            );
-          }
         }
+        // IMPORTANT: The 'finally' block with router.replace for URL cleanup is removed from here.
+        // The redirects in the try/catch blocks now handle the navigation completely.
       };
 
-      // Only run finalizePayment if authentication and training data are fully loaded
       if (!authLoading && !trainingLoading) {
         finalizePayment();
       }
     } else if (statusParam === "completed" && !txRefParam) {
-      // Fallback for unexpected missing tx_ref, should be less common now
+      // Handle missing tx_ref by showing a toast and redirecting to the course page
       toast({
         title: "Payment Error",
         description:
-          "Missing transaction reference for verification. (No tx_ref in URL after cleaning)",
+          "Missing transaction reference for verification. Please contact support.",
         variant: "destructive",
       });
       router.replace(
         `/courses/${training?.id || ""}?paymentError=missing_tx_ref`
       );
-      const newSearchParams = new URLSearchParams(rawSearchParams.toString());
-      newSearchParams.delete("status");
-      router.replace(
-        `${window.location.pathname}?${newSearchParams.toString()}`,
-        { scroll: false }
-      );
     } else {
       setPaymentStatus(null); // Clear status if not present or not 'completed'
     }
   }, [
-    rawSearchParams,
     router,
     user,
     training,
     authLoading,
     trainingLoading,
     toast,
+    // rawSearchParams is no longer directly used in the cleanup, but it's okay to keep
+    // if other parts of the component might still reference it for non-navigation purposes.
   ]);
 
   const handlePayNow = async () => {
@@ -197,8 +186,19 @@ export default function PaymentPage() {
       return;
     }
 
+    // try {
+    //   const amountToSend = parseFloat(training.price.toString());
+    //   if (isNaN(amountToSend) || amountToSend <= 0) {
+    //     alert("Chapa Error: Invalid amount for payment.");
+    //     return;
+    //   }
     try {
-      const amountToSend = parseFloat(training.price.toString());
+      // Calculate discounted price
+      const discountedPrice = training.discount
+        ? training.price * (1 - training.discount / 100)
+        : training.price;
+
+      const amountToSend = parseFloat(discountedPrice.toString()); // Use the calculated discountedPrice
       if (isNaN(amountToSend) || amountToSend <= 0) {
         alert("Chapa Error: Invalid amount for payment.");
         return;
@@ -317,6 +317,9 @@ export default function PaymentPage() {
       </div>
     );
   }
+  const displayPrice = training.discount
+    ? training.price * (1 - training.discount / 100)
+    : training.price;
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
@@ -327,7 +330,16 @@ export default function PaymentPage() {
             Payment for {training.name}
           </h1>
           <p className="text-lg mb-2">
-            Price: <span className="font-semibold">${training.price}</span>
+            {/* Price: <span className="font-semibold">${training.price}</span> */}
+            Price:{" "}
+            <span className="font-semibold">
+              ${Number(displayPrice || 0).toFixed(2)}
+            </span>
+            {training.discount && training.discount > 0 && (
+              <span className="ml-2 line-through text-muted-foreground">
+                ${Number(training.price || 0).toFixed(2)}
+              </span>
+            )}
           </p>
           <p className="text-sm text-gray-600 mb-6">
             Paying as:{" "}
