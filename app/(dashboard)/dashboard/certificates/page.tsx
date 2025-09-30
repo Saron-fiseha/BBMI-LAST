@@ -1,17 +1,22 @@
-"use client"
+// C:\Users\Hp\Documents\BBMI-LMS\app\(dashboard)\dashboard\certificates\page.tsx
+"use client";
 
-import { useState, useEffect } from "react"
-import { DashboardHeader } from "@/components/dashboard/dashboard-header"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useState, useEffect, useCallback } from "react";
+import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Award,
   Download,
-  Share2,
   Calendar,
   BookOpen,
   Search,
@@ -20,343 +25,371 @@ import {
   Star,
   GraduationCap,
   Clock,
-  X,
-  Eye,
-  ExternalLink,
-} from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { useAuth } from "@/hooks/use-auth"
-import Link from "next/link"
-import Image from "next/image"
+  Users,
+  Hash,
+  UserRound,
+  Tag,
+  Eye, // Used for 'View Certificate' icon
+  Loader2, // Used for loading states on buttons
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import Link from "next/link"; // Keep Link for "View My Courses"
 
 interface Certificate {
-  id: number
-  user_id: number
-  course_id: number
-  course_title: string
-  course_category: string
-  course_level: string
-  instructor_name: string
-  student_name: string
-  completion_date: string
-  issue_date: string
-  certificate_code: string
-  verification_code: string
-  grade: string
-  duration_hours: number
-  skills_learned: string[]
-  verification_url: string
-  progress: number
-  total_modules: number
-  completed_modules: number
+  id: number;
+  user_id: number;
+  course_id: number; // Corresponds to training_id in DB
+  course_title: string; // Corresponds to training_name in DB
+  course_category: string;
+  course_level: string;
+  instructor_name: string;
+  student_name: string; // Corresponds to user_name in DB
+  certificate_issued_at: string; // <-- USING THIS
+  issue_date: string; // This remains for API's own issue date
+  certificate_number: string; // <-- USING THIS
+  verification_code: string; // Crucial for API call
+  grade: string;
+  duration_hours: number; // Corresponds to duration in DB
+  skills_learned: string[];
+  verification_url: string; // Not directly used for viewing in new tab, but useful
+  progress: number;
+  total_modules: number;
+  completed_modules: number;
+  training_description?: string;
 }
 
 interface Category {
-  id: number
-  name: string
-  description: string
-  course_count: number
+  id: number;
+  name: string;
+  description: string;
+  course_count: number;
 }
 
 interface FilterOptions {
-  categories: Category[]
-  levels: string[]
-  years: number[]
-  instructors: string[]
+  categories: Category[];
+  levels: string[];
+  years: number[];
+  instructors: string[];
 }
 
 export default function StudentCertificatesPage() {
-  const { toast } = useToast()
-  const { user } = useAuth()
-  const [certificates, setCertificates] = useState<Certificate[]>([])
-  const [filteredCertificates, setFilteredCertificates] = useState<Certificate[]>([])
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
+  const [filteredCertificates, setFilteredCertificates] = useState<
+    Certificate[]
+  >([]);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     categories: [],
     levels: [],
     years: [],
     instructors: [],
-  })
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("all")
-  const [selectedLevel, setSelectedLevel] = useState("all")
-  const [selectedYear, setSelectedYear] = useState("all")
-  const [selectedInstructor, setSelectedInstructor] = useState("all")
-  const [isGenerating, setIsGenerating] = useState<number | null>(null)
-  const [selectedCertificate, setSelectedCertificate] = useState<Certificate | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isDownloading, setIsDownloading] = useState(false)
-  const [categoriesLoading, setCategoriesLoading] = useState(true)
+  });
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedLevel, setSelectedLevel] = useState("all");
+  const [selectedYear, setSelectedYear] = useState("all");
+  const [selectedInstructor, setSelectedInstructor] = useState("all");
+  const [downloadingCertId, setDownloadingCertId] = useState<number | null>(
+    null
+  );
+  const [viewingCertId, setViewingCertId] = useState<number | null>(null);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
-
-  useEffect(() => {
-    if (user?.id) {
-      fetchCertificates()
-    }
-  }, [user?.id])
-
-  useEffect(() => {
-    filterCertificates()
-  }, [certificates, searchTerm, selectedCategory, selectedLevel, selectedYear, selectedInstructor])
-
-  const fetchCategories = async () => {
+  const formatDate = (dateString: string) => {
+    if (!dateString || dateString === "N/A") return "N/A";
     try {
-      setCategoriesLoading(true)
-      const response = await fetch("/api/dashboard/categories")
+      return new Date(dateString).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch (error) {
+      console.error("Error parsing date:", dateString, error);
+      return "N/A";
+    }
+  };
 
+  const fetchCategories = useCallback(async () => {
+    try {
+      setCategoriesLoading(true);
+      const response = await fetch("/api/dashboard/categories");
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-
-      const data = await response.json()
-
+      const data = await response.json();
       if (data.success && data.categories) {
-        setFilterOptions((prev) => ({
-          ...prev,
-          categories: data.categories,
-        }))
+        setFilterOptions((prev) => ({ ...prev, categories: data.categories }));
       } else {
-        console.warn("Categories API returned no data, using fallback")
+        console.warn("Categories API returned no data or success false.");
+        setFilterOptions((prev) => ({ ...prev, categories: [] }));
       }
     } catch (error) {
-      console.error("Categories fetch error:", error)
+      console.error("Categories fetch error:", error);
       toast({
         title: "Warning",
-        description: "Could not load categories from database. Using default categories.",
+        description: "Could not load categories from database.",
         variant: "default",
-      })
+      });
     } finally {
-      setCategoriesLoading(false)
+      setCategoriesLoading(false);
     }
-  }
+  }, [toast]);
 
-  const fetchCertificates = async () => {
+  const fetchCertificates = useCallback(async () => {
     try {
-      setLoading(true)
-      const response = await fetch(`/api/certificates/student?userId=${user?.id}`)
+      setLoading(true);
+      if (!user?.id) {
+        setCertificates([]);
+        setFilteredCertificates([]);
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(
+        `/api/certificates/student?userId=${user.id}`
+      );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (data.certificates && data.certificates.length > 0) {
-        setCertificates(data.certificates)
+        const mappedCertificates: Certificate[] = data.certificates.map(
+          (cert: any) => ({
+            id: cert.id,
+            user_id: cert.user_id,
+            course_id: cert.training_id,
+            course_title: cert.course_title,
+            course_category: cert.course_category || "Uncategorized",
+            course_level: cert.course_level || "General",
+            instructor_name: cert.instructor_name,
+            student_name: cert.student_name,
+            certificate_issued_at: cert.certificate_issued_at,
+            issue_date: cert.issue_date,
+            certificate_number: cert.certificate_number,
+            verification_code: cert.verification_code,
+            grade: cert.grade || "N/A",
+            duration_hours: cert.duration,
+            skills_learned: Array.isArray(cert.skills_learned)
+              ? cert.skills_learned
+              : typeof cert.skills_learned === "string" && cert.skills_learned
+                ? cert.skills_learned.split(",").map((s: string) => s.trim())
+                : [],
+            verification_url: `${window.location.origin}/verify/${encodeURIComponent(cert.verification_code)}`,
+            progress: 100,
+            total_modules: 1,
+            completed_modules: 1,
+            training_description: cert.training_description || "",
+          })
+        );
 
-        // Extract filter options from certificates
-        const categories = [...new Set(data.certificates.map((cert: Certificate) => cert.course_category))]
-        const levels = [...new Set(data.certificates.map((cert: Certificate) => cert.course_level))]
+        setCertificates(mappedCertificates);
+
+        const levels = [
+          ...new Set(mappedCertificates.map((cert) => cert.course_level)),
+        ].filter(Boolean) as string[];
         const years = [
-          ...new Set(data.certificates.map((cert: Certificate) => new Date(cert.completion_date).getFullYear())),
-        ]
-        const instructors = [...new Set(data.certificates.map((cert: Certificate) => cert.instructor_name))]
+          ...new Set(
+            mappedCertificates.map((cert) =>
+              new Date(cert.certificate_issued_at).getFullYear()
+            )
+          ),
+        ].sort((a, b) => b - a);
+        const instructors = [
+          ...new Set(mappedCertificates.map((cert) => cert.instructor_name)),
+        ].filter(Boolean) as string[];
 
-        // setFilterOptions({
-        //   categories: categories.filter(Boolean),
-        //   levels: levels.filter(Boolean),
-        //   years: years.sort((a, b) => b - a),
-        //   instructors: instructors.filter(Boolean),
-        // })
+        setFilterOptions((prev) => {
+          // Find the maximum ID already in 'prev.categories' to ensure new IDs don't clash
+          const maxExistingId = prev.categories.reduce(
+            (maxId, cat) => Math.max(maxId, cat.id),
+            0
+          );
+
+          const categoriesWithCounts = prev.categories.map((cat) => ({
+            ...cat,
+            course_count: mappedCertificates.filter(
+              (c) => c.course_category === cat.name
+            ).length,
+          }));
+
+          const newCategoriesFromCerts = [
+            ...new Set(mappedCertificates.map((c) => c.course_category)),
+          ]
+            .filter(
+              (catName) => !prev.categories.some((pc) => pc.name === catName)
+            )
+            .map((catName, index) => ({
+              id: maxExistingId + 1 + index, // <-- FIXED: Generate a unique ID
+              name: catName,
+              description: "",
+              course_count: mappedCertificates.filter(
+                (c) => c.course_category === catName
+              ).length,
+            }));
+
+          return {
+            ...prev,
+            categories: [...categoriesWithCounts, ...newCategoriesFromCerts],
+            levels: levels,
+            years: years,
+            instructors: instructors,
+          };
+        });
       } else {
-        // Mock certificate data for demonstration - will be replaced when real data is available
-        const mockCertificates: Certificate[] = [
-          {
-            id: 1,
-            user_id: user?.id || 1,
-            course_id: 2,
-            course_title: "Professional Bridal Makeup Artistry",
-            course_category: "Bridal Makeup",
-            course_level: "Intermediate",
-            instructor_name: "Sarah Martinez",
-            student_name: user?.full_name || "Student Name",
-            completion_date: "2024-01-15",
-            issue_date: "2024-01-16",
-            certificate_code: "BBMI-BMA-2024-001",
-            verification_code: "VER-ABC123DEF456",
-            grade: "A+",
-            duration_hours: 18,
-            skills_learned: [
-              "Bridal Makeup Techniques",
-              "Long-lasting Formulas",
-              "Photography-ready Looks",
-              "Client Consultation",
-              "Color Matching",
-            ],
-            verification_url: `${window.location.origin}/verify/${encodeURIComponent("VER-ABC123DEF456")}`,
-            progress: 100,
-            total_modules: 6,
-            completed_modules: 6,
-          },
-          {
-            id: 2,
-            user_id: user?.id || 1,
-            course_id: 4,
-            course_title: "Advanced Color Theory & Application",
-            course_category: "Color Theory",
-            course_level: "Advanced",
-            instructor_name: "Emma Wilson",
-            student_name: user?.full_name || "Student Name",
-            completion_date: "2023-12-10",
-            issue_date: "2023-12-11",
-            certificate_code: "BBMI-CTA-2023-045",
-            verification_code: "VER-XYZ789GHI012",
-            grade: "A",
-            duration_hours: 15,
-            skills_learned: [
-              "Color Matching",
-              "Skin Tone Analysis",
-              "Color Correction",
-              "Seasonal Color Analysis",
-              "Advanced Color Theory",
-            ],
-            verification_url: `${window.location.origin}/verify/${encodeURIComponent("VER-XYZ789GHI012")}`,
-            progress: 100,
-            total_modules: 5,
-            completed_modules: 5,
-          },
-           {
-            id: 3,
-            user_id: user?.id || 1,
-            course_id: 4,
-            course_title: "Advanced Color Theory & Application",
-            course_category: "leg Theory",
-            course_level: "Advanced",
-            instructor_name: "Emma Wilson",
-            student_name: user?.full_name || "Student Name",
-            completion_date: "2023-12-10",
-            issue_date: "2023-12-11",
-            certificate_code: "BBMI-CTA-2023-045",
-            verification_code: "VER-XYZ789GHI012",
-            grade: "A",
-            duration_hours: 15,
-            skills_learned: [
-              "Color Matching",
-              "Skin Tone Analysis",
-              "Color Correction",
-              "Seasonal Color Analysis",
-              "Advanced Color Theory",
-            ],
-            verification_url: `${window.location.origin}/verify/${encodeURIComponent("VER-XYZ789GHI012")}`,
-            progress: 100,
-            total_modules: 5,
-            completed_modules: 5,
-          },
-        ]
-
-        setCertificates(mockCertificates)
-        // setFilterOptions({
-        //   // categories: ["Bridal Makeup", "Color Theory"],
-        //   levels: ["Intermediate", "Advanced"],
-        //   years: [2024, 2023],
-        //   instructors: ["Sarah Martinez", "Emma Wilson"],
-        // })
+        setCertificates([]);
+        setFilterOptions((prev) => ({
+          ...prev,
+          levels: [],
+          years: [],
+          instructors: [],
+        }));
       }
     } catch (error) {
-      console.error("Certificates fetch error:", error)
-      setCertificates([])
+      console.error("Certificates fetch error:", error);
+      setCertificates([]);
       toast({
         title: "Error",
         description: "Failed to load certificates. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  }, [user?.id, toast]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchCertificates();
+    }
+  }, [user?.id, fetchCertificates]);
+
+  useEffect(() => {
+    filterCertificates();
+  }, [
+    certificates,
+    searchTerm,
+    selectedCategory,
+    selectedLevel,
+    selectedYear,
+    selectedInstructor,
+  ]);
 
   const filterCertificates = () => {
-    let filtered = certificates
+    let filtered = certificates;
 
-    // Search filter
     if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase()
+      const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (cert) =>
           cert.course_title.toLowerCase().includes(searchLower) ||
           cert.instructor_name.toLowerCase().includes(searchLower) ||
-          cert.certificate_code.toLowerCase().includes(searchLower) ||
-          cert.student_name.toLowerCase().includes(searchLower),
-      )
+          cert.certificate_number.toLowerCase().includes(searchLower) ||
+          cert.student_name.toLowerCase().includes(searchLower)
+      );
     }
 
-    // Category filter
     if (selectedCategory !== "all") {
-      filtered = filtered.filter((cert) => cert.course_category === selectedCategory)
+      filtered = filtered.filter(
+        (cert) => cert.course_category === selectedCategory
+      );
     }
 
-    // Level filter
     if (selectedLevel !== "all") {
-      filtered = filtered.filter((cert) => cert.course_level === selectedLevel)
+      filtered = filtered.filter((cert) => cert.course_level === selectedLevel);
     }
 
-    // Year filter
     if (selectedYear !== "all") {
-      filtered = filtered.filter((cert) => new Date(cert.completion_date).getFullYear().toString() === selectedYear)
+      filtered = filtered.filter(
+        (cert) =>
+          new Date(cert.certificate_issued_at).getFullYear().toString() ===
+          selectedYear
+      );
     }
 
-    // Instructor filter
     if (selectedInstructor !== "all") {
-      filtered = filtered.filter((cert) => cert.instructor_name === selectedInstructor)
+      filtered = filtered.filter(
+        (cert) => cert.instructor_name === selectedInstructor
+      );
     }
 
-    setFilteredCertificates(filtered)
-  }
+    setFilteredCertificates(filtered);
+  };
 
-  const generateCertificate = async (courseId: number) => {
+  const viewCertificateInNewTab = async (certificate: Certificate) => {
+    setViewingCertId(certificate.id);
     try {
-      setIsGenerating(courseId)
       toast({
-        title: "Generating Certificate",
-        description: "Creating your certificate of completion...",
-      })
+        title: "Preparing Certificate",
+        description: "Opening certificate in a new tab...",
+      });
 
-      const response = await fetch("/api/certificates/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: user?.id,
-          courseId: courseId,
-        }),
-      })
+      const response = await fetch(
+        `/api/certificates/html-content?verificationCode=${encodeURIComponent(certificate.verification_code)}`
+      );
 
       if (!response.ok) {
-        throw new Error("Failed to generate certificate")
+        throw new Error("Failed to fetch certificate HTML");
       }
 
-      const data = await response.json()
+      const htmlContent = await response.text();
 
-      if (data.success) {
-        toast({
-          title: "Success",
-          description: "Certificate generated successfully!",
-        })
-        // Refresh certificates list
-        await fetchCertificates()
+      const newWindow = window.open("", "_blank");
+      if (newWindow) {
+        newWindow.document.write(htmlContent);
+        newWindow.document.close();
       } else {
-        throw new Error(data.message || "Certificate generation failed")
+        toast({
+          title: "Blocked",
+          description: "Pop-ups blocked. Please allow pop-ups for this site.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      console.error("Certificate generation error:", error)
+      console.error("View certificate error:", error);
       toast({
-        title: "Generation Failed",
-        description: "Unable to generate certificate. Please try again.",
+        title: "View Failed",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Unable to view certificate. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsGenerating(null)
+      setViewingCertId(null);
     }
-  }
+  };
 
   const downloadCertificate = async (certificate: Certificate) => {
+    setDownloadingCertId(certificate.id);
     try {
-      setIsDownloading(true)
       toast({
         title: "Preparing Download",
         description: "Generating PDF certificate...",
-      })
+      });
+
+      console.log("Certificate data being sent for PDF:", {
+        certificateId: certificate.id,
+        studentName: certificate.student_name,
+        courseName: certificate.course_title,
+        instructorName: certificate.instructor_name,
+        certificateIssuedAt: formatDate(certificate.certificate_issued_at),
+        certificateNumber: certificate.certificate_number,
+        verificationCode: certificate.verification_code,
+        grade: certificate.grade,
+        duration: certificate.duration_hours,
+        skills: certificate.skills_learned,
+        trainingDescription: certificate.training_description,
+      });
 
       const response = await fetch("/api/certificates/download", {
         method: "POST",
@@ -368,107 +401,62 @@ export default function StudentCertificatesPage() {
           studentName: certificate.student_name,
           courseName: certificate.course_title,
           instructorName: certificate.instructor_name,
-          completionDate: certificate.completion_date,
-          certificateCode: certificate.certificate_code,
+          certificateIssuedAt: formatDate(certificate.certificate_issued_at),
+          certificateNumber: certificate.certificate_number,
+          verificationCode: certificate.verification_code,
           grade: certificate.grade,
           duration: certificate.duration_hours,
           skills: certificate.skills_learned,
+          trainingDescription: certificate.training_description,
         }),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to download certificate")
+        const errorText = await response.text();
+        console.error("Download API Response Error:", errorText);
+        throw new Error(
+          `Failed to download certificate: ${response.status} - ${errorText}`
+        );
       }
 
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.style.display = "none"
-      a.href = url
-      a.download = `BBMI-Certificate-${certificate.certificate_code}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.style.display = "none";
+      a.href = url;
+      a.download = `BBMI-Certificate-${certificate.certificate_number}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
 
       toast({
         title: "Success",
         description: "Certificate downloaded successfully!",
-      })
+      });
     } catch (error) {
-      console.error("Download error:", error)
+      console.error("Download error:", error);
       toast({
         title: "Download Failed",
-        description: "Unable to download certificate. Please try again.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Unable to download certificate. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsDownloading(false)
+      setDownloadingCertId(null);
     }
-  }
-
-  const shareCertificate = async (certificate: Certificate) => {
-    try {
-      const shareData = {
-        title: `BBMI Certificate - ${certificate.course_title}`,
-        text: `🎓 I've successfully completed ${certificate.course_title} at Betty Beauty Makeup Institute and earned my certificate of completion!
-
-Certificate ID: ${certificate.certificate_code}
-Grade: ${certificate.grade}
-Instructor: ${certificate.instructor_name}
-
-#BBMI #MakeupArtist #CertifiedProfessional #BeautyEducation`,
-        url: certificate.verification_url,
-      }
-
-      if (navigator.share && navigator.canShare(shareData)) {
-        await navigator.share(shareData)
-        toast({
-          title: "Shared Successfully",
-          description: "Certificate shared successfully!",
-        })
-      } else {
-        // Fallback: copy to clipboard
-        const shareText = `🎓 I've successfully completed ${certificate.course_title} at Betty Beauty Makeup Institute and earned my certificate of completion!
-
-Certificate ID: ${certificate.certificate_code}
-Grade: ${certificate.grade}
-Instructor: ${certificate.instructor_name}
-Verify at: ${certificate.verification_url}
-
-#BBMI #MakeupArtist #CertifiedProfessional #BeautyEducation`
-
-        await navigator.clipboard.writeText(shareText)
-        toast({
-          title: "Link Copied",
-          description: "Certificate details copied to clipboard!",
-        })
-      }
-    } catch (error) {
-      console.error("Share error:", error)
-      toast({
-        title: "Share Failed",
-        description: "Unable to share certificate. Please try again.",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const openCertificateModal = (certificate: Certificate) => {
-    setSelectedCertificate(certificate)
-    setIsModalOpen(true)
-  }
-
-  const closeCertificateModal = () => {
-    setSelectedCertificate(null)
-    setIsModalOpen(false)
-  }
+  };
 
   if (loading) {
     return (
       <div className="space-y-6">
         <div className="px-6 pt-6">
-          <DashboardHeader heading="Dashboard" text="Loading your certificates..." />
+          <DashboardHeader
+            heading="Certificates"
+            text="Loading your certificates..."
+          />
         </div>
         <div className="px-6 animate-pulse space-y-4">
           {[...Array(3)].map((_, i) => (
@@ -476,24 +464,29 @@ Verify at: ${certificate.verification_url}
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-6 pb-8">
-      {/* Dashboard Header */}
       <div className="px-6 pt-6">
-        <DashboardHeader heading="Dashboard" text="Overview of your learning journey" />
+        <DashboardHeader
+          heading="Certificates"
+          text="Overview of your learning journey"
+        />
       </div>
 
-      {/* Welcome Section */}
       <div className="px-6">
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
           <div className="flex items-center gap-3 mb-2">
             <GraduationCap className="h-8 w-8 text-blue-600" />
-            <h1 className="text-2xl font-bold text-gray-900">My Certificates</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              My Certificates
+            </h1>
           </div>
-          <p className="text-gray-600">View, download and share your achievements</p>
+          <p className="text-gray-600">
+            View your professional achievements and download them.
+          </p>
           <div className="mt-4 flex items-center gap-6 text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <Award className="h-4 w-4 text-blue-600" />
@@ -507,7 +500,6 @@ Verify at: ${certificate.verification_url}
         </div>
       </div>
 
-      {/* Search and Filter Section */}
       <div className="px-6">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1 relative">
@@ -521,12 +513,15 @@ Verify at: ${certificate.verification_url}
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-[160px]">
+            <Select
+              value={selectedCategory}
+              onValueChange={setSelectedCategory}
+            >
+              <SelectTrigger className="w-[180px] sm:w-[200px]">
                 <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Category" />
+                <SelectValue placeholder="All Categories" />
               </SelectTrigger>
-             <SelectContent>
+              <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
                 {categoriesLoading ? (
                   <SelectItem value="loading" disabled>
@@ -535,16 +530,20 @@ Verify at: ${certificate.verification_url}
                 ) : (
                   filterOptions.categories.map((category) => (
                     <SelectItem key={category.id} value={category.name}>
-                      {category.name} ({category.course_count})
+                      {category.name}{" "}
+                      {category.course_count > 0
+                        ? `(${category.course_count})`
+                        : ""}
                     </SelectItem>
                   ))
                 )}
               </SelectContent>
             </Select>
-{/* 
+
             <Select value={selectedLevel} onValueChange={setSelectedLevel}>
               <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Level" />
+                <Star className="h-4 w-4 mr-2 text-yellow-500" />
+                <SelectValue placeholder="All Levels" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Levels</SelectItem>
@@ -554,11 +553,15 @@ Verify at: ${certificate.verification_url}
                   </SelectItem>
                 ))}
               </SelectContent>
-            </Select> */}
+            </Select>
 
-            {/* <Select value={selectedInstructor} onValueChange={setSelectedInstructor}>
-              <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder="Instructor" />
+            <Select
+              value={selectedInstructor}
+              onValueChange={setSelectedInstructor}
+            >
+              <SelectTrigger className="w-[180px]">
+                <Users className="h-4 w-4 mr-2 text-purple-500" />
+                <SelectValue placeholder="All Instructors" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Instructors</SelectItem>
@@ -568,11 +571,12 @@ Verify at: ${certificate.verification_url}
                   </SelectItem>
                 ))}
               </SelectContent>
-            </Select> */}
+            </Select>
 
             <Select value={selectedYear} onValueChange={setSelectedYear}>
               <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder="Year" />
+                <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                <SelectValue placeholder="All Years" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Years</SelectItem>
@@ -587,227 +591,140 @@ Verify at: ${certificate.verification_url}
         </div>
       </div>
 
-      {/* Certificates Grid */}
       <div className="px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCertificates.map((certificate) => (
             <Card
               key={certificate.id}
-              className="overflow-hidden hover:shadow-xl transition-all duration-300 border-2 cursor-pointer group"
-              onClick={() => openCertificateModal(certificate)}
+              className="p-6 space-y-3 flex flex-col justify-between hover:shadow-lg transition-all duration-200"
             >
-              {/* Certificate Template Display - Smaller Size */}
-              <div className="relative">
-                <div className="aspect-[4/3] relative bg-white">
-                  <Image
-                    src="/certificate-template.png"
-                    alt="BBMI Certificate Template"
-                    fill
-                    className="object-contain group-hover:scale-105 transition-transform duration-300"
-                    priority
-                  />
-                  {/* Dynamic Text Overlays */}
-                  <div className="absolute inset-0 flex flex-col justify-center items-center text-center">
-                    {/* Student Name */}
-                    {/* <div className="absolute top-[45%] left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                      <h3 className="text-lg md:text-xl font-bold text-yellow-600 font-serif">
-                        {certificate.student_name}
-                      </h3>
-                    </div> */}
+              <div className="space-y-2">
+                {/* TRAINING NAME at the very top */}
+                <h3 className="text-xl font-bold text-gray-900 line-clamp-2 mb-2">
+                  <BookOpen className="inline h-5 w-5 mr-2 text-blue-600" />
+                  {certificate.course_title}
+                </h3>
 
-                    {/* Course Description - Simplified for smaller view */}
-                    {/* <div className="absolute top-[58%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 max-w-xs px-2">
-                      <p className="text-xs text-blue-900 leading-tight">
-                        {certificate.course_title} - {new Date(certificate.completion_date).toLocaleDateString()}
-                      </p>
-                    </div> */}
+                {/* Issued Date (from certificates table's issue_date) */}
+                {certificate.issue_date && (
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Calendar className="h-4 w-4" />
+                    <span>Issued: {formatDate(certificate.issue_date)}</span>
                   </div>
-
-                  {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <Eye className="h-8 w-8 text-white" />
+                )}
+                {/* Course Completion Date (newly named certificate_issued_at) */}
+                {certificate.certificate_issued_at &&
+                  certificate.certificate_issued_at !== "N/A" && (
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span>
+                        Completed On:{" "}
+                        {formatDate(certificate.certificate_issued_at)}
+                      </span>
                     </div>
+                  )}
+                {/* Level */}
+                {certificate.course_level !== "General" && (
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Star className="h-4 w-4 text-yellow-500" />
+                    <span>Level: {certificate.course_level}</span>
                   </div>
-                </div>
+                )}
+                {/* Instructor Name */}
+                {certificate.instructor_name && (
+                  <p className="flex items-center gap-2 text-sm text-gray-600">
+                    <Users className="h-4 w-4 text-purple-500" />
+                    <span>Instructor: {certificate.instructor_name}</span>
+                  </p>
+                )}
+
+                {/* Duration */}
+                {certificate.duration_hours > 0 && (
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Clock className="h-4 w-4" />
+                    <span>Duration: {certificate.duration_hours} hours</span>
+                  </div>
+                )}
+                {/* Certificate Number (formerly Code) */}
+                {certificate.certificate_number && (
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Hash className="h-4 w-4" />
+                    <span>No: {certificate.certificate_number}</span>
+                  </div>
+                )}
+                {/* Student Name */}
+                {certificate.student_name && (
+                  <p className="text-sm text-gray-600 flex items-center gap-2 mt-2">
+                    <UserRound className="h-4 w-4 text-gray-500" />
+                    <span className="font-medium">
+                      Student: {certificate.student_name}
+                    </span>
+                  </p>
+                )}
+                {/* Skills Learned */}
+                {certificate.skills_learned &&
+                  certificate.skills_learned.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 mt-2">
+                      <Tag className="h-4 w-4" />
+                      <span className="font-medium">Skills:</span>
+                      {certificate.skills_learned.map((skill, idx) => (
+                        <Badge key={idx} variant="outline" className="text-xs">
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
               </div>
 
-              {/* Certificate Summary */}
-              <div className="p-4 bg-white">
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-gray-900 text-sm line-clamp-2">{certificate.course_title}</h4>
-                  <div className="flex items-center justify-between text-xs text-gray-600">
-                    <span>{certificate.course_category}</span>
-                    <Badge variant="secondary" className="text-xs">
-                      {certificate.grade}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <Calendar className="h-3 w-3" />
-                    <span>{new Date(certificate.completion_date).toLocaleDateString()}</span>
-                  </div>
-                </div>
+              {/* View and Download buttons */}
+              <div className="flex gap-2 mt-4 pt-4 border-t">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => viewCertificateInNewTab(certificate)}
+                  disabled={viewingCertId === certificate.id}
+                >
+                  {viewingCertId === certificate.id ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Opening...
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Certificate
+                    </>
+                  )}
+                </Button>
 
-                {/* Quick Actions */}
-                <div className="flex gap-2 mt-3">
-                  <Button
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      downloadCertificate(certificate)
-                    }}
-                    disabled={isDownloading}
-                    className="flex-1 text-xs"
-                  >
-                    <Download className="h-3 w-3 mr-1" />
-                    {isDownloading ? "..." : "PDF"}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      shareCertificate(certificate)
-                    }}
-                    className="flex-1 text-xs"
-                  >
-                    <Share2 className="h-3 w-3 mr-1" />
-                    Share
-                  </Button>
-                </div>
+                <Button
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    downloadCertificate(certificate);
+                  }}
+                  disabled={downloadingCertId === certificate.id}
+                  className="w-full"
+                >
+                  {downloadingCertId === certificate.id ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4 mr-2" />
+                      Download PDF
+                    </>
+                  )}
+                </Button>
               </div>
             </Card>
           ))}
         </div>
       </div>
 
-      {/* Certificate Modal */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              <span>Certificate Details</span>
-              <Button variant="ghost" size="sm" onClick={closeCertificateModal}>
-                <X className="h-4 w-4" />
-              </Button>
-            </DialogTitle>
-          </DialogHeader>
-
-          {selectedCertificate && (
-            <div className="space-y-6">
-              {/* Full Size Certificate */}
-              <div className="relative">
-                <div className="aspect-[4/3] relative bg-white">
-                  <Image
-                    src="/certificate-template.png"
-                    alt="BBMI Certificate Template"
-                    fill
-                    className="object-contain"
-                    priority
-                  />
-                  {/* Dynamic Text Overlays - Full Size */}
-                  <div className="absolute inset-0 flex flex-col justify-center items-center text-center">
-                    {/* Student Name */}
-                    <div className="absolute top-[45%] left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                      <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-yellow-600 font-serif">
-                        {selectedCertificate.student_name}
-                      </h3>
-                    </div>
-
-                    {/* Course Description */}
-                    <div className="absolute top-[58%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 max-w-2xl px-4">
-                      <p className="text-sm md:text-base lg:text-lg text-blue-900 leading-relaxed">
-                        In recognition of exceptional skill in {selectedCertificate.course_title.toLowerCase()},
-                        including long-wear techniques, client consultation, and personalized beauty enhancement.
-                        Proudly awarded by BBMI on {new Date(selectedCertificate.completion_date).toLocaleDateString()}.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Certificate Details */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h5 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                    Skills Acquired
-                  </h5>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCertificate.skills_learned.map((skill, index) => (
-                      <Badge key={index} variant="secondary" className="text-sm py-1 px-3">
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h5 className="font-semibold text-gray-900 mb-3">Course Details</h5>
-                  <div className="space-y-3 text-sm text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="h-4 w-4 text-blue-600" />
-                      <span>Category: {selectedCertificate.course_category}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Star className="h-4 w-4 text-yellow-500" />
-                      <span>Level: {selectedCertificate.course_level}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-green-600" />
-                      <span>Duration: {selectedCertificate.duration_hours} hours</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Award className="h-4 w-4 text-purple-600" />
-                      <span>Grade: {selectedCertificate.grade}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-purple-600" />
-                      <span>Issued: {new Date(selectedCertificate.issue_date).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <GraduationCap className="h-4 w-4 text-blue-600" />
-                      <span>Certificate ID: {selectedCertificate.certificate_code}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-wrap gap-3 pt-4 border-t">
-                <Button
-                  onClick={() => downloadCertificate(selectedCertificate)}
-                  disabled={isDownloading}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  {isDownloading ? "Downloading..." : "Download PDF"}
-                </Button>
-
-                <Button
-                  variant="outline"
-                  onClick={() => shareCertificate(selectedCertificate)}
-                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
-                >
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share Certificate
-                </Button>
-
-                <Button
-                  variant="outline"
-                  onClick={() => window.open(selectedCertificate.verification_url, "_blank")}
-                  className="border-green-600 text-green-600 hover:bg-green-50"
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Verify Online
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Empty State */}
       {filteredCertificates.length === 0 && !loading && (
         <div className="px-6">
           <Card>
@@ -842,5 +759,5 @@ Verify at: ${certificate.verification_url}
         </div>
       )}
     </div>
-  )
+  );
 }

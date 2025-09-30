@@ -495,13 +495,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Redirect based on role
         switch (data.user.role) {
           case "admin":
-            router.push("/admin/dashboard");
+            router.push("/");
             break;
           case "instructor":
-            router.push("/instructor/dashboard");
+            router.push("/");
             break;
           default:
-            router.push("/dashboard");
+            router.push("/");
         }
 
         return { success: true };

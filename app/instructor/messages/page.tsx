@@ -1,138 +1,174 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { MessageSquare, Send, Search, Users, Plus, Mail, MailOpen, AlertCircle, Loader2 } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
-import { toast } from "sonner"
-import { InstructorLayout } from "@/components/instructor/instructor-layout"
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  MessageSquare,
+  Send,
+  Search,
+  Users,
+  Plus,
+  Mail,
+  MailOpen,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { toast } from "sonner";
+import { InstructorLayout } from "@/components/instructor/instructor-layout";
 
 interface Conversation {
-  id: string
-  subject: string
+  id: string;
+  subject: string;
   other_user: {
-    id: string
-    name: string
-    email: string
-    avatar: string
-  }
-  last_message: string
-  last_message_from_me: boolean
-  unread_count: number
-  updated_at: string
-  time_ago: string
+    id: string;
+    name: string;
+    email: string;
+    avatar: string;
+  };
+  last_message: string;
+  last_message_from_me: boolean;
+  unread_count: number;
+  updated_at: string;
+  time_ago: string;
 }
 
 interface Message {
-  id: string
-  sender_id: string
-  sender_name: string
-  content: string
-  created_at: string
-  read_at: string | null
-  is_read: boolean
-  time_ago: string
-  is_from_me: boolean
+  id: string;
+  sender_id: string;
+  sender_name: string;
+  content: string;
+  created_at: string;
+  read_at: string | null;
+  is_read: boolean;
+  time_ago: string;
+  is_from_me: boolean;
 }
 
 export default function InstructorMessagesPage() {
-  const [conversations, setConversations] = useState<Conversation[]>([])
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
-  const [messages, setMessages] = useState<Message[]>([])
-  const [newMessage, setNewMessage] = useState("")
-  const [loading, setLoading] = useState(true)
-  const [messagesLoading, setMessagesLoading] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [error, setError] = useState<string | null>(null)
-  const { user } = useAuth()
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [selectedConversation, setSelectedConversation] =
+    useState<Conversation | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   // New conversation state
-  const [showNewConversation, setShowNewConversation] = useState(false)
-  const [newUser, setNewUser] = useState("")
-  const [newSubject, setNewSubject] = useState("")
-  const [initialMessage, setInitialMessage] = useState("")
-  const [startingConversation, setStartingConversation] = useState(false)
+  const [showNewConversation, setShowNewConversation] = useState(false);
+  const [newUser, setNewUser] = useState("");
+  const [newSubject, setNewSubject] = useState("");
+  const [initialMessage, setInitialMessage] = useState("");
+  const [startingConversation, setStartingConversation] = useState(false);
 
   useEffect(() => {
-    fetchConversations()
-  }, [])
+    fetchConversations();
+  }, []);
 
   const fetchConversations = async () => {
     try {
-      setError(null)
-      const token = localStorage.getItem("auth_token")
-      console.log("🔄 Fetching conversations...")
+      setError(null);
+      const token = localStorage.getItem("auth_token");
+      console.log("🔄 Fetching conversations...");
 
       const response = await fetch("/api/instructor/messages", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
+      });
 
       if (response.ok) {
-        const data = await response.json()
-        console.log("✅ Fetched conversations:", data.length)
-        setConversations(data)
+        const data = await response.json();
+        console.log("✅ Fetched conversations:", data.length);
+        setConversations(data);
       } else {
-        const errorData = await response.json()
-        console.error("❌ Failed to fetch conversations:", response.status, errorData)
-        setError(errorData.details || errorData.error || "Failed to load conversations")
-        toast.error(errorData.error || "Failed to load conversations")
+        const errorData = await response.json();
+        console.error(
+          "❌ Failed to fetch conversations:",
+          response.status,
+          errorData
+        );
+        setError(
+          errorData.details || errorData.error || "Failed to load conversations"
+        );
+        toast.error(errorData.error || "Failed to load conversations");
       }
     } catch (error: any) {
-      console.error("💥 Error fetching conversations:", error)
-      setError("Network error: Unable to connect to server")
-      toast.error("Failed to load conversations")
+      console.error("💥 Error fetching conversations:", error);
+      setError("Network error: Unable to connect to server");
+      toast.error("Failed to load conversations");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const fetchMessages = async (conversationId: string) => {
     try {
-      setMessagesLoading(true)
-      console.log("📨 Fetching messages for conversation:", conversationId)
-      const token = localStorage.getItem("auth_token")
-      const response = await fetch(`/api/instructor/messages/${conversationId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      setMessagesLoading(true);
+      console.log("📨 Fetching messages for conversation:", conversationId);
+      const token = localStorage.getItem("auth_token");
+      const response = await fetch(
+        `/api/instructor/messages/${conversationId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.ok) {
-        const data = await response.json()
-        console.log("✅ Fetched messages:", data.length)
-        setMessages(data)
+        const data = await response.json();
+        console.log("✅ Fetched messages:", data.length);
+        setMessages(data);
         // Refresh conversations to update unread counts
-        fetchConversations()
+        fetchConversations();
       } else {
-        const errorData = await response.json()
-        console.error("❌ Failed to fetch messages:", response.status, errorData)
-        toast.error(errorData.error || "Failed to load messages")
-        setMessages([])
+        const errorData = await response.json();
+        console.error(
+          "❌ Failed to fetch messages:",
+          response.status,
+          errorData
+        );
+        toast.error(errorData.error || "Failed to load messages");
+        setMessages([]);
       }
     } catch (error: any) {
-      console.error("💥 Error fetching messages:", error)
-      toast.error("Failed to load messages")
-      setMessages([])
+      console.error("💥 Error fetching messages:", error);
+      toast.error("Failed to load messages");
+      setMessages([]);
     } finally {
-      setMessagesLoading(false)
+      setMessagesLoading(false);
     }
-  }
+  };
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation) return
+    if (!newMessage.trim() || !selectedConversation) return;
 
     try {
-      const token = localStorage.getItem("auth_token")
+      const token = localStorage.getItem("auth_token");
       const response = await fetch("/api/instructor/messages", {
         method: "POST",
         headers: {
@@ -143,34 +179,38 @@ export default function InstructorMessagesPage() {
           conversation_id: selectedConversation.id,
           content: newMessage,
         }),
-      })
+      });
 
       if (response.ok) {
-        setNewMessage("")
+        setNewMessage("");
         // Refresh messages and conversations
-        await fetchMessages(selectedConversation.id)
-        toast.success("Message sent")
+        await fetchMessages(selectedConversation.id);
+        toast.success("Message sent");
       } else {
-        const errorData = await response.json()
-        toast.error(errorData.error || "Failed to send message")
+        const errorData = await response.json();
+        toast.error(errorData.error || "Failed to send message");
       }
     } catch (error) {
-      console.error("💥 Error sending message:", error)
-      toast.error("Failed to send message")
+      console.error("💥 Error sending message:", error);
+      toast.error("Failed to send message");
     }
-  }
+  };
 
   const startNewConversation = async () => {
     if (!newUser || !newSubject || !initialMessage) {
-      toast.error("Please fill in all fields")
-      return
+      toast.error("Please fill in all fields");
+      return;
     }
 
-    console.log("🚀 Starting new conversation with:", { newUser, newSubject, initialMessage })
-    setStartingConversation(true)
+    console.log("🚀 Starting new conversation with:", {
+      newUser,
+      newSubject,
+      initialMessage,
+    });
+    setStartingConversation(true);
 
     try {
-      const token = localStorage.getItem("auth_token")
+      const token = localStorage.getItem("auth_token");
       const response = await fetch("/api/instructor/messages/new", {
         method: "POST",
         headers: {
@@ -182,42 +222,45 @@ export default function InstructorMessagesPage() {
           subject: newSubject,
           message: initialMessage,
         }),
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (response.ok) {
-        console.log("✅ Conversation created successfully!")
-        toast.success("Conversation started successfully!")
+        console.log("✅ Conversation created successfully!");
+        toast.success("Conversation started successfully!");
 
         // Close dialog and clear form
-        setShowNewConversation(false)
-        setNewUser("")
-        setNewSubject("")
-        setInitialMessage("")
+        setShowNewConversation(false);
+        setNewUser("");
+        setNewSubject("");
+        setInitialMessage("");
 
         // Refresh conversations
-        await fetchConversations()
+        await fetchConversations();
       } else {
-        console.error("❌ Failed to create conversation:", result)
-        toast.error(result.error || "Failed to start conversation")
+        console.error("❌ Failed to create conversation:", result);
+        toast.error(result.error || "Failed to start conversation");
       }
     } catch (error) {
-      console.error("💥 Error starting conversation:", error)
-      toast.error("Something went wrong")
+      console.error("💥 Error starting conversation:", error);
+      toast.error("Something went wrong");
     } finally {
-      setStartingConversation(false)
+      setStartingConversation(false);
     }
-  }
+  };
 
   const filteredConversations = conversations.filter(
     (conv) =>
       conv.other_user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       conv.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      conv.other_user.email.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      conv.other_user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const totalUnread = conversations.reduce((sum, conv) => sum + conv.unread_count, 0)
+  const totalUnread = conversations.reduce(
+    (sum, conv) => sum + conv.unread_count,
+    0
+  );
 
   if (loading) {
     return (
@@ -240,7 +283,7 @@ export default function InstructorMessagesPage() {
           </div>
         </div>
       </InstructorLayout>
-    )
+    );
   }
 
   return (
@@ -249,7 +292,9 @@ export default function InstructorMessagesPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Messages</h1>
-            <p className="text-muted-foreground">Communicate with your students and colleagues</p>
+            <p className="text-muted-foreground">
+              Communicate with your students and colleagues
+            </p>
           </div>
           <div className="flex items-center gap-4">
             {totalUnread > 0 && (
@@ -310,19 +355,31 @@ export default function InstructorMessagesPage() {
                     <div
                       key={conversation.id}
                       className={`p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors ${
-                        selectedConversation?.id === conversation.id ? "bg-muted" : ""
+                        selectedConversation?.id === conversation.id
+                          ? "bg-muted"
+                          : ""
                       } ${conversation.unread_count > 0 ? "border-l-4 border-l-primary" : ""}`}
                       onClick={() => {
-                        console.log("🖱️ Clicked conversation:", conversation.id)
-                        setSelectedConversation(conversation)
-                        fetchMessages(conversation.id)
+                        console.log(
+                          "🖱️ Clicked conversation:",
+                          conversation.id
+                        );
+                        setSelectedConversation(conversation);
+                        fetchMessages(conversation.id);
                       }}
                     >
                       <div className="flex items-start gap-3">
                         <div className="relative">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={conversation.other_user.avatar || "/placeholder.svg"} />
-                            <AvatarFallback>{conversation.other_user.name.charAt(0)}</AvatarFallback>
+                            <AvatarImage
+                              src={
+                                conversation.other_user.avatar ||
+                                "/placeholder.svg"
+                              }
+                            />
+                            <AvatarFallback>
+                              {conversation.other_user.name.charAt(0)}
+                            </AvatarFallback>
                           </Avatar>
                           {conversation.unread_count > 0 && (
                             <div className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full"></div>
@@ -342,20 +399,27 @@ export default function InstructorMessagesPage() {
                                 <MailOpen className="h-3 w-3 text-muted-foreground" />
                               )}
                               {conversation.unread_count > 0 && (
-                                <Badge variant="destructive" className="h-4 w-4 p-0 text-xs">
+                                <Badge
+                                  variant="destructive"
+                                  className="h-4 w-4 p-0 text-xs"
+                                >
                                   {conversation.unread_count}
                                 </Badge>
                               )}
                             </div>
                           </div>
-                          <p className="text-xs text-muted-foreground truncate">{conversation.subject}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {conversation.subject}
+                          </p>
                           <p
                             className={`text-xs truncate mt-1 ${conversation.unread_count > 0 ? "font-medium text-foreground" : "text-muted-foreground"}`}
                           >
                             {conversation.last_message_from_me ? "You: " : ""}
                             {conversation.last_message}
                           </p>
-                          <p className="text-xs text-muted-foreground mt-1">{conversation.time_ago}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {conversation.time_ago}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -372,13 +436,23 @@ export default function InstructorMessagesPage() {
                 <CardHeader className="border-b">
                   <div className="flex items-center gap-3">
                     <Avatar>
-                      <AvatarImage src={selectedConversation.other_user.avatar || "/placeholder.svg"} />
-                      <AvatarFallback>{selectedConversation.other_user.name.charAt(0)}</AvatarFallback>
+                      <AvatarImage
+                        src={
+                          selectedConversation.other_user.avatar ||
+                          "/placeholder.svg"
+                        }
+                      />
+                      <AvatarFallback>
+                        {selectedConversation.other_user.name.charAt(0)}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
-                      <CardTitle className="text-lg">{selectedConversation.other_user.name}</CardTitle>
+                      <CardTitle className="text-lg">
+                        {selectedConversation.other_user.name}
+                      </CardTitle>
                       <CardDescription>
-                        {selectedConversation.subject} • {selectedConversation.other_user.email}
+                        {selectedConversation.subject} •{" "}
+                        {selectedConversation.other_user.email}
                       </CardDescription>
                     </div>
                   </div>
@@ -405,14 +479,20 @@ export default function InstructorMessagesPage() {
                             >
                               <div
                                 className={`max-w-[70%] rounded-lg p-3 ${
-                                  message.is_from_me ? "bg-primary text-primary-foreground" : "bg-muted"
+                                  message.is_from_me
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-muted"
                                 }`}
                               >
                                 <p className="text-sm">{message.content}</p>
                                 <div className="flex items-center justify-between mt-1">
-                                  <p className="text-xs opacity-70">{message.time_ago}</p>
+                                  {/* <p className="text-xs opacity-70">
+                                    {message.time_ago}
+                                  </p> */}
                                   {message.is_from_me && (
-                                    <div className="text-xs opacity-70">{message.is_read ? "Read" : "Sent"}</div>
+                                    <div className="text-xs opacity-70">
+                                      {message.is_read ? "Read" : "Sent"}
+                                    </div>
                                   )}
                                 </div>
                               </div>
@@ -431,12 +511,17 @@ export default function InstructorMessagesPage() {
                         className="min-h-[60px] resize-none"
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault()
-                            sendMessage()
+                            e.preventDefault();
+                            sendMessage();
                           }
                         }}
                       />
-                      <Button onClick={sendMessage} size="icon" className="self-end" disabled={!newMessage.trim()}>
+                      <Button
+                        onClick={sendMessage}
+                        size="icon"
+                        className="self-end"
+                        disabled={!newMessage.trim()}
+                      >
                         <Send className="h-4 w-4" />
                       </Button>
                     </div>
@@ -446,9 +531,12 @@ export default function InstructorMessagesPage() {
             ) : (
               <CardContent className="flex flex-col items-center justify-center h-full">
                 <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Select a Conversation</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  Select a Conversation
+                </h3>
                 <p className="text-muted-foreground text-center">
-                  Choose a conversation from the left to start messaging with other users.
+                  Choose a conversation from the left to start messaging with
+                  other users.
                 </p>
               </CardContent>
             )}
@@ -456,15 +544,22 @@ export default function InstructorMessagesPage() {
         </div>
 
         {/* New Conversation Dialog */}
-        <Dialog open={showNewConversation} onOpenChange={setShowNewConversation}>
+        <Dialog
+          open={showNewConversation}
+          onOpenChange={setShowNewConversation}
+        >
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Start New Conversation</DialogTitle>
-              <DialogDescription>Send a message to any registered user in the system.</DialogDescription>
+              <DialogDescription>
+                Send a message to any registered user in the system.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium">User Name or Email</label>
+                <label className="text-sm font-medium">
+                  User Name or Email
+                </label>
                 <Input
                   placeholder="Enter user name or email address"
                   value={newUser}
@@ -489,10 +584,16 @@ export default function InstructorMessagesPage() {
                 />
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setShowNewConversation(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowNewConversation(false)}
+                >
                   Cancel
                 </Button>
-                <Button onClick={startNewConversation} disabled={startingConversation}>
+                <Button
+                  onClick={startNewConversation}
+                  disabled={startingConversation}
+                >
                   {startingConversation ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -508,5 +609,5 @@ export default function InstructorMessagesPage() {
         </Dialog>
       </div>
     </InstructorLayout>
-  )
+  );
 }

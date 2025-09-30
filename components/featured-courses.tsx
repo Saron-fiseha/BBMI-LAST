@@ -107,7 +107,7 @@ export function FeaturedCourses() {
                     alt={course.title || "Course thumbnail"}
                     width={300}
                     height={200}
-                    className="w-full h-48 object-cover"
+                    className="w-full h-64 object-cover"
                   />
                   {/* <Badge className="absolute top-4 left-4 bg-amber-600 text-black rounded-full">
                     {course.category_id || "Unspecified"}

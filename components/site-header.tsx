@@ -52,23 +52,35 @@ export function SiteHeader() {
 
         {/* Desktop Navigation - Center */}
         <nav className="hidden md:flex items-center space-x-10">
-          <Link href="/" className="text-charcoal hover:text-custom-tan transition-colors">
+          <Link
+            href="/"
+            className="text-charcoal hover:text-custom-tan transition-colors"
+          >
             Home
           </Link>
-          <Link href="/courses" className="text-charcoal hover:text-custom-tan transition-colors">
+          <Link
+            href="/courses"
+            className="text-charcoal hover:text-custom-tan transition-colors"
+          >
             Courses
           </Link>
           {/* <Link href="/instructors" className="text-charcoal hover:text-custom-tan transition-colors">
             Instructors
           </Link> */}
-          <Link href="/about" className="text-charcoal hover:text-custom-tan transition-colors">
+          <Link
+            href="/about"
+            className="text-charcoal hover:text-custom-tan transition-colors"
+          >
             About
           </Link>
           {/* New Portfolio Link */}
           {/* <Link href="/portfolio" className="text-charcoal hover:text-custom-tan transition-colors">
             Portfolio
           </Link> */}
-          <Link href="/contact" className="text-charcoal hover:text-custom-tan transition-colors">
+          <Link
+            href="/contact"
+            className="text-charcoal hover:text-custom-tan transition-colors"
+          >
             Contact
           </Link>
         </nav>
@@ -122,7 +134,7 @@ export function SiteHeader() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/profile" className="cursor-pointer">
+                  <Link href="/dashboard/profile" className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
                     Profile Settings
                   </Link>
@@ -139,9 +151,13 @@ export function SiteHeader() {
             </DropdownMenu>
           ) : (
             <>
-              <Button variant="ghost" asChild className="text-charcoal hover:text-white">
-        <Link href="/login">Login</Link>
-      </Button>
+              <Button
+                variant="ghost"
+                asChild
+                className="text-charcoal hover:text-white"
+              >
+                <Link href="/login">Login</Link>
+              </Button>
               <ShinyButton>
                 <Link
                   href="/register"

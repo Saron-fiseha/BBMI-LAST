@@ -1,234 +1,307 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { createCanvas, loadImage } from "canvas"
-import path from "path"
-import fs from "fs"
-import { Buffer } from "buffer";
+// C:\Users\Hp\Documents\BBMI-LMS\app\api\certificates\download\route.ts
+import { NextRequest, NextResponse } from "next/server";
+import puppeteer from 'puppeteer-core';
+import chrome from '@sparticuz/chromium'; // Required for Vercel/serverless deployments
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json()
-    const { studentName, courseName, instructorName, completionDate, certificateCode, grade, duration, skills } = body
+    const {
+      certificateId,
+      studentName,
+      courseName,
+      instructorName,
+      certificateIssuedAt,
+      certificateNumber,
+      verificationCode,
+      grade,
+      duration,
+      skills,
+      trainingDescription,
+    } = await req.json();
 
-    // Create canvas with certificate dimensions (matching the template)
-    const width = 1200
-    const height = 900
-    const canvas = createCanvas(width, height)
-    const ctx = canvas.getContext("2d")
-
-    // Load the certificate template
-    const templatePath = path.join(process.cwd(), "public", "certificate-template.png")
-
-    if (!fs.existsSync(templatePath)) {
-      throw new Error("Certificate template not found")
+    if (!verificationCode || !studentName || !courseName || !certificateIssuedAt || !certificateNumber) {
+      return NextResponse.json({ error: "Missing essential certificate data for PDF generation." }, { status: 400 });
     }
 
-    const templateImage = await loadImage(templatePath)
+    const baseUrl = req.nextUrl.origin;
+    const logoUrl = `${baseUrl}/logo.png`;
 
-    // Draw the template as background
-    ctx.drawImage(templateImage, 0, 0, width, height)
+    const certificateHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>BBMI Certificate</title>
+        <style>
+          @page {
+            size: A4 landscape;
+            margin: 0;
+          }
+          body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Georgia', serif;
+            background: radial-gradient(circle at center, #ffffff 0%, #f4f4f4 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
 
-    // Set up text rendering
-    ctx.textAlign = "center"
-    ctx.textBaseline = "middle"
+          /* A4 landscape exact size (px at 96dpi) */
+          .certificate {
+            width: 1123px; /* Corresponds to A4 landscape width at 96dpi */
+            height: 794px; /* Corresponds to A4 landscape height at 96dpi */
+            background: #f7ebd5;
+            border: 12px double #B8860B;
+            border-radius: 12px;
+            padding: 40px;
+            position: relative;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+            box-sizing: border-box;
+            overflow: hidden; /* Ensure nothing spills out */
+          }
 
-    // Student Name (Golden script font) - positioned to match template
-    ctx.fillStyle = "#D4AF37" // Gold color matching template
-    ctx.font = "bold 48px serif"
-    ctx.shadowColor = "rgba(0,0,0,0.3)"
-    ctx.shadowBlur = 2
-    ctx.shadowOffsetX = 1
-    ctx.shadowOffsetY = 1
-    ctx.fillText(studentName, width / 2, height * 0.45)
+          .certificate::before,
+          .certificate::after {
+            content: "";
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 5px solid #B8860B;
+          }
+          .certificate::before {
+            top: 20px;
+            left: 20px;
+            border-right: none;
+            border-bottom: none;
+          }
+          .certificate::after {
+            bottom: 20px;
+            right: 20px;
+            border-left: none;
+            border-top: none;
+          }
 
-    // Reset shadow
-    ctx.shadowColor = "transparent"
-    ctx.shadowBlur = 0
-    ctx.shadowOffsetX = 0
-    ctx.shadowOffsetY = 0
+          .certificate-header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin-bottom: 20px;
+            padding-left: 20px;
+          }
 
-    // Course description text - positioned to match template
-    ctx.fillStyle = "#1e3a8a" // Navy blue matching template
-    ctx.font = "16px Arial, sans-serif"
+          .logo {
+            max-width: 80px;
+            margin-right: 12px;
+          }
 
-    const courseText = `In recognition of exceptional skill in ${courseName.toLowerCase()}, including long-wear techniques, client consultation, and personalized beauty enhancement. Proudly awarded by BBMI on ${new Date(completionDate).toLocaleDateString()}.`
+          .logo img {
+            width: 100%;
+            height: auto;
+            display: block;
+          }
 
-    // Word wrap for course description
-    const maxWidth = 600
-    const words = courseText.split(" ")
-    let line = ""
-    const lines = []
+          .institute-name {
+            font-size: 20px;
+            color: #2D2D2D;
+            font-weight: bold;
+            letter-spacing: 1px;
+          }
 
-    for (let n = 0; n < words.length; n++) {
-      const testLine = line + words[n] + " "
-      const metrics = ctx.measureText(testLine)
-      const testWidth = metrics.width
+          .title {
+            text-align: center;
+            margin: 70px 0 10px 0;
+          }
+          .title h1 {
+            font-size: 48px;
+            color: #2D5490;
+            margin: 0;
+            font-weight: bold;
+            letter-spacing: 5px;
+          }
+          .title h2 {
+            font-size: 20px;
+            color: #555;
+            margin: 5px 0 0 0;
+            font-weight: normal;
+            letter-spacing: 3px;
+          }
 
-      if (testWidth > maxWidth && n > 0) {
-        lines.push(line)
-        line = words[n] + " "
-      } else {
-        line = testLine
-      }
+          .presented-to {
+            text-align: center;
+            font-size: 16px;
+            color: #333;
+            margin: 20px 0 5px 0;
+            letter-spacing: 2px;
+          }
+
+          .recipient-name {
+            display: inline-block;
+            text-align: center;
+            font-size: 36px;
+            color: #B8860B;
+            font-style: italic;
+            font-weight: bold;
+            margin: 10px auto 20px auto;
+            padding-bottom: 6px;
+            border-bottom: 3px solid #B8860B;
+          }
+          .recipient-wrapper {
+            text-align: center;
+          }
+
+          .description {
+            text-align: center;
+            font-size: 14px;
+            color: #444;
+            line-height: 1.6;
+            margin: 20px auto;
+            max-width: 700px;
+          }
+
+          .signature-section {
+            text-align: center;
+            margin-top: 30px;
+          }
+          .signature-line {
+            width: 200px;
+            height: 2px;
+            background: #333;
+            margin: 0 auto 10px auto;
+          }
+          .signature-name {
+            font-size: 16px;
+            font-style: italic;
+            color: #333;
+          }
+          .signature-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2D5490;
+          }
+          .signature-company {
+            font-size: 12px;
+            color: #666;
+          }
+
+          .certificate-details {
+            position: absolute;
+            bottom: 20px;
+            left: 40px;
+            right: 40px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #555;
+            font-style: italic;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="certificate">
+          <div class="certificate-header">
+            <div class="logo">
+              <img src="${logoUrl}" alt="BBMI Logo">
+            </div>
+            <div class="institute-name">
+              <div>BRUSHED BY</div>
+              <div>BETTY MAKEUP</div>
+              <div>INSTITUTE</div>
+            </div>
+          </div>
+          
+          <div class="title">
+            <h1>CERTIFICATE</h1>
+            <h2>OF COMPLETION</h2>
+          </div>
+          
+          <div class="presented-to">This Certificate is Proudly Presented To</div>
+          <div class="recipient-wrapper">
+            <div class="recipient-name">${studentName}</div>
+          </div>
+          
+          <div class="description">
+            In recognition of successfully completing the <b>${courseName}</b> Course,<br> 
+            demonstrating mastery of essential beauty techniques, client care, and creative application skills.<br>
+            This certificate is awarded on ${certificateIssuedAt} as a testament to ${studentName}'s dedication,<br>
+            artistry, and commitment to excellence in the field of professional makeup.
+          </div>
+          
+          <div class="signature-section">
+            <div class="signature-line"></div>
+            <div class="signature-name">Ms Betelhem</div>
+            <div class="signature-title">CEO, BBMI</div>
+            <div class="signature-company">Brushed by Betty Makeup Institute</div>
+          </div>
+          
+          <div class="certificate-details">
+            <div>
+              Certificate No: ${certificateNumber}<br>
+              Verification Code: ${verificationCode}
+            </div>
+            <div>
+              Verify at: <b>www.brushedbybetty.com</b><br>
+              Date: ${certificateIssuedAt}
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    // 3. Configure and launch Puppeteer based on environment
+    let browser;
+    if (process.env.NODE_ENV === 'development') {
+      console.log("Launching Puppeteer in Development Mode...");
+      // For local development, puppeteer-core will try to find a system Chrome/Chromium.
+      // If you've installed the full 'puppeteer' package locally, it will use its downloaded Chromium.
+      // If it still fails, you might need to manually specify executablePath here for your local setup
+      // e.g., executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+      // or install 'puppeteer' package instead of 'puppeteer-core' for simpler local setup.
+      browser = await puppeteer.launch({
+        headless: true, // Run in headless mode (no browser window opens)
+        args: ['--no-sandbox', '--disable-setuid-sandbox'], // Recommended args for robustness
+        executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+      });
+    } else {
+      console.log("Launching Puppeteer in Production Mode (Serverless)...");
+      // For production (e.g., Vercel), use @sparticuz/chromium
+      browser = await puppeteer.launch({
+        args: [...chrome.args, '--hide-scrollbars', '--disable-web-security'],
+        executablePath: await chrome.executablePath(),
+        headless: true,
+      });
     }
-    lines.push(line)
 
-    // Draw course description lines
-    const lineHeight = 24
-    const startY = height * 0.58 - ((lines.length - 1) * lineHeight) / 2
+    const page = await browser.newPage();
+    await page.setContent(certificateHtml, {
+      waitUntil: ['domcontentloaded', 'networkidle0'],
+    });
 
-    lines.forEach((line, index) => {
-      ctx.fillText(line.trim(), width / 2, startY + index * lineHeight)
-    })
-
-    // Convert canvas to PNG buffer
-    const pngBuffer = canvas.toBuffer("image/png")
-
-    // Create a proper PDF using a simple PDF structure
-    const pdfDoc = createSimplePDF(pngBuffer, width, height)
-
-    return new NextResponse(pdfDoc, {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="BBMI-Certificate-${certificateCode}.pdf"`,
-        "Content-Length": pdfDoc.length.toString(),
+    // 4. Generate PDF
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      landscape: true,
+      printBackground: true,
+      margin: {
+        top: '0mm',
+        right: '0mm',
+        bottom: '0mm',
+        left: '0mm',
       },
-    })
+    });
+
+    await browser.close();
+
+    // 5. Send PDF as a response
+    const headers = new Headers();
+    headers.set('Content-Type', 'application/pdf');
+    headers.set('Content-Disposition', `attachment; filename="BBMI-Certificate-${certificateNumber}.pdf"`);
+
+     return new NextResponse(Buffer.from(pdfBuffer), { headers });
+
   } catch (error) {
-    console.error("PDF generation error:", error)
-    return NextResponse.json(
-      {
-        error: "Failed to generate PDF",
-        message: error instanceof Error ? error.message : "Unknown error occurred",
-      },
-      { status: 500 },
-    )
-  }
-}
-
-function createSimplePDF(imageBuffer: Buffer, width: number, height: number): Buffer {
-  // Calculate PDF dimensions (A4 landscape: 842 x 595 points)
-  const pdfWidth = 842
-  const pdfHeight = 595
-
-  // Calculate image scaling to fit PDF page
-  const scaleX = pdfWidth / width
-  const scaleY = pdfHeight / height
-  const scale = Math.min(scaleX, scaleY)
-
-  const scaledWidth = width * scale
-  const scaledHeight = height * scale
-
-  // Center the image on the page
-  const x = (pdfWidth - scaledWidth) / 2
-  const y = (pdfHeight - scaledHeight) / 2
-
-  // Create PDF content
-  const pdfContent = `%PDF-1.4
-1 0 obj
-<<
-/Type /Catalog
-/Pages 2 0 R
->>
-endobj
-
-2 0 obj
-<<
-/Type /Pages
-/Kids [3 0 R]
-/Count 1
->>
-endobj
-
-3 0 obj
-<<
-/Type /Page
-/Parent 2 0 R
-/MediaBox [0 0 ${pdfWidth} ${pdfHeight}]
-/Contents 4 0 R
-/Resources <<
-  /XObject <<
-    /Im1 5 0 R
-  >>
->>
->>
-endobj
-
-4 0 obj
-<<
-/Length 58
->>
-stream
-q
-${scaledWidth} 0 0 ${scaledHeight} ${x} ${y} cm
-/Im1 Do
-Q
-endstream
-endobj
-
-5 0 obj
-<<
-/Type /XObject
-/Subtype /Image
-/Width ${width}
-/Height ${height}
-/ColorSpace /DeviceRGB
-/BitsPerComponent 8
-/Filter /DCTDecode
-/Length ${imageBuffer.length}
->>
-stream
-`
-
-  // Convert PNG to JPEG for better PDF compatibility
-  const jpegBuffer = convertPNGToJPEG(imageBuffer)
-
-  const pdfEnd = `
-endstream
-endobj
-
-xref
-0 6
-0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
-0000000289 00000 n 
-0000000397 00000 n 
-trailer
-<<
-/Size 6
-/Root 1 0 R
->>
-startxref
-${600 + jpegBuffer.length}
-%%EOF`
-
-  // Combine PDF parts
-  const pdfBuffer = Buffer.concat([Buffer.from(pdfContent, "utf8"), jpegBuffer, Buffer.from(pdfEnd, "utf8")])
-
-  return pdfBuffer
-}
-
-function convertPNGToJPEG(pngBuffer: Buffer): Buffer {
-  try {
-    // Create a new canvas to convert PNG to JPEG
-    const { createCanvas, loadImage } = require("canvas")
-
-    const dataUrl = `data:image/png;base64,${pngBuffer.toString('base64')}`;
-
-    // This is a synchronous operation for the conversion
-    const img = new Image()
-     img.src = dataUrl;
-
-    const canvas = createCanvas(img.width, img.height)
-    const ctx = canvas.getContext("2d")
-    ctx.drawImage(img, 0, 0)
-
-    // Convert to JPEG with high quality
-    return canvas.toBuffer("image/jpeg", { quality: 0.95 })
-  } catch (error) {
-    console.error("PNG to JPEG conversion failed:", error)
-    // Return original buffer if conversion fails
-    return pngBuffer
+    console.error("Error generating or downloading PDF:", error);
+    return NextResponse.json({ error: "Failed to generate PDF certificate." }, { status: 500 });
   }
 }
