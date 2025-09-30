@@ -264,24 +264,38 @@ export async function GET(request: NextRequest) {
       WHERE u.role = 'instructor'
     `;
 
-    // Base query for fetching instructor data
-    let dataQuery = sql`
-      SELECT 
-        i.id,
-        i.specialties as specialization,
-        i.experience,
-        i.status,
-        i.trainings_count,
-        i.students_count,
-        i.full_name as name,
-        i.email,
-        i.phone,
-        i.user_id,
-        TO_CHAR(i.join_date, 'YYYY-MM-DD') as join_date -- CORRECTED: Using instructor's join_date
-      FROM instructors i
-      JOIN users u ON i.user_id = u.id
-      WHERE u.role = 'instructor'
-    `;
+    // Base query for fetching instructor data with real-time counts
+let dataQuery = sql`
+  SELECT 
+    i.id,
+    i.specialties as specialization,
+    i.experience,
+    i.status,
+    i.full_name as name,
+    i.email,
+    i.phone,
+    i.user_id,
+    TO_CHAR(i.join_date, 'YYYY-MM-DD') as join_date,
+
+   (
+  SELECT COUNT(*)
+  FROM trainings t
+  WHERE t.instructor_id = i.user_id -- ✅ match against user_id
+) AS trainings_count,
+
+(
+  SELECT COUNT(DISTINCT e.user_id)
+  FROM trainings t
+  LEFT JOIN enrollments e ON t.id = e.training_id
+  WHERE t.instructor_id = i.user_id -- ✅ match against user_id
+) AS students_count
+
+
+  FROM instructors i
+  JOIN users u ON i.user_id = u.id
+  WHERE u.role = 'instructor'
+`;
+
 
     // Apply filters to both queries
     const filters = [];

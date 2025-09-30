@@ -15,37 +15,35 @@ export async function POST(request: NextRequest) {
     // Hash the new password
     const passwordHash = await bcrypt.hash(newPassword, 10)
 
-    // Update password in database
-    const result = await sql`
-      UPDATE instructors 
-      SET password_hash = ${passwordHash}, updated_at = CURRENT_TIMESTAMP
+    // Step 1: Get the user_id for this instructor
+    const instructorRecord = await sql`
+      SELECT user_id, full_name, email 
+      FROM instructors 
       WHERE id = ${instructorId} AND email = ${email}
-      RETURNING name, email
     `
 
-    if (result.length === 0) {
+    if (instructorRecord.length === 0) {
       return NextResponse.json({ error: "Instructor not found" }, { status: 404 })
     }
 
-    const instructor = result[0]
+    const instructor = instructorRecord[0]
 
-    // Here you would typically send an email notification
-    // For now, we'll just simulate the email sending
+    // Step 2: Update the password in the users table
+    await sql`
+      UPDATE users
+      SET password_hash = ${passwordHash}, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${instructor.user_id}
+    `
+
+    // Step 3: Simulate email notification
     console.log(`Password reset email would be sent to: ${instructor.email}`)
-    console.log(`New password for ${instructor.name}: ${newPassword}`)
+    console.log(`New password for ${instructor.full_name}: ${newPassword}`)
 
-    // In a real application, you would use a service like:
-    // - SendGrid
-    // - AWS SES
-    // - Nodemailer
-    // - Resend
-
-    // Example email content:
     const emailContent = {
       to: instructor.email,
       subject: "Password Reset - Beauty Salon LMS",
       body: `
-        Dear ${instructor.name},
+        Dear ${instructor.full_name},
         
         Your password has been reset by an administrator.
         Your new temporary password is: ${newPassword}
@@ -59,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message: "Password reset successfully",
-      instructor: { name: instructor.name, email: instructor.email },
+      instructor: { name: instructor.full_name, email: instructor.email },
     })
   } catch (error) {
     console.error("Error resetting password:", error)

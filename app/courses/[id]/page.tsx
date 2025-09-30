@@ -1596,7 +1596,7 @@ const StickySidebar = ({
         <Button
           onClick={handleEnrollClick}
           disabled={checkingEnrollment || enrolling}
-          className="w-full mb-4 bg-amber-600 hover:bg-amber-700 text-white font-bold"
+          className="w-full mb-4 bg-custom-copper hover:bg-custom-copper text-white font-bold"
           size="lg"
         >
           {checkingEnrollment
@@ -1869,7 +1869,7 @@ export default function TrainingPage({
       <div className="flex min-h-screen flex-col">
         <SiteHeader />
         <main className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-amber-600"></div>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-custom-copper"></div>
         </main>
         <SiteFooter />
       </div>

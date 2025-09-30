@@ -3566,6 +3566,29 @@ export default function ModulesPage({
     fetchProgressData();
   }, [params, isAuthenticated, router]);
 
+  useEffect(() => {
+    // Only attempt to scroll if data is loaded and there's a hash in the URL
+    if (!loading && progressData && typeof window !== 'undefined' && window.location.hash) {
+      const targetId = window.location.hash.substring(1); // Remove the '#'
+      const targetElement = document.getElementById(targetId);
+
+      if (targetElement) {
+        // Use requestAnimationFrame for smoother scrolling, ensures layout is stable
+        requestAnimationFrame(() => {
+          targetElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start', // or 'center', 'end'
+          });
+          // Remove the hash from the URL to prevent re-scrolling on subsequent updates
+          // and for cleaner URLs after initial navigation.
+          // Optional: You might want to keep the hash if users are expected to copy/share direct links.
+          // If you decide to keep it, just remove this line.
+          history.replaceState(null, '', window.location.pathname);
+        });
+      }
+    }
+  }, [loading, progressData]);
+
   // Fetch quizzes for the training
   useEffect(() => {
     if (!progressData) return;
@@ -3912,20 +3935,20 @@ export default function ModulesPage({
 
         {progressData?.certificate && (
           <div className="flex justify-end mt-6">
-            <div className="relative bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-lg border border-yellow-200 w-full max-w-sm flex flex-col items-center">
+            <div className="relative bg-gradient-to-br from-custom-copper to-custom-tan p-6 rounded-lg border border-custom-copper w-full max-w-sm flex flex-col items-center">
               {/* Star at top-right */}
               <div className="absolute -top-1 -right-1">
-                <Star className="h-6 w-6 text-yellow-400 fill-current" />
+                <Star className="h-6 w-6 text-custom-copper fill-current" />
               </div>
 
               {/* Centered Award Icon */}
-              <Award className="h-16 w-16 text-yellow-500 mb-3" />
+              <Award className="h-16 w-16 text-custom-copper mb-3" />
 
               {/* Text */}
-              <h3 className="font-bold text-lg text-yellow-800 mb-1 text-center">
+              <h3 className="font-bold text-lg text-custom-copper mb-1 text-center">
                 Training Completed!
               </h3>
-              <p className="text-sm text-yellow-700 mb-3 text-center">
+              <p className="text-sm text-custom-copper mb-3 text-center">
                 Certificate #{progressData.certificate.certificate_number}
               </p>
 
@@ -3933,7 +3956,8 @@ export default function ModulesPage({
               <Button
                 onClick={downloadCertificate}
                 disabled={downloadingCertificate}
-                className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                className="bg-custom-copper hover:bg-custom-copper
+                 text-white"
                 size="sm"
               >
                 {downloadingCertificate ? (
@@ -4323,7 +4347,7 @@ export default function ModulesPage({
 
             {/* Reviews */}
             {progressData.enrollment.progress_percentage === 100 && (
-              <div className="mt-8">
+              <div id="reviews-section" className="mt-8">
                 <ReviewsSection
                   courseId={progressData.enrollment.training_id}
                 />
@@ -4355,25 +4379,25 @@ export default function ModulesPage({
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-custom-brown">
                 {progressData.statistics.total_modules}
               </div>
               <div className="text-sm text-muted-foreground">Total Modules</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-charcoal-gray">
                 {progressData.statistics.completed_modules}
               </div>
               <div className="text-sm text-muted-foreground">Completed</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">
+              <div className="text-2xl font-bold text-light-rose">
                 {Math.round(progressData.enrollment.progress_percentage)}%
               </div>
               <div className="text-sm text-muted-foreground">Progress</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">
+              <div className="text-2xl font-bold text-custom-copper">
                 {Math.floor(progressData.statistics.total_time_spent / 60)}h{" "}
                 {progressData.statistics.total_time_spent % 60}m
               </div>

@@ -149,8 +149,9 @@ export default function ModulesPage() {
         throw new Error(data.error || "Failed to fetch modules")
       }
 
-      const modulesData = data.modules || []
-      console.log("✅ Modules loaded:", modulesData.length)
+     const modulesData = Array.isArray(data) ? data : data.modules || []
+     console.log("✅ Modules loaded:", modulesData.length)
+     setModules(modulesData)
 
       setModules(modulesData)
       setPagination(
@@ -738,7 +739,10 @@ export default function ModulesPage() {
       {/* Modules Table - Responsive */}
       <div className="bg-ivory border border-mustard/20 rounded-lg">
         <div className="p-4 border-b border-mustard/20">
-          <h3 className="text-lg font-semibold text-charcoal">Modules ({pagination.total})</h3>
+          <h3 className="text-lg font-semibold text-charcoal">
+             Modules ({pagination.total > 0 ? pagination.total : modules.length})
+          </h3>
+
         </div>
 
         {!loading && (
@@ -781,12 +785,13 @@ export default function ModulesPage() {
                           <p className="font-medium">#{module.order}</p>
                         </div>
                         <div>
-                          <span className="text-gray-500">Video ID:</span>
-                          <div className="flex items-center space-x-1">
-                            <Play className="h-4 w-4 text-red-600" />
-                            <p className="font-mono text-sm">{module.videoId}</p>
-                          </div>
-                        </div>
+  <span className="text-gray-500">Video ID:</span>
+  <div className="flex items-center space-x-1 w-full max-w-xs truncate">
+    <Play className="h-4 w-4 text-red-600" />
+    <p className="font-mono text-sm truncate">{module.videoId}</p>
+  </div>
+</div>
+
                       </div>
 
                       <div className="flex space-x-2">
@@ -860,12 +865,13 @@ export default function ModulesPage() {
                           <TableCell className="text-deep-purple">{module.programName}</TableCell>
                           <TableCell className="text-deep-purple">{formatDuration(module.duration)}</TableCell>
                           <TableCell className="text-charcoal">#{module.order}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <Play className="h-4 w-4 text-red-600" />
-                              <span className="text-sm font-mono">{module.videoId}</span>
-                            </div>
-                          </TableCell>
+                          <TableCell className="w-40 max-w-xs">
+  <div className="flex items-center space-x-2 truncate">
+    <Play className="h-4 w-4 text-red-600" />
+    <span className="text-sm font-mono truncate">{module.videoId}</span>
+  </div>
+</TableCell>
+
                           <TableCell>
                             <Badge className={getStatusColor(module.status)}>{module.status}</Badge>
                           </TableCell>

@@ -1106,7 +1106,7 @@ function CourseCard({ course, onEnrollClick }: CourseCardProps) {
   const hasDiscount = course.discount > 0;
 
   return (
-    <Card className="flex flex-col overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 group border border-transparent hover:border-amber-500/50">
+    <Card className="flex flex-col overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 group border border-transparent hover:border-custom-copper">
       {/* Image and Badges */}
       <div className="relative aspect-video">
         <img
@@ -1132,7 +1132,7 @@ function CourseCard({ course, onEnrollClick }: CourseCardProps) {
 
       {/* Content Area */}
       <CardHeader className="flex-grow">
-        <CardDescription className="text-amber-600 font-medium text-sm capitalize">
+        <CardDescription className="text-custom-copper font-medium text-sm capitalize">
           {course.category_name}
         </CardDescription>
         <CardTitle className="text-lg font-bold line-clamp-2 leading-tight">
@@ -1195,7 +1195,7 @@ function FeatureItem({
 }) {
   return (
     <div className="flex items-center text-sm text-gray-700">
-      <Icon className="h-4 w-4 mr-2 text-amber-600 flex-shrink-0" />
+      <Icon className="h-4 w-4 mr-2 text-custom-tan flex-shrink-0" />
       <span>{text}</span>
     </div>
   );
@@ -1382,7 +1382,7 @@ export default function CoursesPage() {
             <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:flex md:w-auto md:justify-start bg-white p-1 rounded-lg shadow-sm">
               <TabsTrigger
                 value="all"
-                className="data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 ease-in-out"
+                className="data-[state=active]:bg-custom-copper data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 ease-in-out"
               >
                 All Categories
               </TabsTrigger>
@@ -1390,7 +1390,7 @@ export default function CoursesPage() {
                 <TabsTrigger
                   key={category.id}
                   value={category.id.toString()}
-                  className="capitalize data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 ease-in-out"
+                  className="capitalize data-[state=active]:bg-custom-copper data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 ease-in-out"
                 >
                   {category.name} {/* Displaying the actual category name */}
                 </TabsTrigger>

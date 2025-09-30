@@ -26,6 +26,17 @@ import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 
+// --- Helper Functions ---
+const formatDuration = (minutes: number) => {
+  const hours = Math.floor(minutes / 60);
+  if (minutes % 60 === 0) {
+    return `${hours}h`;
+  } else {
+    const remainingMinutes = minutes % 60;
+    return `${hours}h ${remainingMinutes}m`;
+  }
+};
+
 interface EnrolledCourse {
   id: number
   title: string
@@ -496,9 +507,9 @@ export default function StudentCoursesPage() {
                     <User className="h-4 w-4" />
                     <span>{course.instructor}</span>
                   </div>
-                  <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
-                    <span>{course.duration}h</span>
+                    <span>{formatDuration(course.duration)}</span> {/* UPDATED LINE */}
                   </div>
                 </div>
               </CardHeader>
@@ -540,7 +551,7 @@ export default function StudentCoursesPage() {
                   {course.status === "completed" ? (
                     <>
                       <Button variant="outline" className="flex-1 bg-transparent" asChild>
-                        <Link href={`/courses/${course.id}`}>
+                        <Link href={`/courses/${course.id}/lessons#reviews-section`}> {/* CORRECTED PATH */}
                           <BookOpen className="h-4 w-4 mr-2" />
                           Review
                         </Link>

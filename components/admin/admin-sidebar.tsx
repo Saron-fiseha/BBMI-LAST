@@ -34,11 +34,11 @@ const sidebarItems = [
     href: "/admin/users",
     icon: Users,
   },
-  {
-    title: "Project Creation",
-    href: "/admin/projects",
-    icon: FolderOpen,
-  },
+  // {
+  //   title: "Project Creation",
+  //   href: "/admin/projects",
+  //   icon: FolderOpen,
+  // },
   {
     title: "Training Categories",
     href: "/admin/categories",
@@ -65,7 +65,7 @@ const sidebarItems = [
     icon: UserX,
   },
   {
-    title: "Portfolio",
+    title: "Promotion",
     href: "/admin/portfolio",
     icon: Briefcase,
   },

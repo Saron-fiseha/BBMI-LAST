@@ -2382,9 +2382,9 @@ export default function InstructorsPage() {
                       <TableHead className="text-charcoal font-semibold">
                         Contact
                       </TableHead>
-                      <TableHead className="text-charcoal font-semibold">
+                      {/* <TableHead className="text-charcoal font-semibold">
                         User ID
-                      </TableHead>
+                      </TableHead> */}
                       <TableHead className="text-charcoal font-semibold">
                         Specialization
                       </TableHead>
@@ -2446,9 +2446,9 @@ export default function InstructorsPage() {
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="font-mono text-sm text-deep-purple">
-                            {instructor.user_id || "-"}
-                          </TableCell>
+                          {/* <TableCell className="font-mono text-sm text-deep-purple"> */}
+                            {/* {instructor.user_id || "-"} */}
+                          {/* </TableCell> */}
                           <TableCell className="text-deep-purple">
                             {instructor.specialization}
                           </TableCell>
