@@ -28,23 +28,6 @@ export function FeaturedCourses() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // const fetchCourses = async () => {
-    //   try {
-    //     const response = await fetch("/api/courses?limit=3"); // Fetch top 3 courses
-    //     if (!response.ok) {
-    //       throw new Error(`HTTP error! status: ${response.status}`);
-    //     }
-    //     const json = await response.json();
-    //     setFeaturedCourses(json.courses);
-    //     // const data: Course[] = await response.json()
-    //     // setFeaturedCourses(data)
-    //   } catch (err) {
-    //     console.error("Failed to fetch featured courses:", err);
-    //     setError("Failed to load courses. Please try again later.");
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
     const fetchCourses = async () => {
       try {
         const response = await fetch("/api/courses"); // fetch all trainings
@@ -53,7 +36,7 @@ export function FeaturedCourses() {
         }
 
         const json = await response.json();
-
+        console.log("Raw API response courses:", json.courses);
         // ✅ Sort by created_at (if available) and take top 3
         const sorted = [...json.courses]
           .filter((c) => c.created_at) // Ensure it's defined
@@ -62,8 +45,9 @@ export function FeaturedCourses() {
               new Date(b.created_at!).getTime() -
               new Date(a.created_at!).getTime()
           );
-
+        console.log("Sorted courses (with created_at):", sorted);
         const top3 = sorted.slice(0, 3);
+        console.log("Top 3 most recent courses:", top3);
         setFeaturedCourses(top3);
       } catch (err) {
         console.error("Failed to fetch featured courses:", err);
@@ -123,11 +107,11 @@ export function FeaturedCourses() {
                     alt={course.title || "Course thumbnail"}
                     width={300}
                     height={200}
-                    className="w-full h-48 object-cover"
+                    className="w-full h-64 object-cover"
                   />
-                  <Badge className="absolute top-4 left-4 bg-amber-600 text-black rounded-full">
+                  {/* <Badge className="absolute top-4 left-4 bg-amber-600 text-black rounded-full">
                     {course.category_id || "Unspecified"}
-                  </Badge>
+                  </Badge> */}
                 </div>
 
                 {/* --- Card Header --- */}

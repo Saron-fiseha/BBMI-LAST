@@ -1,3 +1,4 @@
+// C:\Users\Hp\Documents\BBMI-LMS\app\api\certificates\student\route.ts
 import { type NextRequest, NextResponse } from "next/server"
 import { neon } from "@neondatabase/serverless"
 
@@ -21,17 +22,17 @@ export async function GET(request: NextRequest) {
     cert.id,
     cert.user_id,
     cert.training_id,
-    cert.certificate_code,
+    cert.training_name as course_title,
+    cert.certificate_number, -- <-- DIRECTLY USING NEW COLUMN NAME
     cert.verification_code,
     cert.issue_date,
     cert.instructor_name,
-    t.name as course_title,
     t.category_id as course_category,
     t.level as course_level,
     t.duration,
     u.full_name as student_name,
     u.email as student_email,
-    enr.completion_date,
+    enr.certificate_issued_at, -- <-- DIRECTLY USING NEW COLUMN NAME
     enr.progress,
     enr.grade,
     
