@@ -169,7 +169,8 @@ export default function StudentDashboard() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="px-6 pt-6">
+        {/* Added responsive padding-left for loading state to account for mobile menu button */}
+        <div className="px-6 pt-6 pl-16 lg:pl-6">
           <DashboardHeader
             heading="Dashboard"
             text="Loading your dashboard..."
@@ -191,21 +192,21 @@ export default function StudentDashboard() {
     );
   }
 
-  // Calculate in-progress courses on the client side for display if needed.
-  // The backend now provides total courses and completed courses, so in-progress can be derived.
   const inProgressCoursesCount = stats.totalCourses - stats.completedCourses;
 
   return (
+    // Main container with consistent padding for all screen sizes
     <div className="space-y-6 px-6 pt-6 pb-8">
       {/* Dashboard Header */}
-      <div>
+      {/* Added responsive padding-left to make space for the mobile menu button */}
+      <div className="pl-16 lg:pl-0">
         <DashboardHeader
           heading="Dashboard"
           text="Overview of your learning journey"
         />
       </div>
 
-      {/* Welcome Section */}
+      {/* Welcome Section - Text content will wrap naturally */}
       <div>
         <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-6">
           <div className="flex items-center justify-between">
@@ -221,11 +222,9 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Responsive grid: 1 column on small, 2 on medium, 3 on large */}
       <div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {" "}
-          {/* Changed to lg:grid-cols-3 */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -269,9 +268,9 @@ export default function StudentDashboard() {
         </div>
       </div>
 
-      {/* Main Content Grid */}
+      {/* Main Content Grid - Stacks on small/medium, 3 columns on large */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Current Courses */}
+        {/* Current Courses - Takes full width on small/medium, 2 columns on large */}
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
@@ -290,35 +289,37 @@ export default function StudentDashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               {enrolledCourses?.slice(0, 3).map((course) => (
+                // Responsive course card: Stacks content on small, side-by-side on 'sm' and up
                 <div
                   key={course.id}
-                  className="flex items-center space-x-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  <div className="flex-1 space-y-2">
+                  <div className="flex-1 space-y-2 w-full">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-semibold">{course.name}</h4>{" "}
-                      {/* Changed to course.name */}
+                      <h4 className="font-semibold">{course.name}</h4>
                       <Badge variant="secondary">{course.level}</Badge>
                     </div>
                     <p className="text-sm text-gray-600">
                       Instructor: {course.instructor}
                     </p>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 text-sm text-gray-500 flex-wrap">
+                      {" "}
+                      {/* Added flex-wrap for smaller text details */}
                       <span>
                         {course.completed_lessons}/{course.total_lessons}{" "}
-                        lessons {/* Changed property names */}
+                        lessons
                       </span>
                       <span>•</span>
-                      <span>Next: {course.next_lesson}</span>{" "}
-                      {/* Changed property name */}
+                      <span>Next: {course.next_lesson}</span>
                     </div>
                     <Progress
                       value={course.progress}
                       className="h-2 text-custom-copper hover:bg-custom-copper"
                     />
                   </div>
+                  {/* Button: Full width on small, auto width on 'sm' and up */}
                   <Button
-                    className="bg-custom-copper hover:bg-custom-copper"
+                    className="bg-custom-copper hover:bg-custom-copper w-full sm:w-auto"
                     size="sm"
                     asChild
                   >
@@ -343,19 +344,16 @@ export default function StudentDashboard() {
           </Card>
         </div>
 
-        {/* Quick Actions (Keeping as is, it's not related to study hours) */}
+        {/* Quick Actions - Takes full width on small/medium, 1 column on large */}
         <div className="lg:col-span-1">
-          {" "}
-          {/* Added lg:col-span-1 to explicitly place it */}
           <Card>
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
               <CardDescription>Common tasks and shortcuts</CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Quick Actions Buttons: Stacks on small, 2 columns on medium and up */}
               <div className="grid gap-4 md:grid-cols-2">
-                {" "}
-                {/* Adjusted grid for 2 columns on medium screens */}
                 <Button
                   variant="outline"
                   className="h-20 flex-col bg-transparent"

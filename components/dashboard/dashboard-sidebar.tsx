@@ -73,6 +73,14 @@ export function DashboardSidebar({
     <div
       className={cn(
         "pb-12 min-h-screen bg-background border-r flex flex-col",
+        // Mobile specific classes (default behavior for screens < lg)
+        // Hide the sidebar off-screen when not open
+        !open && "translate-x-[-100%]",
+        // Show the sidebar when open (this is the default 'transform' value for visible)
+        open && "translate-x-0",
+        // The 'className' prop from DashboardLayout will contain 'fixed inset-y-0 left-0 z-40 w-64 transform transition-transform duration-200 ease-in-out'
+        // AND 'lg:translate-x-0 lg:static lg:inset-0 lg:flex-shrink-0'.
+        // The 'lg:' classes will override the mobile-specific 'translate-x' on large screens.
         className
       )}
     >
@@ -97,6 +105,7 @@ export function DashboardSidebar({
                 </span>
               </div>
             </Link>
+            {/* Mobile close button: Only visible on small screens when sidebar is open */}
             {open && onOpenChange && (
               <Button
                 variant="ghost"
