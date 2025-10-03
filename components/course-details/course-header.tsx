@@ -7,7 +7,7 @@ interface CourseHeaderProps {
   description: string;
   avgRating: number;
   totalReviews: number;
-  studentCount: number;
+  // studentCount: number;
   duration: number; // in weeks
   // lessonsCount: number;
   modulesCount: number; // total number of modules
@@ -24,14 +24,14 @@ export const CourseHeader = ({
   description,
   avgRating,
   totalReviews,
-  studentCount,
+  // studentCount,
   duration,
   // lessonsCount,
   modulesCount,
   instructor,
 }: CourseHeaderProps) => (
   <div className="mb-8">
-    <div className="text-sm font-bold uppercase text-amber-600 mb-2">
+    <div className="text-sm font-bold uppercase text-custom-copper mb-2">
       {categoryName}
     </div>
     <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
@@ -44,13 +44,13 @@ export const CourseHeader = ({
     <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground mb-6">
       <div className="flex items-center gap-1.5">
         <span className="font-bold text-slate-800">{avgRating.toFixed(1)}</span>
-        <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
+        <Star className="h-4 w-4 text-custom-copper fill-custom-copper" />
         <span>({totalReviews} reviews)</span>
       </div>
-      <div className="flex items-center gap-1.5">
+      {/* <div className="flex items-center gap-1.5">
         <Users className="h-4 w-4" />
         <span>{studentCount} students</span>
-      </div>
+      </div> */}
       <div className="flex items-center gap-1.5">
         <Clock className="h-4 w-4" />
         <span>{duration} minuets</span>

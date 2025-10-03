@@ -254,15 +254,18 @@ export default function StudentMessagesPage() {
   return (
     <>
       <div className="px-6 pt-6">
-        <DashboardHeader heading="Dashboard" text="Messages" />
+        <DashboardHeader
+          heading="Messages"
+          text="Communicate with your instructors and colleagues"
+        />
       </div>
       <div className="space-y-6 max-w-7xl mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Messages</h1>
-            <p className="text-muted-foreground">
+            {/* <h1 className="text-3xl font-bold tracking-tight">Messages</h1> */}
+            {/* <p className="text-muted-foreground">
               Communicate with your instructors and colleagues
-            </p>
+            </p> */}
           </div>
           <div className="flex items-center gap-3">
             {totalUnread > 0 && (

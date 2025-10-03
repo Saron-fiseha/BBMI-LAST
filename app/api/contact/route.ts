@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 
     await resend.emails.send({
       from: "onboarding@resend.dev", // Use a verified domain if you have one, otherwise 'onboarding@resend.dev' is a safe default
-      to: "robelbira@gmail.com", // The target email address
+      to: "brushedbybetty@gmail.com", // The target email address
       subject: `New Contact Form Submission: ${subject}`,
       html: `
         <p><strong>Name:</strong> ${name}</p>

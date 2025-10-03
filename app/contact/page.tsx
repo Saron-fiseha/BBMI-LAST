@@ -1,94 +1,106 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { useToast } from "@/components/ui/use-toast"
-import { MapPin, Phone, Mail, ChevronDown, ChevronUp, Loader2, Share2, Instagram, Youtube, Facebook } from "lucide-react"
-import { BlurFade } from "@/components/magicui/blur-fade"
-import { AnimatedShinyText } from "@/components/magicui/animated-shiny-text"
-import { AnimatedGradientText } from "@/components/magicui/animated-gradient-text"
-import { ShineBorder } from "@/components/magicui/shine-border"
+import { useState } from "react";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  MapPin,
+  Phone,
+  Mail,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  Share2,
+  Instagram,
+  Youtube,
+  Facebook,
+} from "lucide-react";
+import { BlurFade } from "@/components/magicui/blur-fade";
+import { AnimatedShinyText } from "@/components/magicui/animated-shiny-text";
+import { AnimatedGradientText } from "@/components/magicui/animated-gradient-text";
+import { ShineBorder } from "@/components/magicui/shine-border";
 
 // FAQ array remains the same
 const faqs = [
   {
-    question: "How do I enroll in a course?",
+    question: "What courses do you offer at BBMI?",
     answer:
-      "To enroll in a course, simply browse our course catalog, select the course you're interested in, and click 'Enroll Now'. You'll need to create an account and complete the payment process.",
+      "BBMI offers a comprehensive range of courses including Professional Makeup Artistry, Skincare Fundamentals, Bridal & Editorial Makeup, Special Effects (SFX) Makeup, and Nail Technology. All our programs are designed by leading industry experts to meet the latest beauty trends and professional standards.",
   },
   {
-    question: "What payment methods do you accept?",
+    question: "How long are the courses?",
     answer:
-      "We accept all major credit cards (Visa, MasterCard, American Express), PayPal, and bank transfers. All payments are processed securely through our encrypted payment system.",
+      "Course duration varies based on the program's intensity. Our intensive certification programs typically range from 4 to 12 weeks, while specialized workshops may be a few days. We offer flexible scheduling with both full-time weekday and part-time weekend classes to fit your lifestyle.",
   },
   {
-    question: "Can I get a refund if I'm not satisfied?",
+    question: "Do you provide certificates upon completion?",
     answer:
-      "Yes! We offer a 30-day money-back guarantee. If you're not completely satisfied with your course, contact us within 30 days of purchase for a full refund.",
+      "Yes, upon successful completion of any of our certification programs, BBMI provides an industry-recognized certificate. Our qualifications are highly respected and can help you launch or advance your career as a professional in the beauty industry.",
   },
   {
-    question: "How long do I have access to course materials?",
+    question: "What is your enrollment and refund policy?",
     answer:
-      "Once you enroll in a course, you have lifetime access to all course materials, including videos, resources, and updates. You can learn at your own pace.",
+      "To enroll, a registration fee is required to secure your spot. Our refund policy is detailed in the enrollment agreement, but generally, a partial refund can be requested before the second week of class begins. The registration fee is non-refundable.",
   },
   {
-    question: "Do you offer certificates upon completion?",
+    question: "Do you offer career or job placement support?",
     answer:
-      "Yes, all our courses come with a certificate of completion. Once you finish all course modules and pass the final assessment, you'll receive a digital certificate.",
+      "Absolutely. We are committed to our students' success beyond the classroom. BBMI offers extensive career support, including professional portfolio development, interview coaching, and networking opportunities with our industry partners, which include top salons, beauty brands, and media production houses.",
   },
   {
-    question: "Are the courses suitable for beginners?",
+    question: "Will I have access to course materials after I graduate?",
     answer:
-      "We offer courses for all skill levels. Each course clearly indicates whether it's for beginners, intermediate, or advanced students. Check the course requirements before enrolling.",
+      "Yes, all BBMI graduates receive 1 year access to our online student portal. This includes all course notes, video tutorials, and resource lists. You can refresh your skills anytime and will also get updates on new techniques and materials.",
   },
-  {
-    question: "Can I interact with instructors?",
-    answer:
-      "Our courses include Q&A sessions, discussion forums, and some offer one-on-one mentoring sessions with instructors.",
-  },
-  {
-    question: "Do you offer group discounts?",
-    answer:
-      "Yes, we offer special pricing for groups of 5 or more students. Contact us directly to discuss group enrollment options and pricing.",
-  },
-]
+];
 
 const TikTokIcon = (props: React.ComponentProps<"svg">) => (
   <svg {...props} viewBox="0 0 24 24" fill="currentColor">
     <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
   </svg>
-)
-
+);
 
 export default function ContactPage() {
-  const { toast } = useToast()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [openFaq, setOpenFaq] = useState<number | null>(null)
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     subject: "",
     message: "",
-  })
+  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   // --- MODIFIED SECTION START ---
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     try {
       // Assuming your API endpoint is at '/api/contact'
@@ -98,10 +110,10 @@ export default function ContactPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to send message. Please try again.")
+        throw new Error("Failed to send message. Please try again.");
       }
 
       // const result = await response.json(); // You can use the result if needed
@@ -109,25 +121,24 @@ export default function ContactPage() {
       toast({
         title: "Message sent successfully!",
         description: "We'll get back to you within 24 hours.",
-      })
+      });
 
-      setFormData({ name: "", email: "", subject: "", message: "" })
+      setFormData({ name: "", email: "", subject: "", message: "" });
     } catch (error: any) {
       toast({
         title: "Error sending message",
         description: error.message || "Please try again later.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
   // --- MODIFIED SECTION END ---
 
-
   const toggleFaq = (index: number) => {
-    setOpenFaq(openFaq === index ? null : index)
-  }
+    setOpenFaq(openFaq === index ? null : index);
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-[#F5F1E9] text-ivory">
@@ -139,7 +150,8 @@ export default function ContactPage() {
             <div className="text-center">
               <h1 className="text-4xl font-bold mb-4 text-black">Contact Us</h1>
               <p className="text-xl text-black max-w-2xl mx-auto">
-                Have questions about our courses or need support? We're here to help!
+                Have questions about our courses or need support? We're here to
+                help!
               </p>
             </div>
           </div>
@@ -152,14 +164,22 @@ export default function ContactPage() {
               <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
                 <CardContent className="p-6 text-center">
                   <MapPin className="h-8 w-8 mx-auto mb-4 text-custom-khaki" />
-                  <h3 className="font-bold mb-2 text-charcoal">
-                    Address
-                  </h3>
+                  <h3 className="font-bold mb-2 text-charcoal">Address</h3>
                   <div className="text-gray-700">
-                    <p className="mb-3"> Branch 1: 22 round about noah city point building 5th floor </p>
-                    <p className="mb-3"> Branch 2: lebu mati building 3rd floor</p>
-                    <p> Branch 3: summit yetebaberut, Africa convention center </p>
-
+                    <p className="mb-3">
+                      {" "}
+                      Branch 1: 22 round about noah city point building 5th
+                      floor{" "}
+                    </p>
+                    <p className="mb-3">
+                      {" "}
+                      Branch 2: lebu mati building 3rd floor
+                    </p>
+                    <p>
+                      {" "}
+                      Branch 3: summit yetebaberut, Africa convention
+                      center{" "}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -168,81 +188,87 @@ export default function ContactPage() {
               <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
                 <CardContent className="p-6 text-center">
                   <Phone className="h-8 w-8 mx-auto mb-4 text-custom-khaki" />
-                  <h3 className="font-bold mb-2 text-charcoal">
-                    Phone
-                  </h3>
-                  <p className="text-gray-700 mb-3">
-                   +251 913218888
-                  </p>
-                  <p className="text-gray-700 mb-3">
-                    +251 912158143
-                  </p>
-                  <p className="text-gray-700">
-                   +251 969222888
-                  </p>
+                  <h3 className="font-bold mb-2 text-charcoal">Phone</h3>
+                  <p className="text-gray-700 mb-3">+251 913218888</p>
+                  <p className="text-gray-700 mb-3">+251 912158143</p>
+                  <p className="text-gray-700">+251 969222888</p>
                 </CardContent>
               </Card>
             </BlurFade>
             <BlurFade delay={0.3}>
-  <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-    <CardContent className="p-6 text-center">
-      <Mail className="h-8 w-8 mx-auto mb-4 text-custom-khaki" />
-      <h3 className="font-bold mb-2 text-charcoal">
-        Email
-      </h3>
-      {/* --- THE FIX --- */}
-      {/* Wrapped the email address in an <a> tag with a mailto: link */}
-      <a 
-        href="mailto:brushedbybetty@gmail.com" 
-        className="text-gray-700 mt-8 inline-block hover:text-custom-copper hover:underline transition-colors"
-      >
-        brushedbybetty@gmail.com
-      </a>
-    </CardContent>
-  </Card>
-</BlurFade>
+              <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                <CardContent className="p-6 text-center">
+                  <Mail className="h-8 w-8 mx-auto mb-4 text-custom-khaki" />
+                  <h3 className="font-bold mb-2 text-charcoal">Email</h3>
+                  {/* --- THE FIX --- */}
+                  {/* Wrapped the email address in an <a> tag with a mailto: link */}
+                  <a
+                    href="mailto:brushedbybetty@gmail.com"
+                    className="text-gray-700 mt-8 inline-block hover:text-custom-copper hover:underline transition-colors"
+                  >
+                    brushedbybetty@gmail.com
+                  </a>
+                </CardContent>
+              </Card>
+            </BlurFade>
             <BlurFade delay={0.4}>
-  <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-    <CardContent className="p-6 text-center">
-      <Share2 className="h-8 w-8 mx-auto mb-4 text-custom-khaki" />
-      <h3 className="font-bold mb-6 text-charcoal">
-        Follow Us
-      </h3>
-      {/* --- THE FIX --- */}
-      {/* 
+              <Card className="h-full hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                <CardContent className="p-6 text-center">
+                  <Share2 className="h-8 w-8 mx-auto mb-4 text-custom-khaki" />
+                  <h3 className="font-bold mb-6 text-charcoal">Follow Us</h3>
+                  {/* --- THE FIX --- */}
+                  {/* 
         This div is now the main container for the links.
         - `flex flex-col`: Creates a vertical stack.
         - `items-start`: Aligns all links to the left edge of the container.
         - `w-fit mx-auto`: Makes the container only as wide as its content and centers it.
         - `space-y-4`: Adds consistent vertical spacing between each link.
       */}
-      <div className="flex flex-col items-start w-fit mx-auto space-y-4 text-gray-700">
-        
-        {/* Each link is now a flex container for perfect icon-text alignment */}
-        <a href="#" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-custom-copper transition-colors">
-          <Facebook className="h-5 w-5" />
-          <span className="font-medium">Facebook</span>
-        </a>
-        
-        <a href="https://www.instagram.com/brushedbybetty?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDcОMzIxNw==" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-custom-copper transition-colors">
-          <Instagram className="h-5 w-5" />
-          <span className="font-medium">Instagram</span>
-        </a>
-        
-        <a href="https://youtube.com/@brushedbybetty?si=KkLOHRhAI7xoyUzE" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-custom-copper transition-colors">
-          <Youtube className="h-5 w-5" />
-          <span className="font-medium">YouTube</span>
-        </a>
-        
-        <a href="https://vm.tiktok.com/ZMSTy5jY2/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 hover:text-custom-copper transition-colors">
-          <TikTokIcon className="h-5 w-5" />
-          <span className="font-medium">TikTok</span>
-        </a>
-        
-      </div>
-    </CardContent>
-  </Card>
-</BlurFade>
+                  <div className="flex flex-col items-start w-fit mx-auto space-y-4 text-gray-700">
+                    {/* Each link is now a flex container for perfect icon-text alignment */}
+                    <a
+                      href="https://facebook.com/brushedbybettymakeupschool"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 hover:text-custom-copper transition-colors"
+                    >
+                      <Facebook className="h-5 w-5" />
+                      <span className="font-medium">Facebook</span>
+                    </a>
+
+                    <a
+                      href="https://www.instagram.com/brushedbybetty?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDcОMzIxNw=="
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 hover:text-custom-copper transition-colors"
+                    >
+                      <Instagram className="h-5 w-5" />
+                      <span className="font-medium">Instagram</span>
+                    </a>
+
+                    <a
+                      href="https://youtube.com/@brushedbybetty?si=KkLOHRhAI7xoyUzE"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 hover:text-custom-copper transition-colors"
+                    >
+                      <Youtube className="h-5 w-5" />
+                      <span className="font-medium">YouTube</span>
+                    </a>
+
+                    <a
+                      href="https://vm.tiktok.com/ZMSTy5jY2/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 hover:text-custom-copper transition-colors"
+                    >
+                      <TikTokIcon className="h-5 w-5" />
+                      <span className="font-medium">TikTok</span>
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
+            </BlurFade>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -255,7 +281,8 @@ export default function ContactPage() {
                       Send us a Message
                     </CardTitle>
                     <CardDescription className="text-gray-600">
-                      Fill out the form below and we'll get back to you as soon as possible.
+                      Fill out the form below and we'll get back to you as soon
+                      as possible.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -344,14 +371,18 @@ export default function ContactPage() {
                     Frequently Asked Questions
                   </CardTitle>
                   <CardDescription className="text-gray-600">
-                    Find answers to common questions about our courses and services.
+                    Find answers to common questions about our courses and
+                    services.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     {faqs.map((faq, index) => (
                       <BlurFade key={index} delay={index * 0.1}>
-                        <Collapsible open={openFaq === index} onOpenChange={() => toggleFaq(index)}>
+                        <Collapsible
+                          open={openFaq === index}
+                          onOpenChange={() => toggleFaq(index)}
+                        >
                           <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-4 text-left hover:bg-muted/50 border-custom-browny text-charcoal">
                             <span className="font-medium">{faq.question}</span>
                             {openFaq === index ? (
@@ -375,5 +406,5 @@ export default function ContactPage() {
       </main>
       <SiteFooter />
     </div>
-  )
+  );
 }
