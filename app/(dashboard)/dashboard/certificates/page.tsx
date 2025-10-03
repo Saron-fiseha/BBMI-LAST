@@ -405,7 +405,7 @@ export default function StudentCertificatesPage() {
           certificateNumber: certificate.certificate_number,
           verificationCode: certificate.verification_code,
           grade: certificate.grade,
-          duration: certificate.duration, // Use `duration` here
+          duration: certificate.duration_hours, // Use `duration` here
           skills: certificate.skills_learned,
           trainingDescription: certificate.training_description,
         }),
