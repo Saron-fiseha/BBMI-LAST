@@ -118,12 +118,16 @@ export default function LoginPage() {
               <div className="flex items-center justify-between">
                 <Link
                   href="/forgot-password"
-                  className="text-sm text-mustard hover:underline"
+                  className="text-sm text-custom-copper hover:underline"
                 >
                   Forgot password?
                 </Link>
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full bg-custom-copper hover:bg-custom-copper/90 text-white font-bold"
+                disabled={loading}
+              >
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -135,7 +139,10 @@ export default function LoginPage() {
               </Button>
               <div className="text-center text-sm">
                 Don't have an account?{" "}
-                <Link href="/register" className="text-mustard hover:underline">
+                <Link
+                  href="/register"
+                  className="text-custom-copper hover:underline"
+                >
                   Sign up
                 </Link>
               </div>

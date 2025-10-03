@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Meteors } from "@/components/magicui/meteors"
-import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button"
-import { AnimatedGradientText } from "@/components/magicui/animated-gradient-text"
-import { AnimatedShinyText } from "@/components/magicui/animated-shiny-text"
+import Link from "next/link";
+import { Meteors } from "@/components/magicui/meteors";
+import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button";
+import { AnimatedGradientText } from "@/components/magicui/animated-gradient-text";
+import { AnimatedShinyText } from "@/components/magicui/animated-shiny-text";
 
 export function CTASection() {
   return (
@@ -32,10 +32,10 @@ export function CTASection() {
               while keeping its gradient color scheme.
             */}
             <Link
-                href="/register"
-                 className="h-11 inline-flex items-center justify-center text-lg bg-gradient-to-r from-custom-copper to-custom-tan text-white font-bold px-10 rounded-lg shadow-lg transform transition-transform duration-300 hover:scale-105"
-          >
-              Enroll Now
+              href="/register"
+              className="h-11 inline-flex items-center justify-center text-lg bg-gradient-to-r from-custom-copper to-custom-tan text-white font-bold px-10 rounded-lg shadow-lg transform transition-transform duration-300 hover:scale-105"
+            >
+              Join Now
             </Link>
 
             {/* 
@@ -53,5 +53,5 @@ export function CTASection() {
         </div>
       </div>
     </section>
-  )
+  );
 }

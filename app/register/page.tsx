@@ -236,7 +236,11 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full  bg-custom-copper hover:bg-custom-copper/90 text-white font-bold"
+                disabled={loading}
+              >
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -249,7 +253,10 @@ export default function RegisterPage() {
 
               <div className="text-center text-sm">
                 Already have an account?{" "}
-                <Link href="/login" className="text-mustard hover:underline">
+                <Link
+                  href="/login"
+                  className="text-custom-copper hover:underline"
+                >
                   Sign in
                 </Link>
               </div>

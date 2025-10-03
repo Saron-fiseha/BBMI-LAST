@@ -1,29 +1,35 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, ArrowLeft } from "lucide-react"
-import Link from "next/link"
-import { SiteHeader } from "@/components/site-header"
-import { SiteFooter } from "@/components/site-footer"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2, ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState("")
-  const [error, setError] = useState("")
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
-    setMessage("")
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setMessage("");
 
     try {
       const response = await fetch("/api/auth/forgot-password", {
@@ -32,21 +38,21 @@ export default function ForgotPasswordPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (data.success) {
-        setMessage(data.message)
+        setMessage(data.message);
       } else {
-        setError(data.message)
+        setError(data.message);
       }
     } catch (error) {
-      setError("Failed to send reset email. Please try again.")
+      setError("Failed to send reset email. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -54,9 +60,12 @@ export default function ForgotPasswordPage() {
       <main className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Forgot Password</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">
+              Forgot Password
+            </CardTitle>
             <CardDescription className="text-center">
-              Enter your email address and we'll send you a link to reset your password
+              Enter your email address and we'll send you a link to reset your
+              password
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -86,7 +95,11 @@ export default function ForgotPasswordPage() {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full bg-custom-copper  hover:bg-custom-copper/90 text-white font-bold"
+                disabled={loading}
+              >
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -98,8 +111,11 @@ export default function ForgotPasswordPage() {
               </Button>
 
               <div className="text-center">
-                <Link href="/login" className="inline-flex items-center text-sm text-mustard hover:underline">
-                  <ArrowLeft className="mr-1 h-4 w-4" />
+                <Link
+                  href="/login"
+                  className="inline-flex items-center text-sm text-custom-copper hover:underline"
+                >
+                  <ArrowLeft className="mr-1 h-4 w-4 " />
                   Back to login
                 </Link>
               </div>
@@ -109,5 +125,5 @@ export default function ForgotPasswordPage() {
       </main>
       <SiteFooter />
     </div>
-  )
+  );
 }

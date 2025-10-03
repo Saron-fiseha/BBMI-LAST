@@ -1,24 +1,28 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { DashboardSidebar } from "./dashboard-sidebar"
-import { Button } from "@/components/ui/button"
-import { Menu } from "lucide-react"
+import { useState } from "react";
+import { DashboardSidebar } from "./dashboard-sidebar";
+import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
 
 interface DashboardLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background flex">
       {/* Mobile menu button */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
-        <Button variant="outline" size="sm" onClick={() => setSidebarOpen(true)}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setSidebarOpen(true)}
+        >
           <Menu className="h-4 w-4" />
         </Button>
       </div>
@@ -35,8 +39,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-30 bg-black bg-opacity-50 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 z-30 bg-black bg-opacity-50 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
     </div>
-  )
+  );
 }

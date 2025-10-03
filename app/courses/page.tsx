@@ -325,7 +325,6 @@ export default function CoursesPage() {
             </p>
           </section>
         </BlurFade>
-
         {/* --- Filters and Search --- */}
         <BlurFade delay={0.3}>
           <div className="flex flex-col md:flex-row gap-4 mb-8">
@@ -353,38 +352,38 @@ export default function CoursesPage() {
             </Select>
           </div>
         </BlurFade>
-
         {/* --- Category Tabs --- */}
-        <BlurFade delay={0.4}>
-          <Tabs
-            value={categoryFilter}
-            onValueChange={setCategoryFilter}
-            className="w-full mb-10"
-          >
-            {/* Added styling to TabsList for a more prominent and professional look */}
-            {/* <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:flex md:w-auto bg-white p-1 rounded-lg shadow-sm"> */}
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:flex md:w-auto md:justify-start bg-white p-1 rounded-lg shadow-sm">
-              <TabsTrigger
-                value="all"
-                className="data-[state=active]:bg-custom-copper data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 ease-in-out"
-              >
-                All Categories
-              </TabsTrigger>
-              {categories.map((category) => (
+        <div className="mb-40 md:mb-10">
+          <BlurFade delay={0.4}>
+            <Tabs
+              value={categoryFilter}
+              onValueChange={setCategoryFilter}
+              className="w-full"
+            >
+              {/* Added styling to TabsList for a more prominent and professional look */}
+              {/* <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:flex md:w-auto bg-white p-1 rounded-lg shadow-sm"> */}
+              {/* <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:flex md:w-auto md:justify-start bg-white p-1 rounded-lg shadow-sm"> */}
+              <TabsList className="flex flex-wrap justify-start gap-2 w-full p-1 bg-white rounded-lg shadow-sm">
                 <TabsTrigger
-                  key={category.id}
-                  value={category.id.toString()}
-                  className="capitalize data-[state=active]:bg-custom-copper data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 ease-in-out"
+                  value="all"
+                  className="data-[state=active]:bg-custom-copper data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 ease-in-out"
                 >
-                  {category.name} {/* Displaying the actual category name */}
+                  All Categories
                 </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        </BlurFade>
-
+                {categories.map((category) => (
+                  <TabsTrigger
+                    key={category.id}
+                    value={category.id.toString()}
+                    className="capitalize data-[state=active]:bg-custom-copper data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200 ease-in-out"
+                  >
+                    {category.name} {/* Displaying the actual category name */}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </BlurFade>
+        </div>
         {/* --- Trainings Grid --- */}
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch">
           {filteredCourses.map((course, index) => (
             <BlurFade key={course.id} delay={0.1 * index}>
@@ -392,7 +391,6 @@ export default function CoursesPage() {
             </BlurFade>
           ))}
         </div>
-
         {filteredCourses.length === 0 && !loading && (
           <BlurFade delay={0.2}>
             <div className="text-center py-16 col-span-full">

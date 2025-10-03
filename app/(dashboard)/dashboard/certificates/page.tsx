@@ -405,7 +405,7 @@ export default function StudentCertificatesPage() {
           certificateNumber: certificate.certificate_number,
           verificationCode: certificate.verification_code,
           grade: certificate.grade,
-          duration: certificate.duration, // Use `duration` here
+          duration: certificate.duration_hours, // Use `duration` here
           skills: certificate.skills_learned,
           trainingDescription: certificate.training_description,
         }),
@@ -556,7 +556,7 @@ export default function StudentCertificatesPage() {
               </SelectContent>
             </Select>
 
-            <Select
+            {/* <Select
               value={selectedInstructor}
               onValueChange={setSelectedInstructor}
             >
@@ -572,9 +572,9 @@ export default function StudentCertificatesPage() {
                   </SelectItem>
                 ))}
               </SelectContent>
-            </Select>
+            </Select> */}
 
-            <Select value={selectedYear} onValueChange={setSelectedYear}>
+            {/* <Select value={selectedYear} onValueChange={setSelectedYear}>
               <SelectTrigger className="w-[120px]">
                 <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                 <SelectValue placeholder="All Years" />
@@ -587,7 +587,7 @@ export default function StudentCertificatesPage() {
                   </SelectItem>
                 ))}
               </SelectContent>
-            </Select>
+            </Select> */}
           </div>
         </div>
       </div>
@@ -643,16 +643,16 @@ export default function StudentCertificatesPage() {
                 {certificate.duration_hours > 0 && (
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <Clock className="h-4 w-4" />
-                    <span>Duration: {certificate.duration_hours} hours</span>
+                    <span>Duration: {certificate.duration_hours} </span>
                   </div>
                 )}
                 {/* Certificate Number (formerly Code) */}
-                {certificate.certificate_number && (
+                {/* {certificate.certificate_number && (
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <Hash className="h-4 w-4" />
                     <span>No: {certificate.certificate_number}</span>
                   </div>
-                )}
+                )} */}
                 {/* Student Name */}
                 {certificate.student_name && (
                   <p className="text-sm text-gray-600 flex items-center gap-2 mt-2">
@@ -663,7 +663,7 @@ export default function StudentCertificatesPage() {
                   </p>
                 )}
                 {/* Skills Learned */}
-                {certificate.skills_learned &&
+                {/* {certificate.skills_learned &&
                   certificate.skills_learned.length > 0 && (
                     <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500 mt-2">
                       <Tag className="h-4 w-4" />
@@ -674,7 +674,7 @@ export default function StudentCertificatesPage() {
                         </Badge>
                       ))}
                     </div>
-                  )}
+                  )} */}
               </div>
 
               {/* View and Download buttons */}
@@ -694,7 +694,7 @@ export default function StudentCertificatesPage() {
                   ) : (
                     <>
                       <Eye className="h-4 w-4 mr-2" />
-                      View Certificate
+                      View
                     </>
                   )}
                 </Button>
@@ -716,7 +716,7 @@ export default function StudentCertificatesPage() {
                   ) : (
                     <>
                       <Download className="h-4 w-4 mr-2" />
-                      Download PDF
+                      Download
                     </>
                   )}
                 </Button>
