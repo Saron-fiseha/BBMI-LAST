@@ -143,7 +143,7 @@ export function DashboardSidebar({
               size="sm"
               className="w-full justify-start text-muted-foreground hover:text-white"
             >
-              <Link href="/">
+              <Link href="/" onClick={() => onOpenChange?.(false)}>
                 <Home className="mr-2 h-4 w-4" />
                 Back to Home
               </Link>
@@ -166,7 +166,7 @@ export function DashboardSidebar({
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
-                <Link href={item.href}>
+                <Link href={item.href} onClick={() => onOpenChange?.(false)}>
                   <item.icon className="mr-2 h-4 w-4" />
                   {item.title}
                 </Link>
