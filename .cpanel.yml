@@ -13,7 +13,7 @@ deployment:
     - export CERTIFICATE_BASE_URL="https://brushedbybetty/certificates"
 
     # 2️⃣ Set deployment path (your live site folder)
-    - export DEPLOYPATH=/home/brushefgj/public_html/
+    - export DEPLOYPATH=/home/brushefj/public_html/
 
     # 3️⃣ Start logging
     - echo "------ Starting Deployment ------" >> deploy-output.txt
