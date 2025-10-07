@@ -253,7 +253,7 @@ export default function StudentMessagesPage() {
 
   return (
     <>
-      <div className="px-6 pt-6">
+      <div className="px-6 pt-6 pl-16 lg:pl-6">
         <DashboardHeader
           heading="Messages"
           text="Communicate with your instructors and colleagues"
