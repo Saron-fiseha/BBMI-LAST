@@ -746,7 +746,7 @@ const DashboardPage = () => {
                 borderRadius: "8px",
               }}
             />
-            <Legend />
+            {/* <Legend /> */}
           </PieChart>
         </ResponsiveContainer>
       </div>

@@ -2316,10 +2316,10 @@ export default function InstructorsPage() {
                           <span className="text-gray-500">Trainings:</span>
                           <p>{instructor.trainings_count || 0}</p>
                         </div>
-                        <div>
+                        {/* <div>
                           <span className="text-gray-500">Students:</span>
                           <p>{instructor.students_count || 0}</p>
-                        </div>
+                        </div> */}
                         <div>
                           <span className="text-gray-500">Specialization:</span>
                           <p>{instructor.specialization}</p>
@@ -2391,9 +2391,9 @@ export default function InstructorsPage() {
                       <TableHead className="text-charcoal font-semibold">
                         Trainings
                       </TableHead>
-                      <TableHead className="text-charcoal font-semibold">
+                      {/* <TableHead className="text-charcoal font-semibold">
                         Students
-                      </TableHead>
+                      </TableHead> */}
                       <TableHead className="text-charcoal font-semibold">
                         Experience
                       </TableHead>
@@ -2455,9 +2455,9 @@ export default function InstructorsPage() {
                           <TableCell className="text-deep-purple">
                             {instructor.trainings_count || 0}
                           </TableCell>
-                          <TableCell className="text-deep-purple">
+                          {/* <TableCell className="text-deep-purple">
                             {instructor.students_count || 0}
-                          </TableCell>
+                          </TableCell> */}
                           <TableCell className="text-deep-purple">
                             {instructor.experience} years
                           </TableCell>

@@ -600,8 +600,8 @@ export default function AdminPortfolioPage() {
       {/* Header - Responsive */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Portfolio Management</h1>
-          <p className="text-sm sm:text-base text-deep-purple mt-1">Manage Brushed By Betty's portfolio showcase</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-charcoal">Promotion Management</h1>
+          <p className="text-sm sm:text-base text-deep-purple mt-1">Manage Brushed By Betty's promotion showcase</p>
         </div>
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
           <Button
@@ -619,7 +619,7 @@ export default function AdminPortfolioPage() {
             disabled={submitting}
           >
             <Plus className="h-4 w-4 mr-2" />
-            Add Portfolio Item
+            Add Promotion Item
           </Button>
         </div>
       </div>
@@ -687,7 +687,7 @@ export default function AdminPortfolioPage() {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin text-mustard mx-auto mb-2" />
-            <p className="text-deep-purple">Loading portfolio items...</p>
+            <p className="text-deep-purple">Loading promotion items...</p>
           </div>
         </div>
       )}
@@ -695,7 +695,7 @@ export default function AdminPortfolioPage() {
       {/* Portfolio Items Table - Responsive */}
       <div className="bg-ivory border border-mustard/20 rounded-lg">
         <div className="p-4 border-b border-mustard/20">
-          <h3 className="text-lg font-semibold text-charcoal">Portfolio Items ({pagination.total})</h3>
+          <h3 className="text-lg font-semibold text-charcoal">Promotion Items ({pagination.total})</h3>
         </div>
 
         {!loading && (
@@ -706,8 +706,8 @@ export default function AdminPortfolioPage() {
                 {portfolioItems.length === 0 ? (
                   <div className="text-center py-8 text-deep-purple">
                     {error
-                      ? "Error loading portfolio items. Please try again."
-                      : "No portfolio items found. Click 'Add Portfolio Item' to create your first item."}
+                      ? "Error loading Promotion items. Please try again."
+                      : "No Promotion items found. Click 'Add Promotion Item' to create your first item."}
                   </div>
                 ) : (
                   portfolioItems.map((item, index) => (
@@ -718,7 +718,7 @@ export default function AdminPortfolioPage() {
                             {item.file_type === "video" ? (
                               <video
                                 src={
-                                  item.file_path || "/placeholder.svg?height=48&width=48&query=beauty salon portfolio"
+                                  item.file_path || "/placeholder.svg?height=48&width=48&query=beauty salon Promotion"
                                 }
                                 className="object-cover rounded-md w-full h-full"
                                 muted
@@ -803,8 +803,8 @@ export default function AdminPortfolioPage() {
                       <TableRow>
                         <TableCell colSpan={8} className="text-center py-8 text-deep-purple">
                           {error
-                            ? "Error loading portfolio items. Please try again."
-                            : "No portfolio items found. Click 'Add Portfolio Item' to create your first item."}
+                            ? "Error loading Promotion items. Please try again."
+                            : "No Promotion items found. Click 'Add Promotion Item' to create your first item."}
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -897,7 +897,7 @@ export default function AdminPortfolioPage() {
           <div className="bg-ivory border border-mustard/20 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-4 sm:p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl sm:text-2xl font-bold text-charcoal">Create New Portfolio Item</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-charcoal">Create New Promotion Item</h2>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -922,7 +922,7 @@ export default function AdminPortfolioPage() {
                   <Input
                     value={newItem.title}
                     onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
-                    placeholder="Enter portfolio item title"
+                    placeholder="Enter Promotion item title"
                     className="border-mustard/20 focus:border-mustard"
                     required
                     disabled={submitting}
@@ -1077,7 +1077,7 @@ export default function AdminPortfolioPage() {
                         Creating...
                       </>
                     ) : (
-                      "Create Portfolio Item"
+                      "Create Promotion Item"
                     )}
                   </Button>
                 </div>
@@ -1093,7 +1093,7 @@ export default function AdminPortfolioPage() {
           <div className="bg-ivory border border-mustard/20 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-4 sm:p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl sm:text-2xl font-bold text-charcoal">Edit Portfolio Item</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-charcoal">Edit Promotion Item</h2>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -1111,7 +1111,7 @@ export default function AdminPortfolioPage() {
                   <Input
                     value={editingItem.title}
                     onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
-                    placeholder="Enter portfolio item title"
+                    placeholder="Enter Promotion item title"
                     className="border-mustard/20 focus:border-mustard"
                     required
                     disabled={submitting}
@@ -1266,7 +1266,7 @@ export default function AdminPortfolioPage() {
                         Updating...
                       </>
                     ) : (
-                      "Update Portfolio Item"
+                      "Update Promotion Item"
                     )}
                   </Button>
                 </div>
