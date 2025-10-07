@@ -452,7 +452,7 @@ export default function StudentCertificatesPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="px-6 pt-6">
+        <div className="px-6 pt-6 pl-16 lg:pl-6">
           <DashboardHeader
             heading="Certificates"
             text="Loading your certificates..."
@@ -469,7 +469,7 @@ export default function StudentCertificatesPage() {
 
   return (
     <div className="space-y-6 pb-8">
-      <div className="px-6 pt-6">
+      <div className="px-6 pt-6 pl-16 lg:pl-6">
         <DashboardHeader
           heading="Certificates"
           text="Overview of your learning journey"

@@ -403,7 +403,7 @@ if (selectedLevel !== "all") {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="px-6 pt-6">
+        <div className="px-6 pt-6 pl-16 lg:pl-6">
           <DashboardHeader
             heading="My Courses"
             text="Loading your courses..."
@@ -423,7 +423,7 @@ if (selectedLevel !== "all") {
   return (
     <div className="space-y-6 pb-8">
       {/* Dashboard Header */}
-      <div className="px-6 pt-6">
+      <div className="px-6 pt-6 pl-16 lg:pl-6">
         <DashboardHeader
           heading="My Courses"
           text="Overview of your learning journey"

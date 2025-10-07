@@ -163,7 +163,7 @@ export default function InstructorDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -178,21 +178,6 @@ export default function InstructorDashboard() {
             <p className="text-xs text-muted-foreground">Active courses</p>
           </CardContent>
         </Card>
-
-        {/* <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Students
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {dashboardData.stats.totalStudents}
-            </div>
-            <p className="text-xs text-muted-foreground">Enrolled learners</p>
-          </CardContent>
-        </Card> */}
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -228,12 +213,12 @@ export default function InstructorDashboard() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Recent Trainings */}
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <div>
                   <CardTitle>Your Trainings</CardTitle>
                   <CardDescription>
@@ -253,10 +238,10 @@ export default function InstructorDashboard() {
                 dashboardData.trainings.map((training) => (
                   <div
                     key={training.id}
-                    className="flex items-center space-x-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors space-y-2 sm:space-y-0"
                   >
                     <div className="flex-1 space-y-2">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
                         <h4 className="font-semibold">{training.title}</h4>
                         <Badge
                           variant={
@@ -271,7 +256,7 @@ export default function InstructorDashboard() {
                       <p className="text-sm text-gray-600 line-clamp-2">
                         {training.description}
                       </p>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
                         <span className="flex items-center gap-1">
                           <Users className="h-3 w-3" />
                           {training.enrollment_count} students
@@ -290,7 +275,12 @@ export default function InstructorDashboard() {
                         </span>
                       </div>
                     </div>
-                    <Button size="sm" variant="outline" asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      asChild
+                      className="w-full sm:w-auto mt-2 sm:mt-0"
+                    >
                       <Link href={`/courses/${training.id}`}>View</Link>
                     </Button>
                   </div>
@@ -321,7 +311,7 @@ export default function InstructorDashboard() {
               <div className="space-y-4">
                 {dashboardData.recentActivity.length > 0 ? (
                   dashboardData.recentActivity
-                    .slice(0, 8)
+                    .slice(0, 3) // Changed to show only the top 3 activities
                     .map((activity, index) => (
                       <div key={index} className="flex items-start space-x-3">
                         <div className="mt-1">

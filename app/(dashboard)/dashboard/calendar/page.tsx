@@ -407,7 +407,7 @@ export default function CalendarPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6 px-6 pt-6 pb-8">
+      <div className="space-y-6 px-6 pt-6 pb-8 pl-16 lg:pl-6">
         <DashboardHeader
           heading="Calendar"
           text="Loading your training calendar..."
@@ -422,7 +422,7 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="space-y-6 px-6 pt-6 pb-8">
+    <div className="space-y-6 px-6 pt-6 pb-8 pl-16 lg:pl-6">
       <DashboardHeader
         heading="Calendar"
         text="View your training sessions and schedule"
@@ -790,8 +790,8 @@ export default function CalendarPage() {
                           Details
                         </Button>
 
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              {/* <div>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          {/* <div>
                                 <span className="font-medium">Date:</span>
                                 <p>{new Date(session.session_date).toLocaleDateString()}</p>
                               </div>
@@ -801,25 +801,26 @@ export default function CalendarPage() {
                                   {session.start_time} - {session.end_time}
                                 </p>
                               </div> */}
-                              <div>
-                                <span className="font-medium">Instructor:</span>
-                                <p>{session.instructor_name}</p>
-                              </div>
-                              {/* <div>
+                          <div>
+                            <span className="font-medium">Instructor:</span>
+                            <p>{session.instructor_name}</p>
+                          </div>
+                          {/* <div>
                                 <span className="font-medium">Location:</span>
                                 <p>{session.location}</p>
                               </div> */}
-                              <div>
-                                <span className="font-medium">Category:</span>
-                                <p>{session.category}</p>
-                              </div>
-                              <div>
-                                <span className="font-medium">Participants:</span>
-                                <p>
-                                  {session.current_participants}/{session.max_participants}
-                                </p>
-                              </div>
-                            </div>
+                          <div>
+                            <span className="font-medium">Category:</span>
+                            <p>{session.category}</p>
+                          </div>
+                          <div>
+                            <span className="font-medium">Participants:</span>
+                            <p>
+                              {session.current_participants}/
+                              {session.max_participants}
+                            </p>
+                          </div>
+                        </div>
 
                         {session.status === "scheduled" &&
                           session.meeting_url && (
