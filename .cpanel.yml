@@ -23,4 +23,3 @@ deployment:
     - /bin/rm -rf $DEPLOYPATH/* >> deploy-output.txt 2>&1
     - /bin/cp -r out/* $DEPLOYPATH >> deploy-output.txt 2>&1
     - echo "------ Deployment Finished ------" >> deploy-output.txt
-   
