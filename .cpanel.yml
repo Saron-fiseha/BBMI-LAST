@@ -1,19 +1,16 @@
 ---
 deployment:
   tasks:
-    # Set the deployment path (your website's live folder)
     - export DEPLOYPATH=/home/brushefgj/public_html/
-
-    # Move into the repo directory (where your package.json lives)
+    - echo "------ Starting Deployment ------" >> deploy-output.txt
     - cd $PWD
-
-    # Install dependencies
-    - /usr/local/bin/npm install
-
-    # Build and export static site
-    - /usr/local/bin/npm run build
-    - /usr/local/bin/npm run export
-
-    # Copy exported files to the live website folder
-    - /bin/cp -r out/* $DEPLOYPATH
-
+    - echo "Running npm install..." >> deploy-output.txt
+    - /usr/local/bin/npm install >> deploy-output.txt 2>&1
+    - echo "Running npm run build..." >> deploy-output.txt
+    - /usr/local/bin/npm run build >> deploy-output.txt 2>&1
+    - echo "Running npm run export..." >> deploy-output.txt
+    - /usr/local/bin/npm run export >> deploy-output.txt 2>&1
+    - echo "Copying files to public_html..." >> deploy-output.txt
+    - /bin/rm -rf $DEPLOYPATH/* >> deploy-output.txt 2>&1
+    - /bin/cp -r out/* $DEPLOYPATH >> deploy-output.txt 2>&1
+    - echo "------ Deployment Finished ------" >> deploy-output.txt
