@@ -1,6 +1,15 @@
 ---
 deployment:
   tasks:
+    - export NEXT_PUBLIC_API_URL="https://brushedbybetty.com"
+    - export DATABASE_URL="postgresql://neondb_owner:npg_T8cWokJtbzF3@ep-flat-heart-a4313ukx-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require"
+    - export RESEND_API_KEY="re_Q4CZLaoG_MpVCrd5XgUmiw3wMCVfBGgHP"
+    - export JWT_SECRET="e317b068b89b0516730556868ce0b02cf684f21d0db0e510736e6954b1d1fff3"
+    - export NEXTAUTH_URL="https://brushedbybetty.com"
+    - export CHAPA_SECRET_KEY="CHASECK_TEST-BfX7iumQqjrxIy66sYTTpXm7TRYvVhny"
+    - export NEXT_PUBLIC_UPLOAD_URL="https://brushedbybetty/uploads"
+    - export CERTIFICATE_STORAGE_PATH="./public/certificates"
+    - export CERTIFICATE_BASE_URL="https://brushedbybetty/certificates"
     - export DEPLOYPATH=/home/brushefgj/public_html/
     - echo "------ Starting Deployment ------" >> deploy-output.txt
     - cd $PWD
@@ -14,3 +23,4 @@ deployment:
     - /bin/rm -rf $DEPLOYPATH/* >> deploy-output.txt 2>&1
     - /bin/cp -r out/* $DEPLOYPATH >> deploy-output.txt 2>&1
     - echo "------ Deployment Finished ------" >> deploy-output.txt
+   
