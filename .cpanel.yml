@@ -1,6 +1,7 @@
 ---
 deployment:
   tasks:
+    # 1️⃣ Set environment variables
     - export NEXT_PUBLIC_API_URL="https://brushedbybetty.com"
     - export DATABASE_URL="postgresql://neondb_owner:npg_T8cWokJtbzF3@ep-flat-heart-a4313ukx-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require"
     - export RESEND_API_KEY="re_Q4CZLaoG_MpVCrd5XgUmiw3wMCVfBGgHP"
@@ -10,16 +11,36 @@ deployment:
     - export NEXT_PUBLIC_UPLOAD_URL="https://brushedbybetty/uploads"
     - export CERTIFICATE_STORAGE_PATH="./public/certificates"
     - export CERTIFICATE_BASE_URL="https://brushedbybetty/certificates"
+
+    # 2️⃣ Set deployment path (your live site folder)
     - export DEPLOYPATH=/home/brushefgj/public_html/
+
+    # 3️⃣ Start logging
     - echo "------ Starting Deployment ------" >> deploy-output.txt
+    - echo "Current path: $PWD" >> deploy-output.txt
+
+    # 4️⃣ Move to repo root
     - cd $PWD
+
+    # 5️⃣ Install dependencies
     - echo "Running npm install..." >> deploy-output.txt
     - /usr/local/bin/npm install >> deploy-output.txt 2>&1
+
+    # 6️⃣ Build the Next.js site
     - echo "Running npm run build..." >> deploy-output.txt
     - /usr/local/bin/npm run build >> deploy-output.txt 2>&1
+
+    # 7️⃣ Export static files
     - echo "Running npm run export..." >> deploy-output.txt
     - /usr/local/bin/npm run export >> deploy-output.txt 2>&1
-    - echo "Copying files to public_html..." >> deploy-output.txt
+
+    # 8️⃣ Clean old files from public_html
+    - echo "Cleaning public_html..." >> deploy-output.txt
     - /bin/rm -rf $DEPLOYPATH/* >> deploy-output.txt 2>&1
+
+    # 9️⃣ Copy new files to public_html
+    - echo "Copying files to public_html..." >> deploy-output.txt
     - /bin/cp -r out/* $DEPLOYPATH >> deploy-output.txt 2>&1
+
+    # 🔟 Finish logging
     - echo "------ Deployment Finished ------" >> deploy-output.txt
