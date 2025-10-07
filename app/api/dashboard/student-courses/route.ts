@@ -1,8 +1,129 @@
 
+// import { type NextRequest, NextResponse } from "next/server"
+// import { neon } from "@neondatabase/serverless"
+// import { getUserFromToken } from "@/lib/auth"; // Assuming you have an auth utility
+
+
+// const sql = neon(process.env.DATABASE_URL!)
+
+// export async function GET(request: NextRequest) {
+//   try {
+//     const { searchParams } = new URL(request.url)
+//     const userId = searchParams.get("userId")
+
+//     if (!userId) {
+//       return NextResponse.json({ error: "User ID required" }, { status: 400 })
+//     }
+
+//     // Fetch enrolled courses with detailed information
+//    const courses = await sql`
+//   SELECT 
+//     t.id,
+//     t.name AS title, -- ✅ renamed so frontend can display it properly
+//     t.description,
+//     t.category_id,
+//     t.level,
+//     t.duration,
+//     t.image_url as image,
+//     enr.progress_percentage AS progress, -- Use progress_percentage from enrollments table
+//     enr.status,
+//     enr.enrollment_date,
+//     enr.last_accessed,
+//     enr.completion_date,
+//     enr.grade,
+//     enr.certificate_issued as certificate_eligible,
+    
+//     -- Instructor information
+//     COALESCE(u.full_name, 'BBMI Instructor') as instructor,
+//     t.instructor_id,
+    
+//     -- Lesson/Module information
+//     (SELECT COUNT(*) FROM modules WHERE training_id = t.id) as total_modules_count, -- Total modules
+//     (SELECT COUNT(DISTINCT mp.module_id) 
+//      FROM module_progress mp 
+//      JOIN modules m ON mp.module_id = m.id 
+//      WHERE mp.user_id = ${userId} AND m.training_id = t.id AND mp.status = 'completed' -- Count completed modules
+//     ) as completed_modules_count,
+    
+//     -- Next lesson information
+//     (SELECT m.name 
+//      FROM modules m 
+//      LEFT JOIN module_progress mp ON m.id = mp.module_id AND mp.user_id = ${userId}
+//      WHERE m.training_id = t.id AND (mp.status IS NULL OR mp.status != 'completed') -- Find the first non-completed module
+//      ORDER BY m.order_index ASC 
+//      LIMIT 1
+//     ) as next_lesson,
+    
+//     (SELECT m.id 
+//      FROM modules m 
+//      LEFT JOIN module_progress mp ON m.id = mp.module_id AND mp.user_id = ${userId}
+//      WHERE m.training_id = t.id AND (mp.status IS NULL OR mp.status != 'completed')
+//      ORDER BY m.order_index ASC 
+//      LIMIT 1
+//     ) as next_lesson_id
+    
+//   FROM enrollments enr
+//   JOIN trainings t ON enr.training_id = t.id
+//   LEFT JOIN users u ON t.instructor_id = u.id
+//   WHERE enr.user_id = ${userId}
+//   ORDER BY enr.last_accessed DESC, enr.enrollment_date DESC
+// `
+
+//     // Format the response data
+//     const formattedCourses = courses.map((course) => ({
+//       ...course,
+//       status: course.progress >= 100 ? "completed" : course.progress > 0 ? "in-progress" : "active",
+//       next_lesson: course.next_lesson || (course.progress >= 100 ? "Course Completed" : "Getting Started"),
+//       total_lessons: course.total_modules_count || 0, // Map to total_lessons
+//       completed_lessons: course.completed_modules_count || 0, // Map to completed_lessons
+//     }))
+
+//     return NextResponse.json({
+//       success: true,
+//       courses: formattedCourses,
+//       total: formattedCourses.length,
+//     })
+//   } catch (error) {
+//     console.error("Student courses fetch error:", error)
+//     return NextResponse.json(
+//       {
+//         success: false,
+//         courses: [],
+//         total: 0,
+//         error: "Failed to fetch enrolled courses",
+//       },
+//       { status: 500 },
+//     )
+//   }
+// }
+
+// export async function POST(request: NextRequest) {
+//   try {
+//     const { userId, courseId, action } = await request.json()
+
+//     if (!userId || !courseId) {
+//       return NextResponse.json({ error: "User ID and Course ID required" }, { status: 400 })
+//     }
+
+//     if (action === "continue") {
+//       // Update last accessed time
+//       await sql`
+//         UPDATE enrollments 
+//         SET last_accessed = CURRENT_TIMESTAMP
+//         WHERE user_id = ${userId} AND training_id = ${courseId}
+//       `
+
+//       return NextResponse.json({ success: true, message: "Last accessed updated" })
+//     }
+
+//     return NextResponse.json({ error: "Invalid action" }, { status: 400 })
+//   } catch (error) {
+//     console.error("Student courses update error:", error)
+//     return NextResponse.json({ error: "Failed to update course data" }, { status: 500 })
+//   }
+// }
 import { type NextRequest, NextResponse } from "next/server"
 import { neon } from "@neondatabase/serverless"
-import { getUserFromToken } from "@/lib/auth"; // Assuming you have an auth utility
-
 
 const sql = neon(process.env.DATABASE_URL!)
 
@@ -15,67 +136,67 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "User ID required" }, { status: 400 })
     }
 
-    // Fetch enrolled courses with detailed information
-   const courses = await sql`
-  SELECT 
-    t.id,
-    t.name,
-    t.description,
-    t.category_id,
-    t.level,
-    t.duration,
-    t.image_url as image,
-    enr.progress_percentage AS progress, -- Use progress_percentage from enrollments table
-    enr.status,
-    enr.enrollment_date,
-    enr.last_accessed,
-    enr.completion_date,
-    enr.grade,
-    enr.certificate_issued as certificate_eligible,
-    
-    -- Instructor information
-    COALESCE(u.full_name, 'BBMI Instructor') as instructor,
-    t.instructor_id,
-    
-    -- Lesson/Module information
-    (SELECT COUNT(*) FROM modules WHERE training_id = t.id) as total_modules_count, -- Total modules
-    (SELECT COUNT(DISTINCT mp.module_id) 
-     FROM module_progress mp 
-     JOIN modules m ON mp.module_id = m.id 
-     WHERE mp.user_id = ${userId} AND m.training_id = t.id AND mp.status = 'completed' -- Count completed modules
-    ) as completed_modules_count,
-    
-    -- Next lesson information
-    (SELECT m.name 
-     FROM modules m 
-     LEFT JOIN module_progress mp ON m.id = mp.module_id AND mp.user_id = ${userId}
-     WHERE m.training_id = t.id AND (mp.status IS NULL OR mp.status != 'completed') -- Find the first non-completed module
-     ORDER BY m.order_index ASC 
-     LIMIT 1
-    ) as next_lesson,
-    
-    (SELECT m.id 
-     FROM modules m 
-     LEFT JOIN module_progress mp ON m.id = mp.module_id AND mp.user_id = ${userId}
-     WHERE m.training_id = t.id AND (mp.status IS NULL OR mp.status != 'completed')
-     ORDER BY m.order_index ASC 
-     LIMIT 1
-    ) as next_lesson_id
-    
-  FROM enrollments enr
-  JOIN trainings t ON enr.training_id = t.id
-  LEFT JOIN users u ON t.instructor_id = u.id
-  WHERE enr.user_id = ${userId}
-  ORDER BY enr.last_accessed DESC, enr.enrollment_date DESC
-`
+    const courses = await sql`
+      SELECT 
+        t.id,
+        t.name AS title, -- ✅ renamed so frontend can display it properly
+        t.description,
+        t.category_id,
+        t.level,
+        t.duration,
+        t.image_url AS image,
+        enr.progress_percentage AS progress,
+        enr.status,
+        enr.enrollment_date,
+        enr.last_accessed,
+        enr.completion_date,
+        enr.grade,
+        enr.certificate_issued AS certificate_eligible,
+        COALESCE(u.full_name, 'BBMI Instructor') AS instructor,
+        t.instructor_id,
+        (SELECT COUNT(*) FROM modules WHERE training_id = t.id) AS total_modules_count,
+        (SELECT COUNT(DISTINCT mp.module_id)
+          FROM module_progress mp
+          JOIN modules m ON mp.module_id = m.id
+          WHERE mp.user_id = ${userId} AND m.training_id = t.id AND mp.status = 'completed'
+        ) AS completed_modules_count,
+        (SELECT m.name
+          FROM modules m
+          LEFT JOIN module_progress mp ON m.id = mp.module_id AND mp.user_id = ${userId}
+          WHERE m.training_id = t.id AND (mp.status IS NULL OR mp.status != 'completed')
+          ORDER BY m.order_index ASC
+          LIMIT 1
+        ) AS next_lesson,
+        (SELECT m.id
+          FROM modules m
+          LEFT JOIN module_progress mp ON m.id = mp.module_id AND mp.user_id = ${userId}
+          WHERE m.training_id = t.id AND (mp.status IS NULL OR mp.status != 'completed')
+          ORDER BY m.order_index ASC
+          LIMIT 1
+        ) AS next_lesson_id
+      FROM enrollments enr
+      JOIN trainings t ON enr.training_id = t.id
+      LEFT JOIN users u ON t.instructor_id = u.id
+      WHERE enr.user_id = ${userId}
+      ORDER BY enr.last_accessed DESC NULLS LAST, enr.enrollment_date DESC
+    `
 
-    // Format the response data
     const formattedCourses = courses.map((course) => ({
       ...course,
-      status: course.progress >= 100 ? "completed" : course.progress > 0 ? "in-progress" : "active",
-      next_lesson: course.next_lesson || (course.progress >= 100 ? "Course Completed" : "Getting Started"),
-      total_lessons: course.total_modules_count || 0, // Map to total_lessons
-      completed_lessons: course.completed_modules_count || 0, // Map to completed_lessons
+      status:
+        course.progress >= 100
+          ? "completed"
+          : course.progress > 0
+          ? "in-progress"
+          : "active",
+      next_lesson:
+        course.next_lesson || (course.progress >= 100 ? "Course Completed" : "Getting Started"),
+      total_lessons: course.total_modules_count || 0,
+      completed_lessons: course.completed_modules_count || 0,
+      last_accessed:
+        course.last_accessed
+          ? new Date(course.last_accessed).toISOString().split("T")[0]
+          : null, // ✅ properly handle null values
     }))
 
     return NextResponse.json({
@@ -106,13 +227,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "continue") {
-      // Update last accessed time
       await sql`
         UPDATE enrollments 
         SET last_accessed = CURRENT_TIMESTAMP
         WHERE user_id = ${userId} AND training_id = ${courseId}
       `
-
       return NextResponse.json({ success: true, message: "Last accessed updated" })
     }
 

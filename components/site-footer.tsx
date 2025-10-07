@@ -72,12 +72,12 @@ export function SiteFooter() {
           <div className="space-y-4">
             <h4 className="text-lg font-semibold">Quick Links</h4>
             <ul className="space-y-2">
-              <li>
+               <li>
                 <Link
-                  href="/about"
+                  href="/"
                   className="text-custom-tan hover:text-white transition-colors"
                 >
-                  About Us
+                  Home
                 </Link>
               </li>
               <li>
@@ -86,6 +86,14 @@ export function SiteFooter() {
                   className="text-custom-tan hover:text-white transition-colors"
                 >
                   Courses
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/about"
+                  className="text-custom-tan hover:text-white transition-colors"
+                >
+                  About Us
                 </Link>
               </li>
               {/* <li>
@@ -121,7 +129,7 @@ export function SiteFooter() {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="/blog"
+                  href="/#announcement"
                   className="text-custom-tan hover:text-white transition-colors"
                 >
                   Promotions

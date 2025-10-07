@@ -55,6 +55,7 @@
     "critters": "^0.0.25",
     "date-fns": "4.1.0",
     "dotenv": "^16.5.0",
+    "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "latest",
     "framer-motion": "^12.23.7",
     "fs": "latest",

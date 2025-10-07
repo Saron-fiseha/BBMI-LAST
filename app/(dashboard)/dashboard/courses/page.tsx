@@ -286,29 +286,30 @@ export default function StudentCoursesPage() {
   const filterCourses = () => {
     let filtered = courses;
 
-    // Search filter
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (course) =>
-          course.title.toLowerCase().includes(searchLower) ||
-          course.instructor.toLowerCase().includes(searchLower) ||
-          course.category.toLowerCase().includes(searchLower) ||
-          course.description.toLowerCase().includes(searchLower)
-      );
-    }
+   // Search filter
+if (searchTerm) {
+  const searchLower = searchTerm.toLowerCase();
+  filtered = filtered.filter(
+    (course) =>
+      (course.title?.toLowerCase() || "").includes(searchLower) ||
+      (course.instructor?.toLowerCase() || "").includes(searchLower) ||
+      (course.level?.toLowerCase() || "").includes(searchLower) ||
+      (course.description?.toLowerCase() || "").includes(searchLower)
+  );
+}
 
-    // Category filter
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter(
-        (course) => course.category === selectedCategory
-      );
-    }
+if (selectedLevel !== "all") {
+  filtered = filtered.filter(
+    (course) => course.level.toLowerCase() === selectedLevel.toLowerCase()
+  );
+}
 
-    // Level filter
-    if (selectedLevel !== "all") {
-      filtered = filtered.filter((course) => course.level === selectedLevel);
-    }
+
+
+    // // Level filter
+    // if (selectedLevel !== "all") {
+    //   filtered = filtered.filter((course) => course.level === selectedLevel);
+    // }
 
     // Status filter
     if (selectedStatus !== "all") {
@@ -466,29 +467,20 @@ export default function StudentCoursesPage() {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-            >
-              <SelectTrigger className="w-[160px]">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categoriesLoading ? (
-                  <SelectItem value="loading" disabled>
-                    Loading...
-                  </SelectItem>
-                ) : (
-                  filterOptions.categories.map((category) => (
-                    <SelectItem key={category.id} value={category.name}>
-                      {category.name} ({category.course_count})
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+     <Select value={selectedLevel} onValueChange={setSelectedLevel}>
+  <SelectTrigger className="w-[160px]">
+    <Filter className="h-4 w-4 mr-2" />
+    <SelectValue placeholder="Level" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="all">All Levels</SelectItem>
+    <SelectItem value="Beginner">Beginner</SelectItem>
+    <SelectItem value="Intermediate">Intermediate</SelectItem>
+    <SelectItem value="Advanced">Advanced</SelectItem>
+  </SelectContent>
+</Select>
+
+
 
             {/* <Select value={selectedLevel} onValueChange={setSelectedLevel}>
               <SelectTrigger className="w-[140px]">
@@ -649,7 +641,7 @@ export default function StudentCoursesPage() {
                     </>
                   ) : (
                     <Button
-                      className="flex-1"
+                      className="flex-1 bg-custom-copper hover:bg-custom-copper/90"
                       onClick={() =>
                         continueCourse(course.id, course.next_lesson_id)
                       }

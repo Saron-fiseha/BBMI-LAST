@@ -187,7 +187,7 @@ useEffect(() => {
 
       <div className="flex items-center gap-4">
         {/* Notifications */}
-        <DropdownMenu>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="relative bg-transparent" disabled={loading}>
               <Bell className="h-4 w-4" />
@@ -236,14 +236,14 @@ useEffect(() => {
                 <div className="p-4 text-center text-sm text-muted-foreground">No notifications</div>
               )}
             </div>
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator /> */}
             {/* <DropdownMenuItem asChild>
               <Link href="/dashboard/notifications" className="w-full text-center">
                 View all notifications
               </Link>
             </DropdownMenuItem> */}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          {/* </DropdownMenuContent>
+        </DropdownMenu> */}
 
         {/* Profile Menu */}
         <DropdownMenu>

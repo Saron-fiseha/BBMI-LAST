@@ -52,7 +52,7 @@ export async function AnnouncementsSection() {
   }
 
   return (
-    <section className="bg-slate-50 py-20 sm:py-24">
+    <section  id="announcement" className="bg-slate-50 py-20 sm:py-24">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">

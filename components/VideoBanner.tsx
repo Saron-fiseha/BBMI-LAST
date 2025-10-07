@@ -72,16 +72,27 @@ export function VideoBanner() {
   return (
     <section className="relative h-screen w-full flex items-center justify-start overflow-hidden">
       {/* Local Video Background */}
-      <video
+      {/* <video
         className="absolute top-1/2 left-1/2 min-w-full min-h-full w-auto h-auto -translate-x-1/2 -translate-y-1/2 object-cover z-0"
         autoPlay
         muted
         loop
         playsInline
       >
-        <source src="/videos/makeup-banner.mov" type="video/mov" />
+        <source src="/videos/makeup-banner.mp4" type="video/mp4" />
         Your browser does not support the video tag.
-      </video>
+      </video> */}
+      <video
+  className="absolute top-0 left-0 w-full h-full object-cover z-0"
+  autoPlay
+  muted
+  loop
+  playsInline
+>
+  <source src="/videos/makeup-banner.mp4" type="video/mp4" />
+  Your browser does not support the video tag.
+</video>
+
 
       {/* Dark Overlay */}
       <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50 z-10" />

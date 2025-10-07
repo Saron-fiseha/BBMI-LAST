@@ -314,7 +314,7 @@ export default function StudentDashboard() {
                     </div>
                     <Progress
                       value={course.progress}
-                      className="h-2 text-custom-copper hover:bg-custom-copper"
+                      className="h-2"
                     />
                   </div>
                   {/* Button: Full width on small, auto width on 'sm' and up */}
