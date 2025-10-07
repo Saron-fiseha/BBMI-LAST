@@ -1,0 +1,19 @@
+---
+deployment:
+  tasks:
+    # Set the deployment path (your website's live folder)
+    - export DEPLOYPATH=/home/brushefgj/public_html/
+
+    # Move into the repo directory (where your package.json lives)
+    - cd $PWD
+
+    # Install dependencies
+    - /usr/local/bin/npm install
+
+    # Build and export static site
+    - /usr/local/bin/npm run build
+    - /usr/local/bin/npm run export
+
+    # Copy exported files to the live website folder
+    - /bin/cp -r out/* $DEPLOYPATH
+
