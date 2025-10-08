@@ -1,10 +1,14 @@
 ---
 deployment:
   tasks:
+    - export DEPLOYPATH=repositories/BBMI-LMS-WEB # Your application root
+    - cd $DEPLOYPATH
     - echo "Pulling latest changes..."
-    - /bin/git pull origin main
+    - /usr/bin/git pull origin main # Use /usr/bin/git for the Git binary
     - echo "Installing dependencies..."
-    - /usr/local/bin/npm install
+    - /opt/cpanel/ea-nodejs22/bin/npm install --production # Replace XX with your Node.js version (e.g., 18, 20)
     - echo "Building Next.js app..."
-    - /usr/local/bin/npm run build
-    - echo "Deployment complete. Restart Node.js app manually if needed."
+    - /opt/cpanel/ea-nodejs22/bin/npm run build # Replace XX with your Node.js version
+    - echo "Restarting Node.js application..."
+    - /usr/bin/touch tmp/restart.txt # Triggers a restart for the Node.js app
+    - echo "Deployment complete."
