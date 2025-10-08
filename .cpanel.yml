@@ -1,7 +1,7 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/brushefj/repositories/BBM-LMS-WEB # Your application root
+    - export DEPLOYPATH=/home/brushefj/repositories/BBMI-LMS-WEB # Your application root
     - cd $DEPLOYPATH
     - echo "Pulling latest changes..."
     - /usr/bin/git pull origin main # Use /usr/bin/git for the Git binary
