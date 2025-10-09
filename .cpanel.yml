@@ -10,5 +10,5 @@ deployment:
     - echo "Building Next.js app..."
     - /opt/cpanel/ea-nodejs22/bin/npm run build # Replace XX with your Node.js version
     - echo "Restarting Node.js application..."
-    - /usr/bin/touch tmp/restart.txt # Triggers a restart for the Node.js app
+    - /usr/bin/touch tmp/restart.txt
     - echo "Deployment complete."
