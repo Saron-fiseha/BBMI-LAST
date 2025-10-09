@@ -1,30 +1,50 @@
-// server.js (place this in the root of your Next.js project)
-const { createServer } = require('http');
-const { parse } = require('url');
-const next = require('next');
+// // server.js (place this in the root of your Next.js project)
+// const { createServer } = require('http');
+// const { parse } = require('url');
+// const next = require('next');
 
-const dev = process.env.NODE_ENV !== 'production';
-const hostname = 'localhost'; // Passenger proxies traffic, so listen on localhost
-const port = process.env.PORT || 3000; // Passenger will set the PORT environment variable for you
+// const dev = process.env.NODE_ENV !== 'production';
+// const hostname = 'localhost'; // Passenger proxies traffic, so listen on localhost
+// const port = process.env.PORT || 3000; // Passenger will set the PORT environment variable for you
 
-// Create the Next.js app instance
-const app = next({ dev, hostname, port });
+// // Create the Next.js app instance
+// const app = next({ dev, hostname, port });
+// const handle = app.getRequestHandler();
+
+// app.prepare().then(() => {
+//   createServer(async (req, res) => {
+//     try {
+//       // Be sure to pass `true` as the second argument to `url.parse`
+//       // to get access to the `query` obj in the url
+//       const parsedUrl = parse(req.url, true);
+//       await handle(req, res, parsedUrl);
+//     } catch (err) {
+//       console.error('Error occurred handling', req.url, err);
+//       res.statusCode = 500;
+//       res.end('internal server error');
+//     }
+//   }).listen(port, (err) => {
+//     if (err) throw err;
+//     console.log(`> Ready on http://${hostname}:${port}`);
+//   });
+// });
+
+const next = require("next");
+const express = require("express");
+
+const dev = false;
+const app = next({ dev });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
-  createServer(async (req, res) => {
-    try {
-      // Be sure to pass `true` as the second argument to `url.parse`
-      // to get access to the `query` obj in the url
-      const parsedUrl = parse(req.url, true);
-      await handle(req, res, parsedUrl);
-    } catch (err) {
-      console.error('Error occurred handling', req.url, err);
-      res.statusCode = 500;
-      res.end('internal server error');
-    }
-  }).listen(port, (err) => {
-    if (err) throw err;
-    console.log(`> Ready on http://${hostname}:${port}`);
+  const server = express();
+
+  server.all("*", (req, res) => {
+    return handle(req, res);
+  });
+
+  const port = process.env.PORT || 3000;
+  server.listen(port, () => {
+    console.log(`Server running on port ${port}`);
   });
 });
