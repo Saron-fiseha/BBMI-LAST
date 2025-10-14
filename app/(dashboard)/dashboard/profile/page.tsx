@@ -22,11 +22,16 @@ import { Camera, Save, Key, Trash2, Eye, EyeOff } from "lucide-react";
 
 // --- NEW: A helper function to get the auth token ---
 const getAuthToken = () => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem("auth_token");
-  }
-  return null;
+  if (typeof window === "undefined") return null;
+  // Try localStorage first (your app seems to use "auth_token")
+  const token = localStorage.getItem("auth_token") || localStorage.getItem("token");
+  // fallback to cookie (if you store token in cookie)
+  if (token) return token;
+  // simple cookie parse
+  const match = document.cookie.match(/(?:^|;\s*)auth_token=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
 };
+
 
 export default function StudentProfilePage() {
   const { toast } = useToast();
@@ -354,6 +359,7 @@ export default function StudentProfilePage() {
               <Button
                 onClick={handleProfileUpdate}
                 disabled={isUpdatingProfile}
+                className="bg-custom-copper hover:bg-custom-copper-dark text-white"
               >
                 <Save className="h-4 w-4 mr-2" />
                 {isUpdatingProfile ? "Saving..." : "Save Changes"}
