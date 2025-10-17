@@ -17,7 +17,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   experimental: {
-    serverActions: true, // valid boolean in Next.js 15
+    serverActions: { enable: true }, // <-- fix boolean to object
     optimizeCss: true,
   },
   images: {
