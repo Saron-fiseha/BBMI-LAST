@@ -1,7 +1,8 @@
+import path from 'path';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {
-    // Suppress client-side environment variable warnings
     CUSTOM_KEY: '',
   },
   eslint: {
@@ -11,27 +12,28 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   serverComponentsExternalPackages: ['bcryptjs'],
-  
   experimental: {
     serverActions: true,
-    optimizeCss: true
+    optimizeCss: true,
   },
   images: {
     domains: ['images.unsplash.com', 'placeholder.svg'],
     unoptimized: true,
   },
-  // Suppress build warnings for unused environment variables
   webpack: (config, { isServer }) => {
+    // Alias @ to project root
+    config.resolve.alias['@'] = path.resolve(__dirname);
+
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
         net: false,
         tls: false,
-      }
+      };
     }
-    return config
+    return config;
   },
-}
+};
 
-export default nextConfig
+export default nextConfig;
