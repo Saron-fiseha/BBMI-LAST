@@ -1,15 +1,15 @@
----
-version: 2
-deployment:
-  tasks:
-    - export DEPLOYPATH=/home/brushefj/repositories/BBMI-LAST
-    - cd $DEPLOYPATH
-    - echo "Pulling latest changes..."
-    - /usr/bin/git pull origin main
-    - echo "Installing dependencies..."
-    - /opt/cpanel/ea-nodejs22/bin/npm install --production
-    - echo "Building Next.js app..."
-    - /opt/cpanel/ea-nodejs22/bin/npm run build
-    - echo "Restarting Node.js application..."
-    - /usr/bin/touch tmp/restart.txt
-    - echo "Deployment complete."
+# ---
+# version: 2
+# deployment:
+#   tasks:
+#     - export DEPLOYPATH=/home/brushefj/repositories/BBMI-LAST
+#     - cd $DEPLOYPATH
+#     - echo "Pulling latest changes..."
+#     - /usr/bin/git pull origin main
+#     - echo "Installing dependencies..."
+#     - /opt/cpanel/ea-nodejs22/bin/npm install --production
+#     - echo "Building Next.js app..."
+#     - /opt/cpanel/ea-nodejs22/bin/npm run build
+#     - echo "Restarting Node.js application..."
+#     - /usr/bin/touch tmp/restart.txt
+#     - echo "Deployment complete."
