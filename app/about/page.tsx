@@ -87,7 +87,7 @@ export default function AboutPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
                 <TextAnimate
-                  text="About BBMI Academy"
+                  text="About BBMI Makeup"
                   className="text-4xl md:text-5xl font-bold mb-6"
                 />
                 <TextAnimate
@@ -112,7 +112,7 @@ export default function AboutPage() {
                 <div className="absolute inset-0 bg-gradient-to-r from-pink-300 to-purple-300 dark:from-pink-900 dark:to-purple-900 opacity-20 rounded-lg"></div>
                 <img
                   src="/about.jpg"
-                  alt="Glamour Academy campus"
+                  alt="BBMI Academy campus"
                   className="rounded-lg w-full h-auto relative z-10"
                 />
               </div>
@@ -135,14 +135,14 @@ export default function AboutPage() {
                 <div>
                   <TextAnimate
                     className="mb-2"
-                    text="BBMI Makeup Academy is a premier beauty training institution specializing in professional courses for makeup, nail care, and eyelash extensions. Founded by Betelhem Eskinder in 2019 as a beauty salon."
+                    text="BBMI Makeup is a premier beauty training institution specializing in professional courses for makeup, nail care, and eyelash extensions. Founded by Betelhem Eskinder in 2019 as a beauty salon."
                   />
                   <TextAnimate
                     className="mb-2"
                     text="It was officially licensed in 2021 by the Addis Ababa City Administration Education and Training Quality Regulation Authority (ETQRA) as Brushed by Betty Makeup Institution Starting with just sixteen students, the academy has grown significantly and now has the capacity to train over 300 students per session."
                   />
                   <TextAnimate
-                    text="BBMI Makeup Academy is dedicated to empowering individuals with technical skills and entrepreneurial knowledge to succeed in the rapidly growing beauty industry. Our training programs are designed to meet both local and international beauty standards, fostering a new generation of qualified beauty professionals."
+                    text="BBMI Makeup is dedicated to empowering individuals with technical skills and entrepreneurial knowledge to succeed in the rapidly growing beauty industry. Our training programs are designed to meet both local and international beauty standards, fostering a new generation of qualified beauty professionals."
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -195,7 +195,7 @@ export default function AboutPage() {
               <div className="max-w-3xl mx-auto text-center mb-12">
                 <TextAnimate text="Our Values" className="text-3xl font-bold mb-4" />
                 <TextAnimate
-                  text="These core principles guide everything we do at Glamour Academy."
+                  text="These core principles guide everything we do at BBMI."
                   className="text-muted-foreground"
                 />
               </div>
@@ -267,7 +267,7 @@ export default function AboutPage() {
       <div className="max-w-3xl mx-auto text-center mb-12">
         <h2 className="text-3xl font-bold mb-4">Our Leadership Team</h2>
         <p className="text-muted-foreground">
-          Meet the dedicated professionals who make Glamour Academy a leader in beauty education.
+          Meet the dedicated professionals who make BBMI a leader in beauty education.
         </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -307,7 +307,7 @@ export default function AboutPage() {
             <div className="max-w-3xl mx-auto text-center space-y-6">
               <h2 className="text-3xl font-bold">Ready to Start Your Beauty Career?</h2>
               <p className="text-lg opacity-90">
-                Join Glamour Academy today and transform your passion into a successful career in the beauty industry.
+                Join BBMI today and transform your passion into a successful career in the beauty industry.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <ShinyButton href="/courses" size="lg" className="bg-white text-black hover:bg-gray-200">
