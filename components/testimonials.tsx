@@ -16,7 +16,7 @@ const testimonials = [
     role: "Professional Makeup Artist",
     image: "/placeholder.svg?height=80&width=80",
     content:
-      "After completing my course with BBMI, I was offered a jib within the academy, which has allowed me to gain invaluable exprience and build a strong network. BBMI has truley helped me live out my passion.",
+      "After completing my course with BBMI, I was offered a job within the academy, which has allowed me to gain invaluable exprience and build a strong network. BBMI has truley helped me live out my passion.",
     rating: 5,
   },
   {
@@ -25,7 +25,7 @@ const testimonials = [
     role: "BBMI Team Staff Member",
     image: "/placeholder.svg?height=80&width=80",
     content:
-      "My name is Rihanna Murad. I will forever be grateful to BBMI for changing my life. I couldn't afford the of the courses, but they gave me a free opportunity to learn and follow my passion. Through their support, I completed my classes and gained invaluable skills",
+      "My name is Rihanna Murad. I will forever be grateful to BBMI for changing my life. I couldn't afford the cost of the courses, but they gave me a free opportunity to learn and follow my passion. Through their support, I completed my classes and gained invaluable skills",
     rating: 5,
   },
   {
@@ -34,7 +34,7 @@ const testimonials = [
     role: "Skilled Makeup Artist",
     image: "/placeholder.svg?height=80&width=80",
     content:
-      "My name is Kidus and i am a young person with a hearing disability. Thanks to free scholarship i received from BBMI, i was able to follow my passion for make up. The acadamy ot only provided me with execptional training but also ensured me i had a translator to support me throughout my learning journey. ",
+      "My name is Kidus and i am a young person with a hearing disability. Thanks to free scholarship i received from BBMI, i was able to follow my passion for make up. The acadamy not only provided me with execptional training but also ensured me i had a translator to support me throughout my learning journey. ",
     rating: 5,
   },
   {
@@ -43,7 +43,7 @@ const testimonials = [
     role: "Beauty Entrepreneur",
     image: "/placeholder.svg?height=80&width=80",
     content:
-      "My name is Nati, and i'm proud to be breaking barriers in the makeup industry as an Ethiopian men. In a trend where men are not often encouraged to pursue this path, BBMI inspired me with theit acceptance and unwaving support.",
+      "My name is Nati, and i'm proud to be breaking barriers in the makeup industry as an Ethiopian men. In a trend where men are not often encouraged to pursue this path, BBMI inspired me with their acceptance and unwaving support.",
     rating: 5,
   },
 ]
