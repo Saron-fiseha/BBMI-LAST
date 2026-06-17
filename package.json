@@ -10,7 +10,7 @@
     "setup-db": "node scripts/setup-complete-database.js"
   },
   "dependencies": {
-    "@auth/core": "latest",
+    "@auth/core": "^0.41.1",
     "@hookform/resolvers": "^3.9.1",
     "@neondatabase/serverless": "^1.0.1",
     "@radix-ui/react-accordion": "latest",
@@ -65,7 +65,7 @@
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.454.0",
     "next": "^15.4.1",
-    "next-auth": "^4.24.11",
+    "next-auth": "^4.24.7",
     "next-themes": "^0.4.6",
     "nodemailer": "latest",
     "path": "latest",
@@ -89,14 +89,14 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "typescript": "5.6.3",
     "@types/node": "^22.15.33",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "postcss": "^8.5.0",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "typescript": "5.6.3"
   },
   "engines": {
-  "node": "20.x"
-}
+    "node": "20.x"
+  }
 }

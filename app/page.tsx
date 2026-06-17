@@ -23,6 +23,7 @@ export default function HomePage() {
           <AuthorSection />
           <FeaturedCourses />
           <VideoBanner />
+          
           {/* <TrustedPartners /> */}
           <StatsSection />
           <AnnouncementsSection />
