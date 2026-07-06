@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { sql } from "@/lib/db"
+export const dynamic = "force-dynamic"
 
 export async function PUT(request: NextRequest) {
   try {

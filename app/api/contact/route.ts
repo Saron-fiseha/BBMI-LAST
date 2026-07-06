@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { Resend } from "resend"
+export const dynamic = "force-dynamic"
 
 export async function POST(req: NextRequest) {
   if (!process.env.RESEND_API_KEY) {

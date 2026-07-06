@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getUserFromToken } from "@/lib/auth"
 import { sql } from "@/lib/db"
+export const dynamic = "force-dynamic"
 
 // PATCH (update status only)
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {

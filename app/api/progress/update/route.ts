@@ -151,6 +151,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { sql } from "@/lib/db"
 import { getUserFromToken } from "@/lib/auth"
 import { checkAndGenerateCertificate } from "@/lib/certificate-generator"
+export const dynamic = "force-dynamic"
 
 export async function POST(request: NextRequest) {
   try {

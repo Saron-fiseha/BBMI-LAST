@@ -201,6 +201,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getUserFromToken } from "@/lib/auth"
 import { sql } from "@/lib/db"
+export const dynamic = "force-dynamic"
 
 // GET single session
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {

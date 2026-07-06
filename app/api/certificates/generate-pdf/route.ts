@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { generateCertificateHTML, type CertificateData } from "@/lib/certificate-generator"
+export const dynamic = "force-dynamic"
 
 export async function POST(request: NextRequest) {
   try {

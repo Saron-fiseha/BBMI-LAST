@@ -88,6 +88,7 @@
 // C:\Users\Hp\Documents\BBMI-LMS\app\api\certificates\student\route.ts
 import { type NextRequest, NextResponse } from "next/server"
 import { neon } from "@neondatabase/serverless"
+export const dynamic = "force-dynamic"
 
 const sql = neon(process.env.DATABASE_URL!)
 

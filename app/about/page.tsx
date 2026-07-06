@@ -48,32 +48,32 @@ export default function AboutPage() {
   // Mock team members with email and phone
   const teamMembers = [
     {
-      name: "Jennifer Wilson",
-      role: "Founder & CEO",
-      image: "/placeholder.svg?height=200&width=200",
-      email: "jennifer.wilson@example.com",
-      phone: "123-456-7890",
+      name: "Betelhem Eskinnder",
+      role: "Founder and CEO",
+      image: "/betty's-pic-2.png",
+      email: "brushedbybetty@gmail.com ",
+      phone: "0911208157",
     },
     {
-      name: "Marcus Thompson",
-      role: "Education Director",
+      name: "Kalkidan Eyob",
+      role: "Manager/operation",
       image: "/placeholder.svg?height=200&width=200",
-      email: "marcus.thompson@example.com",
-      phone: "123-456-7891",
+      email: "[EMAIL_ADDRESS]",
+      phone: "[PhoneNumber]",
     },
     {
-      name: "Sophia Chen",
-      role: "Head of Curriculum",
+      name: "Liya Ekinder",
+      role: "Manager/Administration",
       image: "/placeholder.svg?height=200&width=200",
-      email: "sophia.chen@example.com",
-      phone: "123-456-7892",
+      email: "[EMAIL_ADDRESS]",
+      phone: "[PhoneNumber]",
     },
     {
-      name: "Daniel Jackson",
-      role: "Student Success Manager",
+      name: "Esayas Tesfaye",
+      role: "Strategic Advisor",
       image: "/placeholder.svg?height=200&width=200",
-      email: "daniel.jackson@example.com",
-      phone: "123-456-7893",
+      email: "[EMAIL_ADDRESS]",
+      phone: "[PhoneNumber]",
     },
   ]
 
@@ -82,41 +82,58 @@ export default function AboutPage() {
       <SiteHeader />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="bg-[#F5F1E9] py-16 md:py-24">
-          <div className="container">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
+        <section className="bg-gradient-to-br from-[#FCF9F3] via-[#F5F1E9] to-[#EBE4D5] relative overflow-hidden min-h-[480px] lg:h-[500px] flex items-center">
+          <div className="absolute top-[-10%] right-[-10%] w-[30vw] h-[30vw] rounded-full bg-[#EAD0B7]/25 blur-3xl pointer-events-none" />
+          <div className="container mx-auto px-4 relative z-10 py-12 lg:py-0">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              <div className="lg:col-span-7 space-y-6">
                 <TextAnimate
                   text="About BBMI Makeup"
-                  className="text-4xl md:text-5xl font-bold mb-6"
+                  className="text-4xl md:text-5xl font-extrabold text-[#71423E] tracking-tight mb-2"
                 />
                 <TextAnimate
                   text="We're dedicated to providing world-class beauty education that transforms passion into successful careers."
-                  className="text-xl text-muted-foreground mb-8"
+                  className="text-lg md:text-xl text-gray-700 font-medium leading-relaxed mb-6"
                 />
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <ShinyButton href="/courses" size="lg" className="text-lg px-8 py-4">
+                  <ShinyButton href="/courses" size="lg" className="text-lg px-8 py-4 bg-gradient-to-r from-[#71423E] to-[#5C4033]">
                     Explore Courses
                   </ShinyButton>
                   <InteractiveHoverButton
                     href="/contact"
                     variant="outline"
                     size="lg"
-                    className="text-lg px-8 py-4 text-black hover:bg-black hover:text-white"
+                    className="text-lg px-8 py-4 border border-[#CA9C73]/40 text-gray-800 hover:bg-[#D1A392]/20 backdrop-blur-sm"
                   >
                     Contact Us
                   </InteractiveHoverButton>
                 </div>
               </div>
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-pink-300 to-purple-300 dark:from-pink-900 dark:to-purple-900 opacity-20 rounded-lg"></div>
-                <img
-                  src="/about.jpg"
-                  alt="BBMI Academy campus"
-                  className="rounded-lg w-full h-auto relative z-10"
-                />
+              
+              {/* Mobile Image Stack (Hidden on desktop) */}
+              <div className="block lg:hidden w-full max-w-[550px] mx-auto">
+                <div className="relative w-full aspect-[4/3] overflow-hidden shadow-lg">
+                  <img
+                    src="/about-new2.jpg"
+                    alt="BBMI Academy campus"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#5C4033]/30 via-transparent to-transparent" />
+                </div>
               </div>
             </div>
+          </div>
+
+          {/* Desktop Full-Bleed Image (Hidden on mobile) */}
+          <div className="hidden lg:block absolute top-0 right-0 bottom-0 w-[42%] h-full overflow-hidden">
+            <img
+              src="/about-new2.jpg"
+              alt="BBMI Academy campus"
+              className="w-full h-full object-cover"
+            />
+            {/* Soft overlay gradient to blend the image edge with the background */}
+            <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#F5F1E9] to-transparent z-20 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#5C4033]/20 via-transparent to-transparent z-10 pointer-events-none" />
           </div>
         </section>
 
@@ -241,7 +258,7 @@ export default function AboutPage() {
           </BlurFade>
         </section>
 
-          {/* --- CERTIFICATIONS SECTION --- */}
+        {/* --- CERTIFICATIONS SECTION --- */}
         <section className="bg-slate-50 py-20 sm:py-24">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12 max-w-3xl mx-auto">
@@ -262,43 +279,43 @@ export default function AboutPage() {
 
         {/* Our Team */}
         <section className="py-16">
-  <BlurFade>
-    <div className="container">
-      <div className="max-w-3xl mx-auto text-center mb-12">
-        <h2 className="text-3xl font-bold mb-4">Our Leadership Team</h2>
-        <p className="text-muted-foreground">
-          Meet the dedicated professionals who make BBMI a leader in beauty education.
-        </p>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        {teamMembers.map((member, index) => (
-          <div key={index} className="text-center">
-            <div className="mb-4 aspect-square relative overflow-hidden rounded-full">
-              <img
-                src={member.image || "/placeholder.svg"}
-                alt={member.name}
-                className="object-cover w-full h-full"
-              />
+          <BlurFade>
+            <div className="container">
+              <div className="max-w-3xl mx-auto text-center mb-12">
+                <h2 className="text-3xl font-bold mb-4">Our Leadership Team</h2>
+                <p className="text-muted-foreground">
+                  Meet the dedicated professionals who make BBMI a leader in beauty education.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {teamMembers.map((member, index) => (
+                  <div key={index} className="text-center">
+                    <div className="mb-4 aspect-square relative overflow-hidden rounded-full">
+                      <img
+                        src={member.image || "/placeholder.svg"}
+                        alt={member.name}
+                        className="object-cover object-top scale-110 w-full h-full"
+                      />
+                    </div>
+                    <h3 className="text-xl font-bold mb-1">{member.name}</h3>
+                    <p className="text-muted-foreground">{member.role}</p>
+                    {/* --- UPDATED: Changed text-primary to text-custom-brown --- */}
+                    <div className="mt-2 flex justify-center items-center gap-4 text-sm text-custom-copper">
+                      <a href={`mailto:${member.email}`} className="flex items-center gap-1 hover:underline">
+                        <Mail size={14} />
+                        Email
+                      </a>
+                      <a href={`tel:${member.phone}`} className="flex items-center gap-1 hover:underline">
+                        <Phone size={14} />
+                        Call
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <h3 className="text-xl font-bold mb-1">{member.name}</h3>
-            <p className="text-muted-foreground">{member.role}</p>
-            {/* --- UPDATED: Changed text-primary to text-custom-brown --- */}
-            <div className="mt-2 flex justify-center items-center gap-4 text-sm text-custom-copper">
-              <a href={`mailto:${member.email}`} className="flex items-center gap-1 hover:underline">
-                <Mail size={14} />
-                Email
-              </a>
-              <a href={`tel:${member.phone}`} className="flex items-center gap-1 hover:underline">
-                <Phone size={14} />
-                Call
-              </a>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  </BlurFade>
-</section>
+          </BlurFade>
+        </section>
 
 
         {/* CTA */}

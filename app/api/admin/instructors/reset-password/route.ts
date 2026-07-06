@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { sql } from "@/lib/db"
 import bcrypt from "bcryptjs"
+export const dynamic = "force-dynamic"
 
 // POST - Reset instructor password
 export async function POST(request: NextRequest) {

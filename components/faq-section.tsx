@@ -60,7 +60,7 @@ export default function FAQSection() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 mb-20">
+    <div id="faq" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 mb-20">
       <Card className="h-full border-0 shadow-xl bg-white/80 backdrop-blur-sm ">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-4xl font-bold bg-gradient-to-r from-slate-800 via-slate-600 to-slate-900 bg-clip-text text-transparent mb-5">
