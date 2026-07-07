@@ -1,6 +1,7 @@
 // C:\Users\Hp\Documents\BBMI-LMS\app\api\chapa\verify\route.ts
 import { NextResponse } from "next/server";
 import { Pool, PoolClient } from 'pg';
+export const dynamic = "force-dynamic"
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,

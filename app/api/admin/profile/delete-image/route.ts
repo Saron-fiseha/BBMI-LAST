@@ -3,6 +3,7 @@ import { sql } from "@/lib/db"
 import { unlink } from "fs/promises"
 import { join } from "path"
 import { existsSync } from "fs"
+export const dynamic = "force-dynamic"
 
 export async function DELETE(request: NextRequest) {
   try {

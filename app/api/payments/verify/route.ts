@@ -147,6 +147,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { sql } from "@/lib/db"
 import { getUserFromToken } from "@/lib/auth"
 import { telebirrService } from "@/lib/telebirr"
+export const dynamic = "force-dynamic"
 
 export async function POST(request: NextRequest) {
   try {

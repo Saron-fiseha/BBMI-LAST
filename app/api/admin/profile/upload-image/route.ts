@@ -3,6 +3,7 @@ import { sql } from "@/lib/db"
 import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
 import { existsSync } from "fs"
+export const dynamic = "force-dynamic"
 
 export async function POST(request: NextRequest) {
   try {

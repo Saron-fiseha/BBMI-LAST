@@ -4,6 +4,7 @@ import { writeFile, mkdir } from "fs/promises"
 import { join } from "path"
 import { existsSync } from "fs"
 import { verifyToken } from "@/lib/auth-utils"
+export const dynamic = "force-dynamic"
 
 const sql = neon(process.env.DATABASE_URL!)
 

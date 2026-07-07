@@ -10,7 +10,13 @@ import { type NextRequest } from "next/server"; // <-- ADD THIS IMPORT AT THE TO
 
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key-change-in-production"
-const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Lazy Resend client — only created when actually needed (avoids build-time crash when key is missing)
+function getResendClient() {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) throw new Error("RESEND_API_KEY is not set. Cannot send emails.")
+  return new Resend(apiKey)
+}
 
 export interface User {
   id: number
@@ -191,7 +197,7 @@ export async function createResetToken(email: string): Promise<{ success: boolea
 
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${resetToken}`
 
-    await resend.emails.send({
+    await getResendClient().emails.send({
       from: "onboarding@resend.dev",
       to: email,
       subject: "Reset your BBMI password",

@@ -43,10 +43,11 @@ export function SiteHeader() {
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2">
-          <div className="h-12 w-12 rounded-full bg-gradient-to-r from-mustard to-deep-purple">
-            <img src="\logo-bbmi.png" alt="" />
-            {/* <img src="\logo-removebg-preview.png" alt="" /> */}
-          </div>
+          <img
+            src="/logo-bbmi.png"
+            alt="BBMI Makeup Institute"
+            className="h-12 w-12 object-contain"
+          />
           <span className="text-xl font-bold text-charcoal">BBMI</span>
         </Link>
 

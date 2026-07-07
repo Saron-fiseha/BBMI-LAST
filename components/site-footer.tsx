@@ -72,7 +72,7 @@ export function SiteFooter() {
           <div className="space-y-4">
             <h4 className="text-lg font-semibold">Quick Links</h4>
             <ul className="space-y-2">
-               <li>
+              <li>
                 <Link
                   href="/"
                   className="text-custom-tan hover:text-white transition-colors"
@@ -137,7 +137,7 @@ export function SiteFooter() {
               </li>
               <li>
                 <Link
-                  href="/faq"
+                  href="/#faq"
                   className="text-custom-tan hover:text-white transition-colors"
                 >
                   FAQ
@@ -203,7 +203,7 @@ export function SiteFooter() {
         <div className="border-t border-gray-800 mt-12 pt-8 text-center">
           {/* Updated text color */}
           <p className="text-custom-tan">
-            © 2025 Brushed by Betty Makeup Institute. All rights reserved.
+            © 2026 Brushed by Betty Makeup Institute. All rights reserved.
           </p>
         </div>
       </div>

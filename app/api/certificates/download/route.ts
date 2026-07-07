@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import puppeteer from 'puppeteer-core';
 import chrome from '@sparticuz/chromium'; // Required for Vercel/serverless deployments
+export const dynamic = "force-dynamic"
 
 export async function POST(req: NextRequest) {
   try {
