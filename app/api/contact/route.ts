@@ -1,3 +1,4 @@
+// deploy test - verifying auto-deploy workflow
 import { type NextRequest, NextResponse } from "next/server"
 import { Resend } from "resend"
 export const dynamic = "force-dynamic"
