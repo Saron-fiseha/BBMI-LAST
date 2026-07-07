@@ -606,7 +606,7 @@ export default function ContactPage() {
                   <Mail className="h-8 w-8 mx-auto mb-4 text-custom-khaki" />
                   <h3 className="font-bold mb-2 text-charcoal">Email</h3>
                   <a
-                    href="mailto:brushedbybetty@gmail.com"
+                    href="mailto:betelhemesknder19@gmail.com"
                     className="text-gray-700 text-sm sm:text-base hover:text-custom-copper hover:underline"
                   >
                     brushedbybetty@gmail.com
