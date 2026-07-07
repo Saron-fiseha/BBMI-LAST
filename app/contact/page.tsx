@@ -552,7 +552,7 @@ export default function ContactPage() {
               </h1>
               <p className="text-base sm:text-lg lg:text-xl text-black max-w-2xl mx-auto">
                 Have questions about our courses or need support? We're here to
-                help!
+                help! 💬
               </p>
             </div>
           </div>
