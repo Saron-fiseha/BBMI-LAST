@@ -438,24 +438,49 @@ export default function AdminPortfolioPage() {
     }
   }
 
-  const exportPortfolio = () => {
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      "No,Title,Category,Status,Featured,Created\n" +
-      portfolioItems
-        .map(
-          (item, index) =>
-            `${index + 1},"${item.title}","${item.category}","${item.status}","${item.featured ? "Yes" : "No"}","${new Date(item.created_at).toLocaleDateString()}"`,
-        )
-        .join("\n")
+  const exportPortfolio = async () => {
+    try {
+      const params = new URLSearchParams({
+        search: searchQuery,
+        category: filterCategory,
+        status: filterStatus,
+        limit: "10000",
+      })
+      const response = await fetch(`/api/admin/portfolio?${params.toString()}`)
+      if (!response.ok) throw new Error("Failed to fetch portfolio items for export")
 
-    const encodedUri = encodeURI(csvContent)
-    const link = document.createElement("a")
-    link.setAttribute("href", encodedUri)
-    link.setAttribute("download", "portfolio.csv")
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+      const data = await response.json()
+      const items: PortfolioItem[] = data.portfolioItems || data.items || portfolioItems
+
+      const csvHeaders = ["No,Title,Category,File Type,Status,Featured,Created"]
+      const csvRows = items.map(
+        (item, index) =>
+          `${index + 1},"${(item.title || "").replace(/"/g, '""')}","${item.category || ""}","${item.file_type || ""}","${item.status || ""}","${item.featured ? "Yes" : "No"}","${item.created_at ? new Date(item.created_at).toLocaleDateString() : ""}"`,
+      )
+
+      const csvContent = [csvHeaders, ...csvRows].join("\n")
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = `portfolio-export-${new Date().toISOString().split("T")[0]}.csv`
+      document.body.appendChild(link)
+      link.click()
+      URL.revokeObjectURL(url)
+      document.body.removeChild(link)
+
+      toast({
+        title: "Success",
+        description: "Portfolio exported successfully",
+      })
+    } catch (error) {
+      console.error("Export error:", error)
+      toast({
+        title: "Export Failed",
+        description: "Failed to export portfolio items.",
+        variant: "destructive",
+      })
+    }
   }
 
   const getCategoryColor = (category: string) => {
@@ -608,14 +633,14 @@ export default function AdminPortfolioPage() {
             variant="outline"
             onClick={exportPortfolio}
             disabled={loading || portfolioItems.length === 0}
-            className="w-full sm:w-auto border-mustard text-mustard hover:bg-mustard hover:text-ivory bg-transparent"
+            className="w-full sm:w-auto "
           >
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
           <Button
             onClick={() => setShowCreateForm(true)}
-            className="w-full sm:w-auto bg-mustard hover:bg-mustard/90 text-ivory transition-all duration-200 hover:scale-105 active:scale-95"
+            className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
             disabled={submitting}
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -761,7 +786,7 @@ export default function AdminPortfolioPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => openEditForm(item)}
-                          className="flex-1 border-mustard/20 text-mustard hover:bg-mustard hover:text-ivory"
+                          className="flex-1 "
                         >
                           <Edit className="h-4 w-4 mr-1" />
                           Edit
@@ -863,7 +888,7 @@ export default function AdminPortfolioPage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => openEditForm(item)}
-                                className="border-mustard/20 text-mustard hover:bg-mustard hover:text-ivory"
+                                className=""
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -983,7 +1008,7 @@ export default function AdminPortfolioPage() {
                         variant="outline"
                         onClick={() => document.getElementById("file-upload")?.click()}
                         disabled={submitting || uploadingFile}
-                        className="border-mustard/20 text-mustard hover:bg-mustard hover:text-ivory"
+                        className=""
                       >
                         {uploadingFile ? (
                           <>
@@ -1069,7 +1094,7 @@ export default function AdminPortfolioPage() {
                   <Button
                     type="submit"
                     disabled={submitting}
-                    className="w-full sm:w-auto bg-mustard hover:bg-mustard/90 text-ivory"
+                    className="w-full sm:w-auto "
                   >
                     {submitting ? (
                       <>
@@ -1172,7 +1197,7 @@ export default function AdminPortfolioPage() {
                         variant="outline"
                         onClick={() => document.getElementById("file-upload-edit")?.click()}
                         disabled={submitting || uploadingEditFile}
-                        className="border-mustard/20 text-mustard hover:bg-mustard hover:text-ivory"
+                        className=""
                       >
                         {uploadingEditFile ? (
                           <>
@@ -1258,7 +1283,7 @@ export default function AdminPortfolioPage() {
                   <Button
                     type="submit"
                     disabled={submitting}
-                    className="w-full sm:w-auto bg-mustard hover:bg-mustard/90 text-ivory"
+                    className="w-full sm:w-auto "
                   >
                     {submitting ? (
                       <>

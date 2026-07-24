@@ -38,6 +38,19 @@ export function SiteHeader() {
     }
   };
 
+  const getProfileLink = () => {
+    if (!user) return "/dashboard/profile";
+
+    switch (user.role) {
+      case "admin":
+        return "/admin/profile";
+      case "instructor":
+        return "/instructor/profile";
+      default:
+        return "/dashboard/profile";
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-ivory/95 backdrop-blur supports-[backdrop-filter]:bg-ivory/60">
       <div className="container flex h-16 items-center justify-between">
@@ -135,7 +148,7 @@ export function SiteHeader() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard/profile" className="cursor-pointer">
+                  <Link href={getProfileLink()} className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
                     Profile Settings
                   </Link>
@@ -159,13 +172,8 @@ export function SiteHeader() {
               >
                 <Link href="/login">Login</Link>
               </Button>
-              <ShinyButton>
-                <Link
-                  href="/register"
-                  className="bg-gradient-to-r from-custom-copper to-custom-tan hover:bg-warm-brown"
-                >
-                  Register
-                </Link>
+              <ShinyButton href="/register">
+                Register
               </ShinyButton>
             </>
           )}
@@ -266,7 +274,7 @@ export function SiteHeader() {
                     </Link>
                   </Button>
                   <Button variant="ghost" asChild className="justify-start">
-                    <Link href="/profile" onClick={() => setIsMenuOpen(false)}>
+                    <Link href={getProfileLink()} onClick={() => setIsMenuOpen(false)}>
                       <Settings className="mr-2 h-4 w-4" />
                       Profile
                     </Link>
@@ -292,14 +300,8 @@ export function SiteHeader() {
                     Login
                   </Link>
                 </Button>
-                <ShinyButton className="w-full">
-                  <Link
-                    href="/register"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800"
-                  >
-                    Register
-                  </Link>
+                <ShinyButton href="/register" className="w-full" onClick={() => setIsMenuOpen(false)}>
+                  Register
                 </ShinyButton>
               </div>
             )}

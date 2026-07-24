@@ -19,18 +19,49 @@ type Module = {
   createdAt: string
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const modules = await sql`
+    const { searchParams } = new URL(request.url)
+    const search = searchParams.get("search")?.trim() || ""
+    const programId = searchParams.get("program") || searchParams.get("programId") || "all"
+    const status = searchParams.get("status") || "all"
+
+    let query = sql`
       SELECT 
         m.*,
         COALESCE(t.name, 'No Program') AS program_name
       FROM modules m
       LEFT JOIN trainings t ON m.training_id::text = t.id::text
-      ORDER BY m.created_at DESC
+      WHERE 1=1
     `
+
+    if (search) {
+      query = sql`
+        ${query}
+        AND (m.name ILIKE ${`%${search}%`} OR m.code ILIKE ${`%${search}%`} OR m.description ILIKE ${`%${search}%`})
+      `
+    }
+    if (programId !== "all" && programId !== "") {
+      query = sql`
+        ${query}
+        AND m.training_id::text = ${programId}
+      `
+    }
+    if (status !== "all" && status !== "") {
+      query = sql`
+        ${query}
+        AND m.status = ${status}
+      `
+    }
+
+    query = sql`
+      ${query}
+      ORDER BY m.order_index ASC, m.created_at DESC
+    `
+
+    const modules = await query
     return NextResponse.json(
-      modules.map((m) => ({
+      modules.map((m: any) => ({
         id: m.id,
         name: m.name,
         description: m.description,

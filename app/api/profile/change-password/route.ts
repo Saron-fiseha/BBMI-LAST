@@ -21,7 +21,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
 
-    const decoded = verifyToken(token);
+    const decoded = await verifyToken(token);
     if (!decoded) {
       console.info("change-password: invalid token");
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
@@ -42,26 +42,26 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ success: false, error: "New password must be at least 8 characters" }, { status: 400 });
     }
 
-    const userResult = await sql`SELECT password FROM users WHERE id = ${decoded.id}`;
+    const userResult = await sql`SELECT password_hash FROM users WHERE id = ${decoded.id}`;
     if (!userResult || userResult.length === 0) {
       return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
     }
     const userFromDb = userResult[0];
 
-    if (!userFromDb.password || typeof userFromDb.password !== "string") {
+    if (!userFromDb.password_hash || typeof userFromDb.password_hash !== "string") {
       return NextResponse.json({
         success: false,
         error: "No password set on the account. Use 'Forgot Password' to set one.",
       }, { status: 400 });
     }
 
-    const isMatch = await bcrypt.compare(currentPassword, userFromDb.password);
+    const isMatch = await bcrypt.compare(currentPassword, userFromDb.password_hash);
     if (!isMatch) {
       return NextResponse.json({ success: false, error: "Incorrect current password" }, { status: 400 });
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-    await sql`UPDATE users SET password = ${hashedNewPassword}, updated_at = NOW() WHERE id = ${decoded.id}`;
+    await sql`UPDATE users SET password_hash = ${hashedNewPassword}, updated_at = NOW() WHERE id = ${decoded.id}`;
 
     return NextResponse.json({ success: true, message: "Password updated successfully" });
   } catch (error) {

@@ -87,11 +87,10 @@ export async function AnnouncementsSection() {
                     </video>
                   ) : (
                     <Image
-                      src={item.file_path}
-                      alt={item.title}
-                      layout="fill"
-                      objectFit="cover"
-                      className="transition-transform duration-300 group-hover:scale-105"
+                      src={item.file_path || "/placeholder.svg"}
+                      alt={item.title || "Announcement image"}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   )}
                 </div>

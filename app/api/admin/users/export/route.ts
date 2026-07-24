@@ -4,24 +4,54 @@ export const dynamic = "force-dynamic"
 
 export async function GET(request: NextRequest) {
   try {
-    // Fetch all users for export
-    const users = await sql`
+    const { searchParams } = new URL(request.url)
+    const search = searchParams.get("search")?.trim() || ""
+    const role = searchParams.get("role") || "all"
+    const status = searchParams.get("status") || "all"
+
+    let query = sql`
       SELECT full_name, email, phone, age, sex, role, status, created_at
-      FROM users 
+      FROM users
+      WHERE 1=1
+    `
+
+    if (search) {
+      query = sql`
+        ${query}
+        AND (full_name ILIKE ${`%${search}%`} OR email ILIKE ${`%${search}%`})
+      `
+    }
+    if (role !== "all") {
+      query = sql`
+        ${query}
+        AND role = ${role}
+      `
+    }
+    if (status !== "all") {
+      query = sql`
+        ${query}
+        AND status = ${status}
+      `
+    }
+
+    query = sql`
+      ${query}
       ORDER BY created_at DESC
     `
+
+    const users = await query
 
     // Create CSV content
     const headers = ["Name", "Email", "Phone", "Age", "Gender", "Role", "Status", "Join Date"]
     const csvContent = [
       headers.join(","),
-      ...users.map((user: { name: any; email: any; phone: any; age: any; gender: any; role: any; status: any; created_at: string | number | Date }) =>
+      ...users.map((user: any) =>
         [
-          `"${user.name || ""}"`,
+          `"${user.full_name || user.name || ""}"`,
           `"${user.email || ""}"`,
           `"${user.phone || ""}"`,
           `"${user.age || ""}"`,
-          `"${user.gender || ""}"`,
+          `"${user.sex || user.gender || ""}"`,
           `"${user.role || ""}"`,
           `"${user.status || ""}"`,
           `"${user.created_at ? new Date(user.created_at).toLocaleDateString() : ""}"`,
@@ -33,7 +63,7 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": "text/csv",
-        "Content-Disposition": 'attachment; filename="users-export.csv"',
+        "Content-Disposition": `attachment; filename="users-export-${new Date().toISOString().split("T")[0]}.csv"`,
       },
     })
   } catch (error) {
@@ -47,3 +77,4 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+

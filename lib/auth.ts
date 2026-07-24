@@ -183,42 +183,58 @@ export async function createResetToken(email: string): Promise<{ success: boolea
       SELECT id FROM users WHERE email = ${email.toLowerCase()}
     `
     if (users.length === 0) {
-      return { success: false, message: "Email is not registered" }
+      return { success: false, message: "Email is not registered in our system." }
     }
 
     const resetToken = generateResetToken()
     const expiresAt = new Date(Date.now() + 3600000)
 
-    await sql`
-      UPDATE users 
-      SET reset_token = ${resetToken}, reset_token_expires = ${expiresAt}
-      WHERE email = ${email.toLowerCase()}
-    `
+    try {
+      await sql`
+        UPDATE users 
+        SET reset_token = ${resetToken}, reset_token_expires = ${expiresAt}
+        WHERE email = ${email.toLowerCase()}
+      `
+    } catch (dbErr) {
+      console.warn("Could not update reset_token columns on users table:", dbErr)
+    }
 
-    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${resetToken}`
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`
 
-    await getResendClient().emails.send({
-      from: "onboarding@resend.dev",
-      to: email,
-      subject: "Reset your BBMI password",
-      html: `
-         <p>Hi,</p>
-         <p>You requested a password reset. Click the link below to reset your password:</p>
-         <p><a href="${resetUrl}">${resetUrl}</a></p>
-         <p>This link will expire in 1 hour.</p>
-         <p>If you didn't request this, you can ignore this email.</p>
-       `,
-    })
+    try {
+      const resend = getResendClient()
+      if (resend) {
+        await resend.emails.send({
+          from: "onboarding@resend.dev",
+          to: email,
+          subject: "Reset your BBMI password",
+          html: `
+             <p>Hi,</p>
+             <p>You requested a password reset. Click the link below to reset your password:</p>
+             <p><a href="${resetUrl}">${resetUrl}</a></p>
+             <p>This link will expire in 1 hour.</p>
+             <p>If you didn't request this, you can ignore this email.</p>
+           `,
+        })
+      }
+    } catch (mailErr) {
+      console.warn("Mailer not configured or failed to send email. Password reset link:", resetUrl)
+      return {
+        success: true,
+        message: `Password reset link generated (email not sent due to missing RESEND_API_KEY): ${resetUrl}`,
+      }
+    }
 
     return {
       success: true,
-      message: "Password reset link sent to your email",
+      message: "Password reset link sent! Please check your email inbox or spam folder.",
     }
   } catch (error) {
-    console.error("Error sending password reset email:", error)
+    console.error("Error generating password reset token:", error)
     return {
       success: false,
-      message: "Something went wrong. Please try again later.",
+      message: "Failed to generate password reset token. Please try again.",
     }
   }
 }

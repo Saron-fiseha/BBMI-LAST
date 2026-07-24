@@ -761,7 +761,7 @@
 //         </div>
 //         <Button
 //           onClick={() => setShowCreateForm(true)}
-//           className="bg-mustard hover:bg-mustard/90 text-ivory mt-4 sm:mt-0"
+//           className=" mt-4 sm:mt-0"
 //         >
 //           <Plus className="h-4 w-4 mr-2" />
 //           Add New Training
@@ -972,7 +972,7 @@
 //                 type="submit"
 //                 form="training-form"
 //                 disabled={submitting || uploadingFile || uploadingDocument}
-//                 className="bg-mustard hover:bg-mustard/90 text-ivory"
+//                 className=""
 //               >
 //                 {submitting ? (
 //                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -1022,6 +1022,9 @@ import {
   X,
   AlertCircle,
   Upload,
+  Download,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -1119,6 +1122,10 @@ export default function TrainingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"details" | "quiz">("details");
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Filter/Search States - these will be updated from URL in useEffect
   const [searchQuery, setSearchQuery] = useState(
@@ -1262,6 +1269,39 @@ export default function TrainingsPage() {
   useEffect(() => {
     fetchDependencies();
   }, [fetchDependencies]);
+
+  const exportTrainings = async () => {
+    try {
+      const csvHeaders = ["Course Code", "Name", "Category", "Instructor", "Price", "Max Trainees", "Level", "Status"];
+      const csvRows = trainings.map((t) => [
+        `"${t.course_code || ""}"`,
+        `"${t.name || ""}"`,
+        `"${t.category_name || ""}"`,
+        `"${t.instructor_name || "N/A"}"`,
+        `"${t.price != null ? t.price : 0}"`,
+        `"${t.max_trainees || 0}"`,
+        `"${t.level || ""}"`,
+        `"${t.status || ""}"`,
+      ]);
+      const csvContent = [csvHeaders.join(","), ...csvRows.map((r) => r.join(","))].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `trainings-export-${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error("Export error:", err);
+      toast({
+        title: "Export Failed",
+        description: "Could not export trainings data.",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Handler for search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1548,8 +1588,8 @@ export default function TrainingsPage() {
               <Image
                 src={data.image_url}
                 alt="Preview"
-                layout="fill"
-                objectFit="cover"
+                fill
+                className="object-cover"
               />
               <Button
                 type="button"
@@ -1832,6 +1872,116 @@ export default function TrainingsPage() {
     );
   }
 
+  const totalPages = Math.ceil(trainings.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedTrainings = trainings.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    const getPageNumbers = () => {
+      const delta = 2;
+      const range = [];
+      const rangeWithDots = [];
+
+      for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+        range.push(i);
+      }
+
+      if (currentPage - delta > 2) {
+        rangeWithDots.push(1, "...");
+      } else {
+        rangeWithDots.push(1);
+      }
+
+      rangeWithDots.push(...range);
+
+      if (currentPage + delta < totalPages - 1) {
+        rangeWithDots.push("...", totalPages);
+      } else {
+        rangeWithDots.push(totalPages);
+      }
+
+      return rangeWithDots;
+    };
+
+    return (
+      <div className="flex items-center justify-between px-4 py-3 bg-ivory border-t border-mustard/20 sm:px-6">
+        <div className="flex justify-between flex-1 sm:hidden">
+          <Button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1 || loading}
+            variant="outline"
+            size="sm"
+          >
+            Previous
+          </Button>
+          <Button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages || loading}
+            variant="outline"
+            size="sm"
+          >
+            Next
+          </Button>
+        </div>
+        <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm text-charcoal">
+              Showing <span className="font-medium">{startIndex + 1}</span> to{" "}
+              <span className="font-medium">
+                {Math.min(startIndex + itemsPerPage, trainings.length)}
+              </span>{" "}
+              of <span className="font-medium">{trainings.length}</span> results
+            </p>
+          </div>
+          <div>
+            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+              <Button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1 || loading}
+                variant="outline"
+                size="sm"
+                className="relative inline-flex items-center px-2 py-2 rounded-l-md"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              {getPageNumbers().map((pageNum, index) => (
+                <Button
+                  key={index}
+                  onClick={() => (typeof pageNum === "number" ? handlePageChange(pageNum) : undefined)}
+                  disabled={pageNum === "..." || loading}
+                  variant={pageNum === currentPage ? "default" : "outline"}
+                  size="sm"
+                  className="relative inline-flex items-center px-4 py-2"
+                >
+                  {pageNum}
+                </Button>
+              ))}
+
+              <Button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages || loading}
+                variant="outline"
+                size="sm"
+                className="relative inline-flex items-center px-2 py-2 rounded-r-md"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </nav>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6 p-6 bg-ivory min-h-screen">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
@@ -1841,13 +1991,25 @@ export default function TrainingsPage() {
             Manage all available training courses.
           </p>
         </div>
-        <Button
-          onClick={() => setShowCreateForm(true)}
-          className="bg-mustard hover:bg-mustard/90 text-ivory mt-4 sm:mt-0"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add New Training
-        </Button>
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4 sm:mt-0">
+          <Button
+            variant="outline"
+            onClick={exportTrainings}
+            disabled={loading || trainings.length === 0}
+            className="w-full sm:w-auto "
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          <Button
+            onClick={() => setShowCreateForm(true)}
+            className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
+            disabled={submitting}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Training
+          </Button>
+        </div>
       </div>
 
       {error && (
@@ -1869,20 +2031,20 @@ export default function TrainingsPage() {
         </Alert>
       )}
 
-      <div className="bg-white border border-mustard/20 rounded-lg shadow-sm">
+      <div className="bg-ivory border border-mustard/20 rounded-lg">
         {/* Search and Filter Bar */}
-        <div className="p-4 border-b flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+        <div className="p-4 border-b border-mustard/20 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-deep-purple" />
             <Input
               placeholder="Search trainings by name or code..."
-              className="pl-8 border-mustard/20 focus:border-mustard"
+              className="pl-8 border-mustard/20 focus:border-mustard bg-white"
               value={searchQuery}
               onChange={handleSearchChange}
             />
           </div>
           <Select value={filterCategory} onValueChange={handleCategoryChange}>
-            <SelectTrigger className="w-full sm:w-[180px] border-mustard/20 focus:border-mustard">
+            <SelectTrigger className="w-full sm:w-[180px] border-mustard/20 focus:border-mustard bg-white">
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
             <SelectContent className="bg-ivory border-mustard/20">
@@ -1895,7 +2057,7 @@ export default function TrainingsPage() {
             </SelectContent>
           </Select>
           <Select value={filterStatus} onValueChange={handleStatusChange}>
-            <SelectTrigger className="w-full sm:w-[180px] border-mustard/20 focus:border-mustard">
+            <SelectTrigger className="w-full sm:w-[180px] border-mustard/20 focus:border-mustard bg-white">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent className="bg-ivory border-mustard/20">
@@ -1907,87 +2069,97 @@ export default function TrainingsPage() {
           </Select>
         </div>
 
-        <div className="w-full overflow-x-auto">
-          <div className="max-h-[60vh] overflow-y-auto">
-            <Table className="min-w-[1200px]">
-              <TableHeader className="sticky top-0 bg-gray-50 z-10">
+        <div className="p-4 border-b border-mustard/20">
+          <h3 className="text-lg font-semibold text-charcoal">
+            Trainings ({trainings.length})
+          </h3>
+        </div>
+
+        <div className="h-96 overflow-auto">
+          <Table>
+            <TableHeader className="sticky top-0 bg-ivory z-10 border-b border-mustard/20">
+              <TableRow>
+                <TableHead className="w-[50px] text-charcoal font-semibold">No.</TableHead>
+                <TableHead className="text-charcoal font-semibold">Training</TableHead>
+                <TableHead className="text-charcoal font-semibold">Code</TableHead>
+                <TableHead className="text-charcoal font-semibold">Category</TableHead>
+                <TableHead className="text-charcoal font-semibold">Instructor</TableHead>
+                <TableHead className="text-charcoal font-semibold">Price</TableHead>
+                <TableHead className="text-charcoal font-semibold">Status</TableHead>
+                <TableHead className="text-right text-charcoal font-semibold">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {trainings.length === 0 && !error ? (
                 <TableRow>
-                  <TableHead className="w-[350px]">Training</TableHead>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Instructor</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableCell colSpan={8} className="text-center h-48 text-deep-purple">
+                    No Trainings Found.
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {trainings.length === 0 && !error ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center h-48">
-                      No Trainings Found.
+              ) : (
+                paginatedTrainings.map((training, index) => (
+                  <TableRow key={training.id} className="border-b border-mustard/10 hover:bg-mustard/5 transition-colors">
+                    <TableCell className="font-medium text-charcoal">{startIndex + index + 1}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Image
+                          src={training.image_url || "/placeholder.svg"}
+                          alt={training.name}
+                          width={40}
+                          height={40}
+                          className="rounded-md object-cover border border-mustard/10"
+                        />
+                        <span className="font-bold text-charcoal">{training.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-deep-purple">{training.course_code}</TableCell>
+                    <TableCell className="text-deep-purple">{training.category_name}</TableCell>
+                    <TableCell className="text-deep-purple">{training.instructor_name || "N/A"}</TableCell>
+                    <TableCell className="text-deep-purple">
+                      {training.price != null ? `$${Number(training.price).toFixed(2)}` : "N/A"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(training.status)}>
+                        {training.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditForm(training)}
+                          className=" bg-white"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteTraining(training.id)}
+                          className="border-red-200 text-red-600 hover:bg-red-50 bg-white"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
-                ) : (
-                  trainings.map((training) => (
-                    <TableRow key={training.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Image
-                            src={training.image_url || "/placeholder.svg"}
-                            alt={training.name}
-                            width={40}
-                            height={40}
-                            className="rounded-md object-cover"
-                          />
-                          <span className="font-bold">{training.name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{training.course_code}</TableCell>
-                      <TableCell>{training.category_name}</TableCell>
-                      <TableCell>{training.instructor_name || "N/A"}</TableCell>
-                      <TableCell>
-                        {training.price != null
-                          ? `$${Number(training.price).toFixed(2)}`
-                          : "N/A"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(training.status)}>
-                          {training.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => openEditForm(training)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="icon"
-                            onClick={() => handleDeleteTraining(training.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
+        
+        {/* Pagination Controls */}
+        {renderPagination()}
       </div>
 
+
       {(showCreateForm || (showEditForm && editingTraining)) && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-5xl max-h-[90vh] shadow-xl flex flex-col">
-            <div className="p-6 border-b flex justify-between items-center">
-              <h2 className="text-2xl font-bold">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-ivory border border-mustard/20 rounded-lg w-full max-w-4xl max-h-[90vh] shadow-xl flex flex-col">
+            <div className="p-6 border-b border-mustard/20 flex justify-between items-center bg-ivory">
+              <h2 className="text-2xl font-bold text-charcoal">
                 {showEditForm ? "Edit Training" : "Create New Training"}
               </h2>
               <Button
@@ -1998,6 +2170,7 @@ export default function TrainingsPage() {
                   setShowEditForm(false);
                   setEditingTraining(null);
                 }}
+                className="text-charcoal hover:bg-mustard/10"
                 disabled={submitting}
               >
                 <X className="h-5 w-5" />
@@ -2073,7 +2246,7 @@ export default function TrainingsPage() {
                 type="submit"
                 form="training-form"
                 disabled={submitting || uploadingFile || uploadingDocument}
-                className="bg-mustard hover:bg-mustard/90 text-ivory"
+                className=""
               >
                 {submitting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

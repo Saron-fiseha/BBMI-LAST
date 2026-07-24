@@ -19,9 +19,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: "Passwords do not match" }, { status: 400 })
     }
  
-    if (password.length < 6) {
+    if (password.length < 8) {
       return NextResponse.json(
-        { success: false, message: "Password must be at least 6 characters long" },
+        { success: false, message: "Password must be at least 8 characters long" },
+        { status: 400 },
+      )
+    }
+
+    const hasLetter = /[a-zA-Z]/.test(password)
+    const hasNumber = /[0-9]/.test(password)
+    const hasSpecial = /[^a-zA-Z0-9]/.test(password)
+
+    if (!hasLetter || !hasNumber || !hasSpecial) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Password must contain at least one letter, one number, and one special character (!@#$%^&*)",
+        },
         { status: 400 },
       )
     }

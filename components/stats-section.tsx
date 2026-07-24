@@ -8,7 +8,7 @@ import { Users, Award, BookOpen, TrendingUp } from "lucide-react"
 const stats = [
   {
     icon: Users,
-    value: 4500,
+    value: 6500,
     label: "Students Trained",
     description: "Successful graduates working in the beauty industry",
   },
@@ -20,7 +20,7 @@ const stats = [
   },
   {
     icon: BookOpen,
-    value: 25,
+    value: 18,
     label: "Comprehensive Courses",
     description: "Covering all aspects of beauty and wellness",
   },

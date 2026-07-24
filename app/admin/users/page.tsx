@@ -150,7 +150,13 @@ export default function AdminUsersPage() {
         throw new Error(data.error || "Failed to fetch users")
       }
 
-      const usersData = data.users || []
+      const usersData = (data.users || []).map((u: any) => ({
+        ...u,
+        name: u.name || u.full_name || "",
+        gender: u.gender || u.sex || "",
+        full_name: u.full_name || u.name || "",
+        sex: u.sex || u.gender || "",
+      }))
       console.log("✅ Users loaded:", usersData.length)
 
       setUsers(usersData)
@@ -395,24 +401,33 @@ export default function AdminUsersPage() {
     }
   }
 
-  const exportUsers = () => {
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      "No,Name,Email,Phone,Age,Gender,Role,Status,Created\n" +
-      users
-        .map(
-          (u, index) =>
-            `${index + 1},"${u.name}","${u.email}","${u.phone || "-"}","${u.age || "-"}","${u.gender || "-"}","${u.role}","${u.status}","${new Date(u.created_at).toLocaleDateString()}"`,
-        )
-        .join("\n")
+  const exportUsers = async () => {
+    try {
+      const params = new URLSearchParams({
+        search: searchQuery,
+        role: filterRole,
+        status: filterStatus,
+      })
+      const response = await fetch(`/api/admin/users/export?${params.toString()}`)
+      if (!response.ok) throw new Error("Failed to export users")
 
-    const encodedUri = encodeURI(csvContent)
-    const link = document.createElement("a")
-    link.setAttribute("href", encodedUri)
-    link.setAttribute("download", "users.csv")
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `users-export-${new Date().toISOString().split("T")[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (err) {
+      console.error("Export error:", err)
+      toast({
+        title: "Export Failed",
+        description: "Could not export user data.",
+        variant: "destructive",
+      })
+    }
   }
 
   const getRoleColor = (role: string) => {
@@ -442,6 +457,8 @@ export default function AdminUsersPage() {
   const openEditForm = (user: User) => {
     setEditingUser({
       ...user,
+      full_name: user.full_name || user.name || "",
+      gender: (user.gender || user.sex || "").toLowerCase(),
       password: "",
       confirmPassword: "",
     })
@@ -565,14 +582,14 @@ export default function AdminUsersPage() {
             variant="outline"
             onClick={exportUsers}
             disabled={loading || users.length === 0}
-            className="w-full sm:w-auto border-mustard text-mustard hover:bg-mustard hover:text-ivory bg-transparent"
+            className="w-full sm:w-auto "
           >
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
           <Button
             onClick={() => setShowCreateForm(true)}
-            className="w-full sm:w-auto bg-mustard hover:bg-mustard/90 text-ivory transition-all duration-200 hover:scale-105 active:scale-95"
+            className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
             disabled={submitting}
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -709,7 +726,7 @@ export default function AdminUsersPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => openEditForm(user)}
-                          className="flex-1 border-mustard/20 text-mustard hover:bg-mustard hover:text-ivory"
+                          className="flex-1 "
                         >
                           <Edit className="h-4 w-4 mr-1" />
                           Edit
@@ -786,7 +803,7 @@ export default function AdminUsersPage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => openEditForm(user)}
-                                className="border-mustard/20 text-mustard hover:bg-mustard hover:text-ivory"
+                                className=""
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -984,7 +1001,7 @@ export default function AdminUsersPage() {
                   <Button
                     type="submit"
                     disabled={submitting}
-                    className="w-full sm:w-auto bg-mustard hover:bg-mustard/90 text-ivory"
+                    className="w-full sm:w-auto "
                   >
                     {submitting ? (
                       <>
@@ -1170,7 +1187,7 @@ export default function AdminUsersPage() {
                   <Button
                     type="submit"
                     disabled={submitting}
-                    className="w-full sm:w-auto bg-mustard hover:bg-mustard/90 text-ivory"
+                    className="w-full sm:w-auto "
                   >
                     {submitting ? (
                       <>

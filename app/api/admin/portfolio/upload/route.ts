@@ -12,34 +12,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "No file uploaded" }, { status: 400 })
     }
 
-    // Validate file type
-    const allowedTypes = [
-      "image/jpeg",
-      "image/jpg",
-      "image/png",
-      "image/gif",
-      "image/webp",
-      "video/mp4",
-      "video/webm",
-      "video/ogg",
-      "video/avi",
-      "video/mov",
-    ]
+    const fileNameLower = file.name.toLowerCase()
+    const allowedImageExts = [".jpg", ".jpeg", ".png", ".gif", ".webp"]
+    const allowedVideoExts = [".mp4", ".webm", ".ogg", ".avi", ".mov", ".mkv", ".flv", ".wmv", ".m4v", ".3gp"]
+    const isImage = file.type.startsWith("image/") || allowedImageExts.some((ext) => fileNameLower.endsWith(ext))
+    const isVideo = file.type.startsWith("video/") || allowedVideoExts.some((ext) => fileNameLower.endsWith(ext))
 
-    if (!allowedTypes.includes(file.type)) {
+    if (!isImage && !isVideo) {
       return NextResponse.json(
         {
           success: false,
-          error: "Invalid file type. Please upload images (JPEG, PNG, GIF, WebP) or videos (MP4, WebM, OGG, AVI, MOV)",
+          error: "Invalid file type. Please upload images (JPEG, PNG, GIF, WebP) or videos (MP4, WebM, OGG, AVI, MOV, MKV)",
         },
         { status: 400 },
       )
     }
 
-    // Validate file size (10MB limit)
-    const maxSize = 10 * 1024 * 1024 // 10MB
+    // Validate file size (100MB limit)
+    const maxSize = 100 * 1024 * 1024 // 100MB
     if (file.size > maxSize) {
-      return NextResponse.json({ success: false, error: "File size too large. Maximum size is 10MB" }, { status: 400 })
+      return NextResponse.json({ success: false, error: "File size too large. Maximum size is 100MB" }, { status: 400 })
     }
 
     const bytes = await file.arrayBuffer()
@@ -51,7 +43,7 @@ export async function POST(request: NextRequest) {
     const filename = `${timestamp}_${originalName}`
 
     // Determine file type
-    const fileType = file.type.startsWith("video/") ? "video" : "image"
+    const fileType = isVideo ? "video" : "image"
 
     // Create upload directory if it doesn't exist
     const uploadDir = path.join(process.cwd(), "public", "uploads", "portfolio")

@@ -56,7 +56,7 @@ export function HeroSection() {
             {/* Glassmorphic Stats Section */}
             <div className="grid grid-cols-3 gap-4 sm:gap-6 p-6 rounded-2xl bg-white/50 backdrop-blur-lg border border-white/60 shadow-md max-w-xl">
               <div className="text-center relative">
-                <div className="text-2xl sm:text-3xl font-extrabold text-[#71423E]">4500+</div>
+                <div className="text-2xl sm:text-3xl font-extrabold text-[#71423E]">6500+</div>
                 <div className="text-xs font-semibold text-gray-500 uppercase mt-1">Students</div>
                 <div className="absolute right-0 top-1/4 h-1/2 w-[1px] bg-[#CA9C73]/30 hidden sm:block" />
               </div>
@@ -76,14 +76,14 @@ export function HeroSection() {
           <div className="lg:col-span-5 relative flex justify-center items-center h-[450px] sm:h-[550px] w-full mt-8 lg:mt-0">
             {/* Background Decorative Gold Frame */}
             <div className="absolute inset-4 border border-[#CA9C73]/15 rounded-3xl transform rotate-2 pointer-events-none -z-10" />
-            
+
             {/* Background Image Card */}
             <div className="absolute top-4 left-4 w-[75%] h-[75%] rounded-3xl overflow-hidden shadow-xl border border-white/40 transform -rotate-3 transition-transform duration-500 hover:rotate-0 hover:scale-[1.02]">
               <Image
                 src="/home2.jpg"
                 alt="Brushed by Betty Academy campus"
-                layout="fill"
-                objectFit="cover"
+                fill
+                className="object-cover"
                 priority
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#5C4033]/20 via-transparent to-transparent" />
@@ -94,8 +94,8 @@ export function HeroSection() {
               <Image
                 src="/home-new.jpg"
                 alt="A student applying makeup professionally"
-                layout="fill"
-                objectFit="cover"
+                fill
+                className="object-cover"
                 priority
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#5C4033]/30 via-transparent to-transparent" />

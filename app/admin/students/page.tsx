@@ -233,14 +233,19 @@ export default function StudentsPage() {
   // Export function
   const handleExport = async () => {
     try {
-      const response = await fetch("/api/admin/students/export")
+      const params = new URLSearchParams({
+        search: searchQuery,
+        status: filterStatus,
+        gender: filterGender,
+      })
+      const response = await fetch(`/api/admin/students/export?${params.toString()}`)
       if (!response.ok) throw new Error("Export failed")
 
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = "students-export.csv"
+      a.download = `students-export-${new Date().toISOString().split("T")[0]}.csv`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -338,11 +343,12 @@ export default function StudentsPage() {
 
     setIsUpdating(true)
     try {
+      const studentName = editingStudent.full_name || editingStudent.name
       const response = await fetch(`/api/admin/students/${editingStudent.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: editingStudent.name,
+          name: studentName,
           email: editingStudent.email,
           phone: editingStudent.phone,
           age: editingStudent.age,
@@ -412,8 +418,12 @@ export default function StudentsPage() {
 
   // Open edit dialog
   const openEditDialog = (student: Student) => {
+    const studentName = student.full_name || student.name || ""
     setEditingStudent({
       ...student,
+      full_name: studentName,
+      name: studentName,
+      gender: (student.gender || "").toLowerCase(),
       password: "",
       confirmPassword: "",
     })
@@ -548,14 +558,14 @@ export default function StudentsPage() {
             variant="outline"
             onClick={handleExport}
             disabled={loading || students.length === 0}
-            className="w-full sm:w-auto border-mustard text-mustard hover:bg-mustard hover:text-ivory bg-transparent"
+            className="w-full sm:w-auto "
           >
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
           <Button
             onClick={() => setIsCreateDialogOpen(true)}
-            className="w-full sm:w-auto bg-mustard hover:bg-mustard/90 text-ivory transition-all duration-200 hover:scale-105 active:scale-95"
+            className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
             disabled={isCreating}
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -718,7 +728,7 @@ export default function StudentsPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => openEditDialog(student)}
-                          className="flex-1 border-mustard/20 text-mustard hover:bg-mustard hover:text-ivory"
+                          className="flex-1 "
                         >
                           <Edit className="h-4 w-4 mr-1" />
                           Edit
@@ -823,7 +833,7 @@ export default function StudentsPage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => openEditDialog(student)}
-                                className="border-mustard/20 text-mustard hover:bg-mustard hover:text-ivory"
+                                className=""
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -981,7 +991,7 @@ export default function StudentsPage() {
               <Button
                 type="submit"
                 disabled={isCreating}
-                className="bg-mustard hover:bg-mustard/90 text-ivory"
+                className=""
               >
                 {isCreating ? (
                   <>
@@ -1012,7 +1022,11 @@ export default function StudentsPage() {
                   <Input
                     id="edit-name"
                     value={editingStudent.full_name}
-                    onChange={(e) => setEditingStudent((prev) => (prev ? { ...prev, name: e.target.value } : null))}
+                    onChange={(e) =>
+                      setEditingStudent((prev) =>
+                        prev ? { ...prev, full_name: e.target.value, name: e.target.value } : null,
+                      )
+                    }
                     required
                     className="border-mustard/20 focus:border-mustard"
                   />
@@ -1119,7 +1133,7 @@ export default function StudentsPage() {
                 <Button
                   type="submit"
                   disabled={isUpdating}
-                  className="bg-mustard hover:bg-mustard/90 text-ivory"
+                  className=""
                 >
                   {isUpdating ? (
                     <>

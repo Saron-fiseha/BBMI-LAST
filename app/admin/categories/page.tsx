@@ -500,14 +500,14 @@ export default function CategoriesPage() {
             variant="outline"
             onClick={exportCategories}
             disabled={loading || categories.length === 0}
-            className="w-full sm:w-auto border-mustard text-mustard hover:bg-mustard hover:text-ivory bg-transparent"
+            className="w-full sm:w-auto "
           >
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
           <Button
             onClick={() => setShowCreateForm(true)}
-            className="w-full sm:w-auto bg-mustard hover:bg-mustard/90 text-ivory transition-all duration-200 hover:scale-105 active:scale-95"
+            className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
             disabled={submitting}
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -628,7 +628,7 @@ export default function CategoriesPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => openEditForm(category)}
-                          className="flex-1 border-mustard/20 text-mustard hover:bg-mustard hover:text-ivory"
+                          className="flex-1 "
                         >
                           <Edit className="h-4 w-4 mr-1" />
                           Edit
@@ -714,7 +714,7 @@ export default function CategoriesPage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => openEditForm(category)}
-                                className="border-mustard/20 text-mustard hover:bg-mustard hover:text-ivory"
+                                className=""
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -837,7 +837,7 @@ export default function CategoriesPage() {
                   <Button
                     type="submit"
                     disabled={submitting}
-                    className="w-full sm:w-auto bg-mustard hover:bg-mustard/90 text-ivory"
+                    className="w-full sm:w-auto "
                   >
                     {submitting ? (
                       <>
@@ -962,7 +962,7 @@ export default function CategoriesPage() {
                   <Button
                     type="submit"
                     disabled={submitting}
-                    className="w-full sm:w-auto bg-mustard hover:bg-mustard/90 text-ivory"
+                    className="w-full sm:w-auto "
                   >
                     {submitting ? (
                       <>

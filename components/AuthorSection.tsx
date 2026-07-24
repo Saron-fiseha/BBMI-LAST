@@ -43,10 +43,9 @@ export function AuthorSection() {
               <Image
                 src="/betty's-pic-2.png"
                 alt="Betelhem Esknder, professional makeup artist and instructor"
-                layout="fill"
-                // objectFit="cover"
-                objectFit="contain"
-                className="transition-transform duration-500 hover:scale-105"
+                fill
+                className="object-contain transition-transform duration-500 hover:scale-105"
+                priority
               />
             </div>
           </div>

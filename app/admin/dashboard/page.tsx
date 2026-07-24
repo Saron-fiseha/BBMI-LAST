@@ -389,7 +389,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge" // Not directly used in this snippet but kept for completeness
 import { Users, BookOpen, LayoutGrid, Layers, DollarSign, Target } from "lucide-react" // Changed BookOpen to LayoutGrid, Layers
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell } from "recharts"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell, LineChart, Line, CartesianGrid } from "recharts"
 
 // Interface for fetched stats
 interface DashboardStats {
@@ -422,18 +422,28 @@ interface StudentsPerTrainingItem {
   students: number
 }
 
-// Define specific colors for the pie chart
+// Define warm nude and copper color palette for pie and bar charts
 const PIE_CHART_COLORS = [
-  "#C5A100", // Mustard
+  "#D4A373", // Warm Tan / Nude
+  "#E07A5F", // Warm Copper
+  "#B5828C", // Muted Rose
+  "#CCD5AE", // Sage Nude
+  "#E9EDC9", // Cream Soft
+  "#C5A100", // Gold Mustard
   "#6B2D5C", // Deep Purple
-  "#F4D03F", // Yellow
-  "#8E44AD", // Amethyst
-  "#E67E22", // Carrot
-  "#3498DB", // Belize Hole
-  "#27AE60", // Nephritis
-  "#C0392B", // Pomegranate
-  "#7F8C8D", // Asbestos
-  "#D35400", // Pumpkin
+  "#81B29A", // Soft Teal
+  "#F4F1DE", // Off White
+  "#D5BFAF", // Litter Blush
+];
+
+// Screenshot 1 Palette for horizontal bar chart
+const HORIZONTAL_BAR_COLORS = [
+  "#8A2744", // Deep Crimson
+  "#65798F", // Slate Gray
+  "#B0B6BC", // Light Gray
+  "#094D3F", // Forest Green
+  "#5B598E", // Purple
+  "#979C64", // Olive Green
 ];
 
 const DashboardPage = () => {
@@ -520,59 +530,55 @@ const DashboardPage = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Total Students */}
-        <Card className="bg-gradient-to-br from-mustard/10 to-mustard/5 border-mustard/20 group hover:shadow-lg transition-all duration-300">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-charcoal flex items-center gap-2">
-              <Users className="h-5 w-5 text-mustard group-hover:scale-110 transition-transform" />
-              Total Students
-            </CardTitle>
-            <CardDescription className="text-deep-purple">Registered users</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-mustard">{dashboardStats.totalStudents}</div>
+        {/* Total Students - Lighter Crimson */}
+        <Card className="bg-gradient-to-br from-[#A83858] to-[#C95374] border-none shadow-md group hover:-translate-y-1 hover:shadow-xl transition-all duration-300 rounded-xl overflow-hidden">
+          <CardContent className="p-6 flex items-center gap-6">
+            <div className="p-2 bg-white/20 rounded-lg shrink-0">
+              <Users className="h-10 w-10 text-white" />
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-white mb-1">{dashboardStats.totalStudents}</div>
+              <div className="text-sm font-medium text-white/90">Total Students</div>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Total Categories */}
-        <Card className="bg-gradient-to-br from-purple/10 to-purple/5 border-purple/20 group hover:shadow-lg transition-all duration-300">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-charcoal flex items-center gap-2">
-              <LayoutGrid className="h-5 w-5 text-deep-purple group-hover:scale-110 transition-transform" />
-              Total Categories
-            </CardTitle>
-            <CardDescription className="text-deep-purple">Of trainings offered</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-deep-purple">{dashboardStats.totalCategories}</div>
+        {/* Total Categories - Lighter Steel Blue */}
+        <Card className="bg-gradient-to-br from-[#7C90A6] to-[#9AB1C7] border-none shadow-md group hover:-translate-y-1 hover:shadow-xl transition-all duration-300 rounded-xl overflow-hidden">
+          <CardContent className="p-6 flex items-center gap-6">
+            <div className="p-2 bg-white/20 rounded-lg shrink-0">
+              <LayoutGrid className="h-10 w-10 text-white" />
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-white mb-1">{dashboardStats.totalCategories}</div>
+              <div className="text-sm font-medium text-white/90">Total Categories</div>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Total Trainings */}
-        <Card className="bg-gradient-to-br from-mustard/10 to-mustard/5 border-mustard/20 group hover:shadow-lg transition-all duration-300">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-charcoal flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-mustard group-hover:scale-110 transition-transform" />
-              Total Trainings
-            </CardTitle>
-            <CardDescription className="text-deep-purple">Currently active</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-mustard">{dashboardStats.totalTrainings}</div>
+        {/* Total Trainings - Lighter Forest Green */}
+        <Card className="bg-gradient-to-br from-[#3D8F73] to-[#55B899] border-none shadow-md group hover:-translate-y-1 hover:shadow-xl transition-all duration-300 rounded-xl overflow-hidden">
+          <CardContent className="p-6 flex items-center gap-6">
+            <div className="p-2 bg-white/20 rounded-lg shrink-0">
+              <BookOpen className="h-10 w-10 text-white" />
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-white mb-1">{dashboardStats.totalTrainings}</div>
+              <div className="text-sm font-medium text-white/90">Total Trainings</div>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Total Modules */}
-        <Card className="bg-gradient-to-br from-purple/10 to-purple/5 border-purple/20 group hover:shadow-lg transition-all duration-300">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-charcoal flex items-center gap-2">
-              <Layers className="h-5 w-5 text-deep-purple group-hover:scale-110 transition-transform" />
-              Total Modules
-            </CardTitle>
-            <CardDescription className="text-deep-purple">Across all trainings</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-deep-purple">{dashboardStats.totalModules}</div>
+        {/* Total Modules - Lighter Plum Purple */}
+        <Card className="bg-gradient-to-br from-[#775C9A] to-[#967CC4] border-none shadow-md group hover:-translate-y-1 hover:shadow-xl transition-all duration-300 rounded-xl overflow-hidden">
+          <CardContent className="p-6 flex items-center gap-6">
+            <div className="p-2 bg-white/20 rounded-lg shrink-0">
+              <Layers className="h-10 w-10 text-white" />
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-white mb-1">{dashboardStats.totalModules}</div>
+              <div className="text-sm font-medium text-white/90">Total Modules</div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -609,52 +615,79 @@ const DashboardPage = () => {
             </ResponsiveContainer>
           </CardContent>
         </Card> */}
-{/* Modules & Trainings Overview - Using categoryOverviewData from API */}
-<Card className="bg-ivory border-mustard/20 lg:col-span-2">
-  <CardHeader>
-    <CardTitle className="text-charcoal">Category Overview</CardTitle>
-    <CardDescription className="text-deep-purple">
-      Trainings & modules by category
-    </CardDescription>
-  </CardHeader>
-  <CardContent>
-    {categoryOverviewData?.length ? (
-      <div className="w-full h-[500px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={categoryOverviewData}
-            margin={{ top: 10, right: 40, left: 20, bottom: 80 }}
-          >
-            <XAxis
-              dataKey="name"
-              stroke="#222222"
-              fontSize={12}
-              interval={0} // Display all labels
-              angle={-45} // Rotate labels
-              textAnchor="end"
-              height={80} // Extra height for rotated labels
-            />
-            <YAxis stroke="#222222" />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#F8F1E5",
-                border: "1px solid #C5A100",
-                borderRadius: "8px",
-              }}
-            />
-            <Legend wrapperStyle={{ paddingTop: "20px" }} />
-            <Bar dataKey="trainings" fill="#C5A100" name="Trainings" />
-            <Bar dataKey="modules" fill="#6B2D5C" name="Modules" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-    ) : (
-      <div className="text-center text-gray-500 py-10">
-        No category overview data available.
-      </div>
-    )}
-  </CardContent>
-</Card>
+        {/* Trainings by Category */}
+        <Card className="bg-ivory border-mustard/20">
+          <CardHeader>
+            <CardTitle className="text-charcoal/70 font-semibold">Trainings by Category</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {categoryOverviewData?.length ? (
+              <div className="w-full h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={categoryOverviewData}
+                    layout="vertical"
+                    margin={{ top: 10, right: 30, left: 40, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} vertical={true} />
+                    <XAxis type="number" stroke="#B0B6BC" />
+                    <YAxis dataKey="name" type="category" width={120} stroke="#5C7286" fontSize={11} tickLine={false} axisLine={false} />
+                    <Tooltip
+                      cursor={{fill: 'rgba(0,0,0,0.05)'}}
+                      contentStyle={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: "8px" }}
+                    />
+                    <Bar dataKey="trainings" radius={[0, 4, 4, 0]}>
+                      {categoryOverviewData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={HORIZONTAL_BAR_COLORS[index % HORIZONTAL_BAR_COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="text-center text-gray-400 py-10 h-[300px] flex items-center justify-center">
+                No data available for this chart.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Modules by Category */}
+        <Card className="bg-ivory border-mustard/20">
+          <CardHeader>
+            <CardTitle className="text-charcoal/70 font-semibold">Modules by Category</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {categoryOverviewData?.length ? (
+              <div className="w-full h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={categoryOverviewData}
+                    layout="vertical"
+                    margin={{ top: 10, right: 30, left: 40, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} vertical={true} />
+                    <XAxis type="number" stroke="#B0B6BC" />
+                    <YAxis dataKey="name" type="category" width={120} stroke="#5C7286" fontSize={11} tickLine={false} axisLine={false} />
+                    <Tooltip
+                      cursor={{fill: 'rgba(0,0,0,0.05)'}}
+                      contentStyle={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: "8px" }}
+                    />
+                    <Bar dataKey="modules" radius={[0, 4, 4, 0]}>
+                      {categoryOverviewData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={HORIZONTAL_BAR_COLORS[index % HORIZONTAL_BAR_COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="text-center text-gray-400 py-10 h-[300px] flex items-center justify-center">
+                No data available for this chart.
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
 
       </div>
@@ -705,58 +738,71 @@ const DashboardPage = () => {
         </Card>
       </div> */}
 
-      {/* Students per Course Pie Chart */}
-<Card className="bg-ivory border-mustard/20 lg:col-span-2">
-  <CardHeader>
-    <CardTitle className="text-charcoal">Students Distribution by Training</CardTitle>
-    <CardDescription className="text-deep-purple">
-      Current enrollment breakdown per training
-    </CardDescription>
-  </CardHeader>
-  <CardContent>
-    {studentsPerTrainingPieData?.length ? (
-      <div className="w-full h-[500px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={studentsPerTrainingPieData}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={({ name, students }) => `${name}: ${students}`}
-              outerRadius={180} // Increased radius to fill space
-              fill="#8884d8"
-              dataKey="students"
-            >
-              {studentsPerTrainingPieData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={PIE_CHART_COLORS[index % PIE_CHART_COLORS.length]}
-                />
-              ))}
-            </Pie>
-            <Tooltip
-              formatter={(value: number, name: string) => {
-                if (name === "students") return [`Students: ${value}`, "Enrollments"];
-                return [value, name];
-              }}
-              contentStyle={{
-                backgroundColor: "#F8F1E5",
-                border: "1px solid #C5A100",
-                borderRadius: "8px",
-              }}
-            />
-            {/* <Legend /> */}
-          </PieChart>
-        </ResponsiveContainer>
+      {/* Trends Section - Replaced Pie Chart with Line Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* New Hires / Student Enrollments Trend */}
+        <Card className="bg-ivory border-mustard/20">
+          <CardHeader>
+            <CardTitle className="text-charcoal/70 font-semibold">Student Enrollments Trend (Last 6 Months)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {monthlyPerformanceData?.length ? (
+              <div className="w-full h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={monthlyPerformanceData}
+                    margin={{ top: 20, right: 30, left: 0, bottom: 10 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="month" stroke="#B0B6BC" fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#B0B6BC" fontSize={12} tickLine={false} axisLine={false} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: "8px" }}
+                    />
+                    <Line type="linear" dataKey="students" stroke="#8A2744" strokeWidth={2} dot={{ r: 4, fill: "#8A2744" }} activeDot={{ r: 6 }} name="Students" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="text-center text-gray-400 py-10 h-[300px] flex items-center justify-center">
+                No data available for this chart.
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Students per Training Trend */}
+        <Card className="bg-ivory border-mustard/20">
+          <CardHeader>
+            <CardTitle className="text-charcoal/70 font-semibold">Students per Training</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {studentsPerTrainingPieData?.length ? (
+              <div className="w-full h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={studentsPerTrainingPieData}
+                    margin={{ top: 20, right: 30, left: 0, bottom: 80 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="name" stroke="#B0B6BC" fontSize={11} tickLine={false} axisLine={false} angle={-45} textAnchor="end" height={80} interval={0} />
+                    <YAxis stroke="#B0B6BC" fontSize={12} tickLine={false} axisLine={false} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: "8px" }}
+                    />
+                    <Legend wrapperStyle={{ paddingTop: "20px" }} />
+                    <Line type="linear" dataKey="students" stroke="#094D3F" strokeWidth={2} dot={{ r: 4, fill: "#094D3F" }} activeDot={{ r: 6 }} name="Students" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="text-center text-gray-400 py-10 h-[300px] flex items-center justify-center">
+                No data available for this chart.
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
-    ) : (
-      <div className="text-center text-gray-500 py-10">
-        No training enrollment data available.
-      </div>
-    )}
-  </CardContent>
-</Card>
 
 
 

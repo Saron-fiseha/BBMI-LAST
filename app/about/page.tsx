@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { Card, CardContent } from "@/components/ui/card"
@@ -10,8 +11,6 @@ import { ShinyButton } from "@/components/magicui/shiny-button"
 import { InteractiveHoverButton } from "@/components/magicui/interactive-hover-button"
 import { BlurFade } from "@/components/magicui/blur-fade"
 import { NumberTicker } from "@/components/magicui/number-ticker"
-// --- ADDED: Import useEffect and dynamic ---
-// import { useEffect } from 'react'
 import dynamic from 'next/dynamic'
 // import { pdfjs } from "react-pdf"
 
@@ -109,14 +108,17 @@ export default function AboutPage() {
                   </InteractiveHoverButton>
                 </div>
               </div>
-              
+
               {/* Mobile Image Stack (Hidden on desktop) */}
               <div className="block lg:hidden w-full max-w-[550px] mx-auto">
                 <div className="relative w-full aspect-[4/3] overflow-hidden shadow-lg">
-                  <img
+                  <Image
                     src="/about-new2.jpg"
                     alt="BBMI Academy campus"
+                    width={550}
+                    height={412}
                     className="w-full h-full object-cover"
+                    priority
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#5C4033]/30 via-transparent to-transparent" />
                 </div>
@@ -126,10 +128,12 @@ export default function AboutPage() {
 
           {/* Desktop Full-Bleed Image (Hidden on mobile) */}
           <div className="hidden lg:block absolute top-0 right-0 bottom-0 w-[42%] h-full overflow-hidden">
-            <img
+            <Image
               src="/about-new2.jpg"
               alt="BBMI Academy campus"
+              fill
               className="w-full h-full object-cover"
+              priority
             />
             {/* Soft overlay gradient to blend the image edge with the background */}
             <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#F5F1E9] to-transparent z-20 pointer-events-none" />
@@ -168,7 +172,7 @@ export default function AboutPage() {
                       <Users className="h-6 w-6" />
                     </div>
                     <h3 className="text-2xl font-bold mb-2">
-                      <NumberTicker value={4500} />+
+                      <NumberTicker value={6500} />+
                     </h3>
                     <p className="text-custom-copper">Graduates</p>
                   </div>
@@ -177,7 +181,7 @@ export default function AboutPage() {
                       <BookOpen className="h-6 w-6" />
                     </div>
                     <h3 className="text-2xl font-bold mb-2">
-                      <NumberTicker value={25} />+
+                      <NumberTicker value={18} />+
                     </h3>
                     <p className="text-custom-copper">Courses</p>
                   </div>
@@ -195,7 +199,7 @@ export default function AboutPage() {
                       <Clock className="h-6 w-6" />
                     </div>
                     <h3 className="text-2xl font-bold mb-2">
-                      <NumberTicker value={10} />+
+                      <NumberTicker value={6} />+
                     </h3>
                     <p className="text-custom-copper">Years of Excellence</p>
                   </div>
@@ -291,10 +295,13 @@ export default function AboutPage() {
                 {teamMembers.map((member, index) => (
                   <div key={index} className="text-center">
                     <div className="mb-4 aspect-square relative overflow-hidden rounded-full">
-                      <img
+                      <Image
                         src={member.image || "/placeholder.svg"}
                         alt={member.name}
+                        width={200}
+                        height={200}
                         className="object-cover object-top scale-110 w-full h-full"
+                        loading="lazy"
                       />
                     </div>
                     <h3 className="text-xl font-bold mb-1">{member.name}</h3>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -91,24 +91,16 @@ export default function ModulesPage() {
     [router, searchParams],
   )
 
-  // Debounced search
-  const debouncedSearch = useCallback(
-    debounce((search: string) => {
-      updateURL({ search, page: "1" })
-    }, 300),
-    [updateURL],
-  )
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  function debounce(func: Function, wait: number) {
-    let timeout: NodeJS.Timeout
-    return function executedFunction(...args: any[]) {
-      const later = () => {
-        clearTimeout(timeout)
-        func(...args)
-      }
-      clearTimeout(timeout)
-      timeout = setTimeout(later, wait)
+  const handleSearchChange = (search: string) => {
+    setSearchQuery(search)
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
     }
+    searchTimeoutRef.current = setTimeout(() => {
+      fetchModules(search, filterProgram, filterStatus, 1)
+    }, 400)
   }
 
   // Fetch modules from database with pagination
@@ -221,11 +213,7 @@ export default function ModulesPage() {
     updateURL({ status, page: "1" })
   }
 
-  // Handle search change
-  const handleSearchChange = (search: string) => {
-    setSearchQuery(search)
-    debouncedSearch(search)
-  }
+
 
   // Effect to fetch data when URL params change
   useEffect(() => {
@@ -476,24 +464,43 @@ export default function ModulesPage() {
     })
   }
 
-  const exportModules = () => {
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      "#,Name,Code,Program,Duration,Order,Status,VideoID\n" +
-      modules
-        .map(
-          (m, index) =>
-            `${index + 1},"${m.name}","${m.moduleCode}","${m.programName}",${m.duration},${m.order},"${m.status}","${m.videoId}"`,
-        )
-        .join("\n")
+  const exportModules = async () => {
+    try {
+      const params = new URLSearchParams({
+        search: searchQuery,
+        program: filterProgram,
+        status: filterStatus,
+      })
+      const response = await fetch(`/api/admin/modules?${params.toString()}`)
+      if (!response.ok) throw new Error("Failed to fetch modules for export")
 
-    const encodedUri = encodeURI(csvContent)
-    const link = document.createElement("a")
-    link.setAttribute("href", encodedUri)
-    link.setAttribute("download", "modules.csv")
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+      const data = await response.json()
+      const allModules: Module[] = Array.isArray(data) ? data : data.modules || []
+
+      const csvHeaders = ["#,Name,Code,Program,Duration,Order,Status,VideoID"]
+      const csvRows = allModules.map(
+        (m, index) =>
+          `${index + 1},"${(m.name || "").replace(/"/g, '""')}","${(m.moduleCode || "").replace(/"/g, '""')}","${(m.programName || "").replace(/"/g, '""')}",${m.duration || 0},${m.order || 0},"${m.status || ""}","${(m.videoId || "").replace(/"/g, '""')}"`,
+      )
+
+      const csvContent = [csvHeaders, ...csvRows].join("\n")
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `modules-export-${new Date().toISOString().split("T")[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error("Export error:", error)
+      toast({
+        title: "Export Failed",
+        description: "Failed to export modules.",
+        variant: "destructive",
+      })
+    }
   }
 
   const getStatusColor = (status: string) => {
@@ -534,13 +541,23 @@ export default function ModulesPage() {
     return match ? match[1] : url
   }
 
+
+
+  // Client-side pagination logic
+  const itemsPerPage = 10;
+  const currentPage = pagination.page;
+  const totalItems = modules.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedModules = modules.slice(startIndex, startIndex + itemsPerPage);
+
   // Pagination component
   const renderPagination = () => {
-    if (pagination.totalPages <= 1) return null
+    if (totalPages <= 1) return null
 
     const getPageNumbers = () => {
-      const current = pagination.page
-      const total = pagination.totalPages
+      const current = currentPage
+      const total = totalPages
       const delta = 2
       const range = []
       const rangeWithDots = []
@@ -570,16 +587,16 @@ export default function ModulesPage() {
       <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
         <div className="flex justify-between flex-1 sm:hidden">
           <Button
-            onClick={() => handlePageChange(pagination.page - 1)}
-            disabled={!pagination.hasPrev || loading}
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1 || loading}
             variant="outline"
             size="sm"
           >
             Previous
           </Button>
           <Button
-            onClick={() => handlePageChange(pagination.page + 1)}
-            disabled={!pagination.hasNext || loading}
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages || loading}
             variant="outline"
             size="sm"
           >
@@ -589,19 +606,18 @@ export default function ModulesPage() {
         <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
           <div>
             <p className="text-sm text-gray-700">
-              Showing{" "}
+              Showing <span className="font-medium">{startIndex + 1}</span> to{" "}
               <span className="font-medium">
-                {Math.min((pagination.page - 1) * pagination.limit + 1, pagination.total)}
+                {Math.min(startIndex + itemsPerPage, totalItems)}
               </span>{" "}
-              to <span className="font-medium">{Math.min(pagination.page * pagination.limit, pagination.total)}</span>{" "}
-              of <span className="font-medium">{pagination.total}</span> results
+              of <span className="font-medium">{totalItems}</span> results
             </p>
           </div>
           <div>
             <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
               <Button
-                onClick={() => handlePageChange(pagination.page - 1)}
-                disabled={!pagination.hasPrev || loading}
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1 || loading}
                 variant="outline"
                 size="sm"
                 className="relative inline-flex items-center px-2 py-2 rounded-l-md"
@@ -614,7 +630,7 @@ export default function ModulesPage() {
                   key={index}
                   onClick={() => (typeof pageNum === "number" ? handlePageChange(pageNum) : undefined)}
                   disabled={pageNum === "..." || loading}
-                  variant={pageNum === pagination.page ? "default" : "outline"}
+                  variant={pageNum === currentPage ? "default" : "outline"}
                   size="sm"
                   className="relative inline-flex items-center px-4 py-2"
                 >
@@ -623,8 +639,8 @@ export default function ModulesPage() {
               ))}
 
               <Button
-                onClick={() => handlePageChange(pagination.page + 1)}
-                disabled={!pagination.hasNext || loading}
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages || loading}
                 variant="outline"
                 size="sm"
                 className="relative inline-flex items-center px-2 py-2 rounded-r-md"
@@ -651,14 +667,14 @@ export default function ModulesPage() {
             variant="outline"
             onClick={exportModules}
             disabled={loading || modules.length === 0}
-            className="w-full sm:w-auto border-mustard text-mustard hover:bg-mustard hover:text-ivory bg-transparent"
+            className="w-full sm:w-auto "
           >
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
           <Button
             onClick={() => setShowForm(true)}
-            className="w-full sm:w-auto bg-mustard hover:bg-mustard/90 text-ivory transition-all duration-200 hover:scale-105 active:scale-95"
+            className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
             disabled={isSubmitting}
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -757,7 +773,7 @@ export default function ModulesPage() {
                       : "No modules found. Click 'Add Module' to create your first module."}
                   </div>
                 ) : (
-                  modules.map((module, index) => (
+                  paginatedModules.map((module, index) => (
                     <div key={module.id} className="border border-mustard/10 rounded-lg p-4 space-y-3 bg-white">
                       <div className="flex justify-between items-start">
                         <div>
@@ -799,7 +815,7 @@ export default function ModulesPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => handleEditClick(module)}
-                          className="flex-1 border-mustard/20 text-mustard hover:bg-mustard hover:text-ivory"
+                          className="flex-1 "
                         >
                           <Edit className="h-4 w-4 mr-1" />
                           Edit
@@ -847,13 +863,13 @@ export default function ModulesPage() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      modules.map((module, index) => (
+                      paginatedModules.map((module, index) => (
                         <TableRow
                           key={module.id}
                           className="border-mustard/10 hover:bg-mustard/5 transition-colors duration-200"
                         >
                           <TableCell className="font-medium text-charcoal">
-                            {(pagination.page - 1) * pagination.limit + index + 1}
+                            {startIndex + index + 1}
                           </TableCell>
                           <TableCell>
                             <div>
@@ -881,7 +897,7 @@ export default function ModulesPage() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleEditClick(module)}
-                                className="border-mustard/20 text-mustard hover:bg-mustard hover:text-ivory"
+                                className=""
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -1077,7 +1093,7 @@ export default function ModulesPage() {
                 <Button
                   onClick={editingModule ? handleEditModule : handleCreateModule}
                   disabled={isSubmitting}
-                  className="w-full sm:w-auto bg-mustard hover:bg-mustard/90 text-ivory"
+                  className="w-full sm:w-auto "
                 >
                   {isSubmitting ? (
                     <>

@@ -1,202 +1,64 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { neon } from "@neondatabase/serverless"
+import { sql } from "@/lib/db"
 export const dynamic = "force-dynamic"
-
-const sql = neon(process.env.DATABASE_URL!)
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const search = searchParams.get("search")?.trim() || ""
     const status = searchParams.get("status") || "all"
-    const gender = searchParams.get("sex") || "all"
+    const gender = searchParams.get("gender") || searchParams.get("sex") || "all"
 
     console.log("Exporting students with filters:", { search, status, gender })
 
-    let students
+    let query = sql`
+      SELECT 
+        s.roll_number,
+        s.id_number,
+        u.full_name as name,
+        u.email,
+        COALESCE(u.phone, '') as phone,
+        COALESCE(u.age, 0) as age,
+        COALESCE(u.sex, '') as gender,
+        COUNT(DISTINCT e.training_id) AS courses_enrolled,
+        COUNT(DISTINCT e.training_id) FILTER (WHERE e.status = 'completed') AS courses_completed,
+        ROUND(COALESCE(SUM(mp.time_spent_minutes), 0)::numeric / 60.0, 1) AS total_hours,
+        s.status,
+        s.join_date,
+        s.last_active
+      FROM students s
+      JOIN users u ON s.user_id = u.id
+      LEFT JOIN enrollments e ON u.id = e.user_id
+      LEFT JOIN module_progress mp ON u.id = mp.user_id
+      WHERE u.role = 'student'
+    `
 
-    // Apply the same filters as the main GET route
-    if (search && status !== "all" && gender !== "all") {
-      students = await sql`
-        SELECT 
-          s.roll_number,
-          s.id_number,
-          u.full_name,
-          u.email,
-          u.phone,
-          u.age,
-          u.sex,
-          s.courses_enrolled,
-          s.courses_completed,
-          s.total_hours,
-          s.status,
-          s.join_date,
-          s.last_active
-        FROM students s
-        JOIN users u ON s.user_id = u.id
-        WHERE u.role = 'student'
-          AND (u.full_name ILIKE ${`%${search}%`} OR u.email ILIKE ${`%${search}%`})
-          AND s.status = ${status}
-          AND u.sex = ${gender}
-        ORDER BY s.roll_number ASC
-      `
-    } else if (search && status !== "all") {
-      students = await sql`
-        SELECT 
-          s.roll_number,
-          s.id_number,
-          u.full_name,
-          u.email,
-          u.phone,
-          u.age,
-          u.sex,
-          s.courses_enrolled,
-          s.courses_completed,
-          s.total_hours,
-          s.status,
-          s.join_date,
-          s.last_active
-        FROM students s
-        JOIN users u ON s.user_id = u.id
-        WHERE u.role = 'student'
-          AND (u.full_name ILIKE ${`%${search}%`} OR u.email ILIKE ${`%${search}%`})
-          AND s.status = ${status}
-        ORDER BY s.roll_number ASC
-      `
-    } else if (search && gender !== "all") {
-      students = await sql`
-        SELECT 
-          s.roll_number,
-          s.id_number,
-          u.full_name,
-          u.email,
-          u.phone,
-          u.age,
-          u.sex,
-          s.courses_enrolled,
-          s.courses_completed,
-          s.total_hours,
-          s.status,
-          s.join_date,
-          s.last_active
-        FROM students s
-        JOIN users u ON s.user_id = u.id
-        WHERE u.role = 'student'
-          AND (u.full_name ILIKE ${`%${search}%`} OR u.email ILIKE ${`%${search}%`})
-          AND u.sex = ${gender}
-        ORDER BY s.roll_number ASC
-      `
-    } else if (status !== "all" && gender !== "all") {
-      students = await sql`
-        SELECT 
-          s.roll_number,
-          s.id_number,
-          u.full_name,
-          u.email,
-          u.phone,
-          u.age,
-          u.sex,
-          s.courses_enrolled,
-          s.courses_completed,
-          s.total_hours,
-          s.status,
-          s.join_date,
-          s.last_active
-        FROM students s
-        JOIN users u ON s.user_id = u.id
-        WHERE u.role = 'student'
-          AND s.status = ${status}
-          AND u.sex = ${gender}
-        ORDER BY s.roll_number ASC
-      `
-    } else if (search) {
-      students = await sql`
-        SELECT 
-          s.roll_number,
-          s.id_number,
-          u.full_name,
-          u.email,
-          u.phone,
-          u.age,
-          u.sex,
-          s.courses_enrolled,
-          s.courses_completed,
-          s.total_hours,
-          s.status,
-          s.join_date,
-          s.last_active
-        FROM students s
-        JOIN users u ON s.user_id = u.id
-        WHERE u.role = 'student'
-          AND (u.full_name ILIKE ${`%${search}%`} OR u.email ILIKE ${`%${search}%`})
-        ORDER BY s.roll_number ASC
-      `
-    } else if (status !== "all") {
-      students = await sql`
-        SELECT 
-          s.roll_number,
-          s.id_number,
-          u.full_name,
-          u.email,
-          u.phone,
-          u.age,
-          u.sex,
-          s.courses_enrolled,
-          s.courses_completed,
-          s.total_hours,
-          s.status,
-          s.join_date,
-          s.last_active
-        FROM students s
-        JOIN users u ON s.user_id = u.id
-        WHERE u.role = 'student'
-          AND s.status = ${status}
-        ORDER BY s.roll_number ASC
-      `
-    } else if (gender !== "all") {
-      students = await sql`
-        SELECT 
-          s.roll_number,
-          s.id_number,
-          u.full_name,
-          u.email,
-          u.phone,
-          u.age,
-          u.sex,
-          s.courses_enrolled,
-          s.courses_completed,
-          s.total_hours,
-          s.status,
-          s.join_date,
-          s.last_active
-        FROM students s
-        JOIN users u ON s.user_id = u.id
-        WHERE u.role = 'student'
-          AND u.sex = ${gender}
-        ORDER BY s.roll_number ASC
-      `
-    } else {
-      students = await sql`
-        SELECT 
-          s.roll_number,
-          s.id_number,
-          u.full_name,
-          u.email,
-          u.phone,
-          u.age,
-          u.sex,
-          s.courses_enrolled,
-          s.courses_completed,
-          s.total_hours,
-          s.status,
-          s.join_date,
-          s.last_active
-        FROM students s
-        JOIN users u ON s.user_id = u.id
-        WHERE u.role = 'student'
-        ORDER BY s.roll_number ASC
+    if (search) {
+      query = sql`
+        ${query}
+        AND (u.full_name ILIKE ${`%${search}%`} OR u.email ILIKE ${`%${search}%`})
       `
     }
+    if (status !== "all") {
+      query = sql`
+        ${query}
+        AND s.status = ${status}
+      `
+    }
+    if (gender !== "all") {
+      query = sql`
+        ${query}
+        AND u.sex = ${gender}
+      `
+    }
+
+    query = sql`
+      ${query}
+      GROUP BY s.id, s.roll_number, s.id_number, u.full_name, u.email, u.phone, u.age, u.sex, s.join_date, s.last_active, s.status
+      ORDER BY s.roll_number ASC
+    `
+
+    const students = await query
 
     // Generate CSV content
     const csvHeaders = [
@@ -231,7 +93,7 @@ export async function GET(request: NextRequest) {
       student.last_active ? new Date(student.last_active).toLocaleDateString() : "",
     ])
 
-    const csvContent = [csvHeaders, ...csvRows].map((row) => row.map((field) => `"${field}"`).join(",")).join("\n")
+    const csvContent = [csvHeaders, ...csvRows].map((row) => row.map((field: any) => `"${field}"`).join(",")).join("\n")
 
     return new NextResponse(csvContent, {
       headers: {

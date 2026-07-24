@@ -240,6 +240,7 @@ import {
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast"; // Added for consistency with CoursesPage
+import Image from "next/image";
 
 // --- Types (Copied from app/courses/page.tsx and extended for featured) ---
 
@@ -297,9 +298,12 @@ function CourseCard({ course, onEnrollClick }: CourseCardProps) {
       {/* Image and Badges */}
 
       <div className="relative h-72 w-full overflow-hidden">
-        <img
-          src={course.image_url || "/placeholder.svg?height=200&width=300"}
+        <Image
+          src={course.image_url || "/placeholder.svg"}
           alt={course.title}
+          width={400}
+          height={300}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
         {hasDiscount && (

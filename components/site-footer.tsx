@@ -60,7 +60,7 @@ export function SiteFooter() {
                 <Youtube className="w-5 h-5" />
               </Link>
               <Link
-                href="https://vm.tiktok.com/ZMSTy5jY2/"
+                href="https://www.tiktok.com/@brushedbybetty2?_r=1&_t=ZS-97rygqPYY8F"
                 className="text-custom-tan hover:text-white transition-colors"
               >
                 <TikTokIcon />

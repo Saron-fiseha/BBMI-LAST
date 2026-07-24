@@ -10,284 +10,114 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search")?.trim() || ""
     const status = searchParams.get("status") || "all"
     const gender = searchParams.get("gender") || "all"
+    const page = Number.parseInt(searchParams.get("page") || "1")
+    const limit = Number.parseInt(searchParams.get("limit") || "10")
+    const offset = (page - 1) * limit
 
-    console.log("🔍 Fetching students with filters:", { search, status, gender })
+    console.log("🔍 Fetching students with filters:", { search, status, gender, page, limit })
 
     // Ensure all student users have corresponding student records
     await ensureStudentRecords()
 
-    let students
-
-    // Build query based on filters - fetch from both tables with JOIN
-    if (search && status !== "all" && gender !== "all") {
-     students = await sql`
-  SELECT 
-    s.id::text,
-    s.roll_number,
-    s.id_number,
-    u.full_name,
-    u.email,
-    COALESCE(u.phone, '') as phone,
-    COALESCE(u.age, 0) as age,
-    COALESCE(u.sex, '') as gender,
-    u.role,
-  COUNT(DISTINCT e.training_id) AS courses_enrolled,
-COUNT(mp.id) FILTER (WHERE mp.status = 'completed') AS courses_completed,
-COALESCE(SUM(mp.time_spent_minutes), 0) AS total_minutes,
-CASE 
- WHEN COUNT(DISTINCT e.training_id) > 0
- THEN ROUND( (COUNT(DISTINCT mp.training_id) FILTER (WHERE mp.status = 'completed')::decimal 
-                 / COUNT(DISTINCT e.training_id)) * 100, 2 )
-    ELSE 0
-END AS progress_percent,
-    s.join_date,
-    s.last_active,
-    s.status
-  FROM students s
-  JOIN users u ON s.user_id = u.id
-  LEFT JOIN enrollments e ON s.id = e.user_id          -- from enrollments
-  LEFT JOIN module_progress mp ON s.id = mp.user_id  -- join with progress
-  WHERE u.role = 'student'
-  GROUP BY s.id, s.roll_number, s.id_number, u.full_name, u.email, u.phone, u.age, u.sex, u.role, s.join_date, s.last_active, s.status
-  ORDER BY s.roll_number ASC
-`
-
-    } else if (search && status !== "all") {
-      students = await sql`
-  SELECT 
-    s.id::text,
-    s.roll_number,
-    s.id_number,
-    u.full_name,
-    u.email,
-    COALESCE(u.phone, '') as phone,
-    COALESCE(u.age, 0) as age,
-    COALESCE(u.sex, '') as gender,
-    u.role,
-  COUNT(DISTINCT e.training_id) AS courses_enrolled,
-COUNT(mp.id) FILTER (WHERE mp.status = 'completed') AS courses_completed,
-COALESCE(SUM(mp.time_spent_minutes), 0) AS total_minutes,
-CASE 
- WHEN COUNT(DISTINCT e.training_id) > 0
- THEN ROUND( (COUNT(DISTINCT mp.training_id) FILTER (WHERE mp.status = 'completed')::decimal 
-                 / COUNT(DISTINCT e.training_id)) * 100, 2 )
-    ELSE 0
-END AS progress_percent,
-    s.join_date,
-    s.last_active,
-    s.status
-  FROM students s
-  JOIN users u ON s.user_id = u.id
-  LEFT JOIN enrollments e ON s.id = e.user_id          -- from enrollments
-  LEFT JOIN module_progress mp ON s.id = mp.user_id  -- join with progress
-  WHERE u.role = 'student'
-  GROUP BY s.id, s.roll_number, s.id_number, u.full_name, u.email, u.phone, u.age, u.sex, u.role, s.join_date, s.last_active, s.status
-  ORDER BY s.roll_number ASC
-`
-
-    } else if (search && gender !== "all") {
-      students = await sql`
-  SELECT 
-    s.id::text,
-    s.roll_number,
-    s.id_number,
-    u.full_name,
-    u.email,
-    COALESCE(u.phone, '') as phone,
-    COALESCE(u.age, 0) as age,
-    COALESCE(u.sex, '') as gender,
-    u.role,
-  COUNT(DISTINCT e.training_id) AS courses_enrolled,
-COUNT(mp.id) FILTER (WHERE mp.status = 'completed') AS courses_completed,
-COALESCE(SUM(mp.time_spent_minutes), 0) AS total_minutes,
-CASE 
- WHEN COUNT(DISTINCT e.training_id) > 0
- THEN ROUND( (COUNT(DISTINCT mp.training_id) FILTER (WHERE mp.status = 'completed')::decimal 
-                 / COUNT(DISTINCT e.training_id)) * 100, 2 )
-    ELSE 0
-END AS progress_percent,
-    s.join_date,
-    s.last_active,
-    s.status
-  FROM students s
-  JOIN users u ON s.user_id = u.id
-  LEFT JOIN enrollments e ON s.id = e.user_id          -- from enrollments
-  LEFT JOIN module_progress mp ON s.id = mp.user_id  -- join with progress
-  WHERE u.role = 'student'
-  GROUP BY s.id, s.roll_number, s.id_number, u.full_name, u.email, u.phone, u.age, u.sex, u.role, s.join_date, s.last_active, s.status
-  ORDER BY s.roll_number ASC
-`
-
-    } else if (status !== "all" && gender !== "all") {
-     students = await sql`
-  SELECT 
-    s.id::text,
-    s.roll_number,
-    s.id_number,
-    u.full_name,
-    u.email,
-    COALESCE(u.phone, '') as phone,
-    COALESCE(u.age, 0) as age,
-    COALESCE(u.sex, '') as gender,
-    u.role,
-  COUNT(DISTINCT e.training_id) AS courses_enrolled,
-COUNT(mp.id) FILTER (WHERE mp.status = 'completed') AS courses_completed,
-COALESCE(SUM(mp.time_spent_minutes), 0) AS total_minutes,
-CASE 
- WHEN COUNT(DISTINCT e.training_id) > 0
- THEN ROUND( (COUNT(DISTINCT mp.training_id) FILTER (WHERE mp.status = 'completed')::decimal 
-                 / COUNT(DISTINCT e.training_id)) * 100, 2 )
-    ELSE 0
-END AS progress_percent,
-    s.join_date,
-    s.last_active,
-    s.status
-  FROM students s
-  JOIN users u ON s.user_id = u.id
-  LEFT JOIN enrollments e ON s.id = e.user_id          -- from enrollments
-  LEFT JOIN module_progress mp ON s.id = mp.user_id  -- join with progress
-  WHERE u.role = 'student'
-  GROUP BY s.id, s.roll_number, s.id_number, u.full_name, u.email, u.phone, u.age, u.sex, u.role, s.join_date, s.last_active, s.status
-  ORDER BY s.roll_number ASC
-`
-
-    } else if (search) {
-    students = await sql`
-  SELECT 
-    s.id::text,
-    s.roll_number,
-    s.id_number,
-    u.full_name,
-    u.email,
-    COALESCE(u.phone, '') as phone,
-    COALESCE(u.age, 0) as age,
-    COALESCE(u.sex, '') as gender,
-    u.role,
-  COUNT(DISTINCT e.training_id) AS courses_enrolled,
-COUNT(mp.id) FILTER (WHERE mp.status = 'completed') AS courses_completed,
-COALESCE(SUM(mp.time_spent_minutes), 0) AS total_minutes,
-CASE 
- WHEN COUNT(DISTINCT e.training_id) > 0
- THEN ROUND( (COUNT(DISTINCT mp.training_id) FILTER (WHERE mp.status = 'completed')::decimal 
-                 / COUNT(DISTINCT e.training_id)) * 100, 2 )
-    ELSE 0
-END AS progress_percent,
-    s.join_date,
-    s.last_active,
-    s.status
-  FROM students s
-  JOIN users u ON s.user_id = u.id
-  LEFT JOIN enrollments e ON s.id = e.user_id          -- from enrollments
-  LEFT JOIN module_progress mp ON s.id = mp.user_id  -- join with progress
-  WHERE u.role = 'student'
-  GROUP BY s.id, s.roll_number, s.id_number, u.full_name, u.email, u.phone, u.age, u.sex, u.role, s.join_date, s.last_active, s.status
-  ORDER BY s.roll_number ASC
-`
-    } else if (status !== "all") {
-    students = await sql`
-  SELECT 
-    s.id::text,
-    s.roll_number,
-    s.id_number,
-    u.full_name,
-    u.email,
-    COALESCE(u.phone, '') as phone,
-    COALESCE(u.age, 0) as age,
-    COALESCE(u.sex, '') as gender,
-    u.role,
-  COUNT(DISTINCT e.training_id) AS courses_enrolled,
-COUNT(mp.id) FILTER (WHERE mp.status = 'completed') AS courses_completed,
-COALESCE(SUM(mp.time_spent_minutes), 0) AS total_minutes,
-CASE 
- WHEN COUNT(DISTINCT e.training_id) > 0
- THEN ROUND( (COUNT(DISTINCT mp.training_id) FILTER (WHERE mp.status = 'completed')::decimal 
-                 / COUNT(DISTINCT e.training_id)) * 100, 2 )
-    ELSE 0
-END AS progress_percent,
-    s.join_date,
-    s.last_active,
-    s.status
-  FROM students s
-  JOIN users u ON s.user_id = u.id
-  LEFT JOIN enrollments e ON s.id = e.user_id          -- from enrollments
-  LEFT JOIN module_progress mp ON s.id = mp.user_id  -- join with progress
-  WHERE u.role = 'student'
-  GROUP BY s.id, s.roll_number, s.id_number, u.full_name, u.email, u.phone, u.age, u.sex, u.role, s.join_date, s.last_active, s.status
-  ORDER BY s.roll_number ASC
-`
-
-    } else if (gender !== "all") {
-    students = await sql`
-  SELECT 
-    s.id::text,
-    s.roll_number,
-    s.id_number,
-    u.full_name,
-    u.email,
-    COALESCE(u.phone, '') as phone,
-    COALESCE(u.age, 0) as age,
-    COALESCE(u.sex, '') as gender,
-    u.role,
-  COUNT(DISTINCT e.training_id) AS courses_enrolled,
-COUNT(mp.id) FILTER (WHERE mp.status = 'completed') AS courses_completed,
-COALESCE(SUM(mp.time_spent_minutes), 0) AS total_minutes,
-CASE 
- WHEN COUNT(DISTINCT e.training_id) > 0
- THEN ROUND( (COUNT(DISTINCT mp.training_id) FILTER (WHERE mp.status = 'completed')::decimal 
-                 / COUNT(DISTINCT e.training_id)) * 100, 2 )
-    ELSE 0
-END AS progress_percent,
-    s.join_date,
-    s.last_active,
-    s.status
-  FROM students s
-  JOIN users u ON s.user_id = u.id
-  LEFT JOIN enrollments e ON s.id = e.user_id          -- from enrollments
-  LEFT JOIN module_progress mp ON s.id = mp.user_id  -- join with progress
-  WHERE u.role = 'student'
-  GROUP BY s.id, s.roll_number, s.id_number, u.full_name, u.email, u.phone, u.age, u.sex, u.role, s.join_date, s.last_active, s.status
-  ORDER BY s.roll_number ASC
-`
-    } else {
-      // No filters - get all students
-    students = await sql`
-  SELECT 
-    s.id::text,
-    s.roll_number,
-    s.id_number,
-    u.full_name,
-    u.email,
-    COALESCE(u.phone, '') as phone,
-    COALESCE(u.age, 0) as age,
-    COALESCE(u.sex, '') as gender,
-    u.role,
-  COUNT(DISTINCT e.training_id) AS courses_enrolled,
-COUNT(mp.id) FILTER (WHERE mp.status = 'completed') AS courses_completed,
-COALESCE(SUM(mp.time_spent_minutes), 0) AS total_minutes,
-CASE 
- WHEN COUNT(DISTINCT e.training_id) > 0
- THEN ROUND( (COUNT(DISTINCT mp.training_id) FILTER (WHERE mp.status = 'completed')::decimal 
-                 / COUNT(DISTINCT e.training_id)) * 100, 2 )
-    ELSE 0
-END AS progress_percent,
-    s.join_date,
-    s.last_active,
-    s.status
-  FROM students s
-  JOIN users u ON s.user_id = u.id
-  LEFT JOIN enrollments e ON s.id = e.user_id          -- from enrollments
-  LEFT JOIN module_progress mp ON s.id = mp.user_id  -- join with progress
-  WHERE u.role = 'student'
-  GROUP BY s.id, s.roll_number, s.id_number, u.full_name, u.email, u.phone, u.age, u.sex, u.role, s.join_date, s.last_active, s.status
-  ORDER BY s.roll_number ASC
-`
+    // 1. Total Count Query
+    let totalCountQuery = sql`
+      SELECT COUNT(DISTINCT s.id) as total
+      FROM students s
+      JOIN users u ON s.user_id = u.id
+      WHERE u.role = 'student'
+    `
+    if (search) {
+      totalCountQuery = sql`
+        ${totalCountQuery}
+        AND (u.full_name ILIKE ${`%${search}%`} OR u.email ILIKE ${`%${search}%`})
+      `
+    }
+    if (status !== "all") {
+      totalCountQuery = sql`
+        ${totalCountQuery}
+        AND s.status = ${status}
+      `
+    }
+    if (gender !== "all") {
+      totalCountQuery = sql`
+        ${totalCountQuery}
+        AND u.sex = ${gender}
+      `
     }
 
-    console.log("✅ Successfully fetched", students.length, "students")
+    const totalResult = await totalCountQuery
+    const total = Number.parseInt(totalResult[0]?.total || "0", 10)
+    const totalPages = Math.ceil(total / limit) || 1
+
+    // 2. Main Data Query
+    let mainQuery = sql`
+      SELECT 
+        s.id::text,
+        s.roll_number,
+        s.id_number,
+        u.full_name,
+        u.full_name as name,
+        u.email,
+        COALESCE(u.phone, '') as phone,
+        COALESCE(u.age, 0) as age,
+        COALESCE(u.sex, '') as gender,
+        u.role,
+        COUNT(DISTINCT e.training_id) AS courses_enrolled,
+        COUNT(DISTINCT e.training_id) FILTER (WHERE e.status = 'completed') AS courses_completed,
+        ROUND(COALESCE(SUM(mp.time_spent_minutes), 0)::numeric / 60.0, 1) AS total_hours,
+        COALESCE(AVG(e.progress_percentage), 0) AS progress_percent,
+        s.join_date,
+        s.last_active,
+        s.status
+      FROM students s
+      JOIN users u ON s.user_id = u.id
+      LEFT JOIN enrollments e ON u.id = e.user_id
+      LEFT JOIN module_progress mp ON u.id = mp.user_id
+      WHERE u.role = 'student'
+    `
+
+    if (search) {
+      mainQuery = sql`
+        ${mainQuery}
+        AND (u.full_name ILIKE ${`%${search}%`} OR u.email ILIKE ${`%${search}%`})
+      `
+    }
+    if (status !== "all") {
+      mainQuery = sql`
+        ${mainQuery}
+        AND s.status = ${status}
+      `
+    }
+    if (gender !== "all") {
+      mainQuery = sql`
+        ${mainQuery}
+        AND u.sex = ${gender}
+      `
+    }
+
+    mainQuery = sql`
+      ${mainQuery}
+      GROUP BY s.id, s.roll_number, s.id_number, u.full_name, u.email, u.phone, u.age, u.sex, u.role, s.join_date, s.last_active, s.status
+      ORDER BY s.roll_number ASC
+      LIMIT ${limit}
+      OFFSET ${offset}
+    `
+
+    const students = await mainQuery
+
+    console.log("✅ Successfully fetched", students.length, "students of total", total)
 
     return NextResponse.json({
       success: true,
       students: students || [],
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
     })
   } catch (error) {
     console.error("❌ Students fetch error:", error)

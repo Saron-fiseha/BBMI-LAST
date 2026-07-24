@@ -96,7 +96,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <DashboardSidebar
         open={sidebarOpen}
         onOpenChange={setSidebarOpen}
-        className="fixed inset-y-0 left-0 z-40 w-64 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:flex-shrink-0"
+        className="fixed inset-y-0 left-0 z-40 w-64 transform transition-transform duration-200 ease-in-out lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:flex-shrink-0 lg:overflow-y-auto"
       />
 
       {/* Main Content Area */}

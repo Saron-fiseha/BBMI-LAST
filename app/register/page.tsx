@@ -43,6 +43,14 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [emailError, setEmailError] = useState("");
+
+  // Password validation states
+  const isLengthValid = formData.password.length >= 8;
+  const hasLetter = /[a-zA-Z]/.test(formData.password);
+  const hasNumber = /[0-9]/.test(formData.password);
+  const hasSpecial = /[^a-zA-Z0-9]/.test(formData.password);
+  const isPasswordValid = isLengthValid && hasLetter && hasNumber && hasSpecial;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,8 +64,8 @@ export default function RegisterPage() {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long");
+    if (!isPasswordValid) {
+      setError("Please ensure your password meets all complexity requirements.");
       setLoading(false);
       return;
     }
@@ -68,13 +76,19 @@ export default function RegisterPage() {
     });
 
     if (!result.success) {
-      setError(result.message || "Registration failed");
+      if (result.message?.toLowerCase().includes("email already exists")) {
+        setEmailError("This email is already registered. Please log in.");
+      } else {
+        setError(result.message || "Registration failed");
+      }
     }
 
     setLoading(false);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.name === "email") setEmailError("");
+    setError("");
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -123,7 +137,7 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
+                <Label htmlFor="email" className={emailError ? "text-destructive" : ""}>Email *</Label>
                 <Input
                   id="email"
                   name="email"
@@ -132,7 +146,9 @@ export default function RegisterPage() {
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  className={emailError ? "border-destructive focus-visible:ring-destructive" : ""}
                 />
+                {emailError && <p className="text-sm font-medium text-destructive">{emailError}</p>}
               </div>
 
               <div className="space-y-2">
@@ -200,12 +216,29 @@ export default function RegisterPage() {
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
                     ) : (
-                      <Eye className="h-4 w-4" />
+                      <Eye className="h-4 w-4 text-muted-foreground" />
                     )}
                   </Button>
                 </div>
+                {/* Password Strength Indicators */}
+                {formData.password.length > 0 && (
+                  <div className="text-xs space-y-1 mt-2">
+                    <p className={isLengthValid ? "text-green-600" : "text-muted-foreground"}>
+                      {isLengthValid ? "✓" : "○"} At least 8 characters
+                    </p>
+                    <p className={hasLetter ? "text-green-600" : "text-muted-foreground"}>
+                      {hasLetter ? "✓" : "○"} Contains a letter
+                    </p>
+                    <p className={hasNumber ? "text-green-600" : "text-muted-foreground"}>
+                      {hasNumber ? "✓" : "○"} Contains a number
+                    </p>
+                    <p className={hasSpecial ? "text-green-600" : "text-muted-foreground"}>
+                      {hasSpecial ? "✓" : "○"} Contains a special character
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
