@@ -27,7 +27,9 @@ export async function GET() {
         t.created_at,
         t.updated_at,
         -- Fetch the instructor's name from the instructors table ---
-        i.full_name AS instructor_name
+        i.full_name AS instructor_name,
+        TRUE AS provides_certification,
+        TRUE AS one_year_access
       FROM trainings t -- Using the correct table name here
       LEFT JOIN instructors i ON t.instructor_id = i.user_id
       LEFT JOIN categories c ON t.category_id = c.id

@@ -192,221 +192,374 @@ return `
 <head>
   <meta charset="UTF-8">
   <title>BBMI Certificate</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
   <style>
     @page {
       size: A4 landscape;
       margin: 0;
     }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
     body {
       margin: 0;
       padding: 0;
-      font-family: 'Georgia', serif;
-      background: radial-gradient(circle at center, #ffffff 0%, #f4f4f4 100%);
+      background: #111;
       display: flex;
       align-items: center;
       justify-content: center;
+      width: 1123px;
+      height: 794px;
+      overflow: hidden;
     }
-
-    /* A4 landscape exact size (px at 96dpi) */
+    @media print {
+      html, body {
+        width: 1123px;
+        height: 794px;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #111 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .certificate {
+        width: 1123px !important;
+        height: 794px !important;
+        background: radial-gradient(ellipse at 50% 30%, #2a2a2a 0%, #141414 60%, #0d0d0d 100%) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    }
+ 
     .certificate {
       width: 1123px;
       height: 794px;
-      background: #f7ebd5;
-      border: 12px double #B8860B;
-      border-radius: 12px;
-      padding: 40px;
+      background: radial-gradient(ellipse at 50% 30%, #2a2a2a 0%, #141414 60%, #0d0d0d 100%);
       position: relative;
-      box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
-      box-sizing: border-box;
-    }
-
-    .certificate::before,
-    .certificate::after {
-      content: "";
-      position: absolute;
-      width: 60px;
-      height: 60px;
-      border: 5px solid #B8860B;
-    }
-    .certificate::before {
-      top: 20px;
-      left: 20px;
-      border-right: none;
-      border-bottom: none;
-    }
-    .certificate::after {
-      bottom: 20px;
-      right: 20px;
-      border-left: none;
-      border-top: none;
-    }
-
-    .certificate-header {
+      overflow: hidden;
       display: flex;
       align-items: center;
-      justify-content: flex-start;
-      margin-bottom: 20px;
-      padding-left: 20px;
+      justify-content: center;
+      flex-shrink: 0;
     }
-
-    .logo {
-      max-width: 80px;
-      margin-right: 12px;
-    }
-
-    .logo img {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    .institute-name {
-      font-size: 20px;
-      color: #2D2D2D;
-      font-weight: bold;
-      letter-spacing: 1px;
-    }
-
-    .title {
+ 
+    /* ── Corners ── */
+    .corner { position: absolute; pointer-events: none; }
+    .corner-tl { top: 0; left: 0; width: 210px; }
+    .corner-tr { top: 0; right: 0; width: 210px; }
+    .corner-bl { bottom: 0; left: 0; width: 170px; }
+    .corner-br { bottom: 0; right: 0; width: 170px; }
+ 
+    /* ── Content ── */
+    .cert-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
-      margin: 70px 0 10px 0;
+      width: 68%;
     }
-    .title h1 {
-      font-size: 48px;
-      color: #2D5490;
-      margin: 0;
-      font-weight: bold;
-      letter-spacing: 5px;
+ 
+    /* Logo */
+    .logo-box {
+      background: #2a2118;
+      border: 2px solid #c8a846;
+      border-radius: 4px;
+      width: 76px;
+      height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 5px;
+      flex-shrink: 0;
     }
-    .title h2 {
-      font-size: 20px;
-      color: #555;
-      margin: 5px 0 0 0;
-      font-weight: normal;
-      letter-spacing: 3px;
+    .logo-box img {
+      width: 62px;
+      height: 62px;
+      object-fit: contain;
     }
-
-    .presented-to {
-      text-align: center;
-      font-size: 16px;
-      color: #333;
-      margin: 20px 0 5px 0;
-      letter-spacing: 2px;
+    .logo-ring {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 2px solid #c8a846;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
     }
-
-    .recipient-name {
-      display: inline-block;
-      text-align: center;
-      font-size: 36px;
-      color: #B8860B;
-      font-style: italic;
-      font-weight: bold;
-      margin: 10px auto 20px auto;
-      padding-bottom: 6px;
-      border-bottom: 3px solid #B8860B;
-    }
-    .recipient-wrapper {
-      text-align: center;
-    }
-
-    .description {
-      text-align: center;
+    .logo-fallback-flame { font-size: 11px; color: #d4af37; }
+    .logo-fallback-text {
+      font-family: 'Cinzel', serif;
       font-size: 14px;
-      color: #444;
-      line-height: 1.6;
-      margin: 20px auto;
-      max-width: 700px;
+      font-weight: 700;
+      color: #d4af37;
+      letter-spacing: 2px;
+      line-height: 1;
     }
-
+    .institute-label {
+      font-family: 'Cinzel', serif;
+      font-size: 8.5px;
+      letter-spacing: 3px;
+      color: #d4af37;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+ 
+    .cert-heading {
+      font-family: 'Cinzel', serif;
+      font-size: 38px;
+      font-weight: 700;
+      color: #d4af37;
+      letter-spacing: 10px;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+    .cert-subheading {
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: #b89030;
+      letter-spacing: 6px;
+      margin-bottom: 9px;
+      text-transform: uppercase;
+    }
+ 
+    .divider {
+      width: 80%;
+      height: 1px;
+      background: linear-gradient(to right, transparent, #c8a846, transparent);
+      margin-bottom: 8px;
+    }
+ 
+    .presented-to {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: #aaa;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+ 
+    .recipient-name {
+      font-family: 'EB Garamond', serif;
+      font-size: 30px;
+      font-style: italic;
+      color: #f5e07a;
+      font-weight: 500;
+      margin-bottom: 7px;
+      border-bottom: 1px solid #888;
+      padding-bottom: 5px;
+      min-width: 280px;
+    }
+ 
+    .description {
+      font-family: 'EB Garamond', serif;
+      font-size: 13px;
+      color: #e0e0e0;
+      line-height: 1.6;
+      max-width: 92%;
+      margin-bottom: 12px;
+    }
+ 
+    .bottom-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 2px;
+    }
+ 
+    .cert-details {
+      font-family: 'EB Garamond', serif;
+      font-size: 11px;
+      color: #999;
+      font-style: italic;
+      text-align: left;
+      line-height: 1.6;
+    }
+    .cert-details b { color: #d4af37; font-style: normal; }
+ 
     .signature-section {
-      text-align: center;
-      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     .signature-line {
-      width: 200px;
-      height: 2px;
-      background: #333;
-      margin: 0 auto 10px auto;
+      width: 150px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, #888, transparent);
+      margin-bottom: 5px;
     }
     .signature-name {
-      font-size: 16px;
+      font-family: 'EB Garamond', serif;
+      font-size: 13px;
       font-style: italic;
-      color: #333;
+      color: #f0f0f0;
     }
     .signature-title {
-      font-size: 14px;
-      font-weight: bold;
-      color: #2D5490;
+      font-family: 'Cinzel', serif;
+      font-size: 9px;
+      color: #d4af37;
+      letter-spacing: 2px;
     }
     .signature-company {
-      font-size: 12px;
-      color: #666;
+      font-family: 'EB Garamond', serif;
+      font-size: 10px;
+      color: #aaa;
     }
-
-    .certificate-details {
-      position: absolute;
-      bottom: 20px;
-      left: 40px;
-      right: 40px;
+ 
+    .seal-block {
       display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      color: #555;
-      font-style: italic;
+      flex-direction: column;
+      align-items: center;
     }
+    .seal-svg { width: 72px; }
+    .verify-text {
+      font-family: 'EB Garamond', serif;
+      font-size: 10px;
+      font-style: italic;
+      color: #aaa;
+      margin-top: 2px;
+      text-align: center;
+    }
+    .verify-text b { color: #d4af37; font-style: normal; }
   </style>
 </head>
 <body>
-  <div class="certificate">
-    <div class="certificate-header">
-      <div class="logo">
-        <img src="/logo.png" alt="BBMI Logo">
-      </div>
-      <div class="institute-name">
-        <div>BRUSHED BY</div>
-        <div>BETTY MAKEUP</div>
-        <div>INSTITUTE</div>
+<div class="certificate">
+ 
+  <!-- Top-left corner -->
+  <svg class="corner corner-tl" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,0 L180,0 Q220,0 220,40 L220,60 Q180,20 120,20 L0,20 Z" fill="#b8952a" opacity="0.9"/>
+    <path d="M0,0 L160,0 Q200,0 200,40 L200,55 Q165,18 105,18 L0,18 Z" fill="#d4af37" opacity="0.7"/>
+    <path d="M0,0 L0,180 Q0,220 40,220 L60,220 Q20,180 20,120 L20,0 Z" fill="#b8952a" opacity="0.9"/>
+    <path d="M0,0 L0,160 Q0,200 40,200 L55,200 Q18,165 18,105 L18,0 Z" fill="#d4af37" opacity="0.7"/>
+    <circle cx="195" cy="195" r="30" stroke="#c8a846" stroke-width="1" fill="none" opacity="0.4"/>
+    <circle cx="195" cy="195" r="20" stroke="#c8a846" stroke-width="0.5" fill="none" opacity="0.3"/>
+  </svg>
+ 
+  <!-- Top-right corner -->
+  <svg class="corner corner-tr" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M220,0 L40,0 Q0,0 0,40 L0,60 Q40,20 100,20 L220,20 Z" fill="#b8952a" opacity="0.9"/>
+    <path d="M220,0 L60,0 Q20,0 20,40 L20,55 Q55,18 115,18 L220,18 Z" fill="#d4af37" opacity="0.7"/>
+    <path d="M220,0 L220,180 Q220,220 180,220 L160,220 Q200,180 200,120 L200,0 Z" fill="#b8952a" opacity="0.9"/>
+    <path d="M220,0 L220,160 Q220,200 180,200 L165,200 Q202,165 202,105 L202,0 Z" fill="#d4af37" opacity="0.7"/>
+    <rect x="30" y="30" width="80" height="80" rx="4" stroke="#c8a846" stroke-width="0.8" fill="none" opacity="0.5"/>
+    <rect x="40" y="40" width="60" height="60" rx="4" stroke="#c8a846" stroke-width="0.5" fill="none" opacity="0.3"/>
+  </svg>
+ 
+  <!-- Bottom-left corner -->
+  <svg class="corner corner-bl" viewBox="0 0 180 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,130 L160,130 Q180,130 180,110 L180,96 Q158,118 110,118 L0,118 Z" fill="#b8952a" opacity="0.9"/>
+    <path d="M0,130 L0,20 Q0,0 20,0 L34,0 Q12,22 12,70 L12,130 Z" fill="#b8952a" opacity="0.9"/>
+  </svg>
+ 
+  <!-- Bottom-right corner -->
+  <svg class="corner corner-br" viewBox="0 0 180 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M180,130 L20,130 Q0,130 0,110 L0,96 Q22,118 70,118 L180,118 Z" fill="#b8952a" opacity="0.9"/>
+    <path d="M180,130 L180,20 Q180,0 160,0 L146,0 Q168,22 168,70 L168,130 Z" fill="#b8952a" opacity="0.9"/>
+  </svg>
+ 
+  <!-- ── CONTENT ── -->
+  <div class="cert-content">
+ 
+    <div class="logo-box">
+      <img src="/logo.png" alt="BBMI Logo"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+      <div class="logo-ring" style="display:none;">
+        <div class="logo-fallback-flame">🔥</div>
+        <div class="logo-fallback-text">BBMI</div>
       </div>
     </div>
-    
-    <div class="title">
-      <h1>CERTIFICATE</h1>
-      <h2>OF COMPLETION</h2>
-    </div>
-    
+    <div class="institute-label">Makeup Institute</div>
+ 
+    <div class="cert-heading">CERTIFICATE</div>
+    <div class="cert-subheading">Of Completion</div>
+ 
+    <div class="divider"></div>
+ 
     <div class="presented-to">This Certificate is Proudly Presented To</div>
-    <div class="recipient-wrapper">
-      <div class="recipient-name">${data.userName}</div>
-    </div>
-    
+ 
+    <div class="recipient-name">${data.userName}</div>
+ 
     <div class="description">
-      In recognition of successfully completing the <b>${data.trainingTitle}</b> Course,<br> 
+      In recognition of successfully completing the <b style="color:#f5e07a;">${data.trainingTitle}</b> Course,<br>
       demonstrating mastery of essential beauty techniques, client care, and creative application skills.<br>
       This certificate is awarded on ${data.completionDate} as a testament to ${data.userName}'s dedication,<br>
       artistry, and commitment to excellence in the field of professional makeup.
     </div>
-    
-    <div class="signature-section">
-      <div class="signature-line"></div>
-      <div class="signature-name">Ms Betelhem</div>
-      <div class="signature-title">CEO, BBMI</div>
-      <div class="signature-company">Brushed by Betty Makeup Institute</div>
-    </div>
-    
-    <div class="certificate-details">
-      <div>
-        Certificate No: ${data.certificateNumber}<br>
-        Verification Code: ${data.verificationCode}
+ 
+    <div class="bottom-row">
+ 
+      <div class="cert-details">
+        Certificate No: <b>${data.certificateNumber}</b><br>
+        Verification Code: <b>${data.verificationCode}</b>
       </div>
-      <div>
-        Verify at: <b>brushedbybetty.com</b><br>
-        Date: ${data.completionDate}
+ 
+      <div class="signature-section">
+        <div class="signature-line"></div>
+        <div class="signature-name">Ms Betelhem</div>
+        <div class="signature-title">CEO, BBMI</div>
+        <div class="signature-company">Brushed by Betty Makeup Institute</div>
       </div>
+ 
+      <div class="seal-block">
+        <svg class="seal-svg" viewBox="0 0 110 130" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="sg" cx="40%" cy="35%" r="60%">
+              <stop offset="0%" stop-color="#f5e07a"/>
+              <stop offset="40%" stop-color="#d4af37"/>
+              <stop offset="100%" stop-color="#8a6a00"/>
+            </radialGradient>
+            <radialGradient id="si" cx="40%" cy="35%" r="60%">
+              <stop offset="0%" stop-color="#ffe680"/>
+              <stop offset="60%" stop-color="#c8960c"/>
+              <stop offset="100%" stop-color="#7a5200"/>
+            </radialGradient>
+          </defs>
+          <g transform="translate(55,52)">
+            <polygon points="0,-44 4,-32 -4,-32" fill="url(#sg)"/>
+            <polygon points="0,-44 4,-32 -4,-32" fill="url(#sg)" transform="rotate(22.5)"/>
+            <polygon points="0,-44 4,-32 -4,-32" fill="url(#sg)" transform="rotate(45)"/>
+            <polygon points="0,-44 4,-32 -4,-32" fill="url(#sg)" transform="rotate(67.5)"/>
+            <polygon points="0,-44 4,-32 -4,-32" fill="url(#sg)" transform="rotate(90)"/>
+            <polygon points="0,-44 4,-32 -4,-32" fill="url(#sg)" transform="rotate(112.5)"/>
+            <polygon points="0,-44 4,-32 -4,-32" fill="url(#sg)" transform="rotate(135)"/>
+            <polygon points="0,-44 4,-32 -4,-32" fill="url(#sg)" transform="rotate(157.5)"/>
+            <polygon points="0,-44 4,-32 -4,-32" fill="url(#sg)" transform="rotate(180)"/>
+            <polygon points="0,-44 4,-32 -4,-32" fill="url(#sg)" transform="rotate(202.5)"/>
+            <polygon points="0,-44 4,-32 -4,-32" fill="url(#sg)" transform="rotate(225)"/>
+            <polygon points="0,-44 4,-32 -4,-32" fill="url(#sg)" transform="rotate(247.5)"/>
+            <polygon points="0,-44 4,-32 -4,-32" fill="url(#sg)" transform="rotate(270)"/>
+            <polygon points="0,-44 4,-32 -4,-32" fill="url(#sg)" transform="rotate(292.5)"/>
+            <polygon points="0,-44 4,-32 -4,-32" fill="url(#sg)" transform="rotate(315)"/>
+            <polygon points="0,-44 4,-32 -4,-32" fill="url(#sg)" transform="rotate(337.5)"/>
+            <circle r="36" fill="url(#sg)"/>
+            <circle r="30" fill="url(#si)"/>
+            <circle r="26" fill="none" stroke="#f0d060" stroke-width="0.8" opacity="0.6"/>
+            <circle r="22" fill="none" stroke="#f0d060" stroke-width="0.5" opacity="0.4"/>
+          </g>
+          <polygon points="30,104 44,88 44,130 30,118" fill="#b8952a"/>
+          <polygon points="44,88 44,130 55,130 55,88" fill="#d4af37"/>
+          <polygon points="80,104 66,88 66,130 80,118" fill="#b8952a"/>
+          <polygon points="66,88 66,130 55,130 55,88" fill="#c8a028"/>
+        </svg>
+        <div class="verify-text">Verify at: <b>brushedbybetty.com</b><br>${data.completionDate}</div>
+      </div>
+ 
     </div>
   </div>
+ 
+</div>
 </body>
 </html>
-
-
 `
  }

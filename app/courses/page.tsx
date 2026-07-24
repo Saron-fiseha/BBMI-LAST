@@ -217,22 +217,30 @@ export default function CoursesPage() {
         // IMPORTANT: Your backend API MUST return `category_name` within each course object.
         // If your API currently doesn't, you will need to update your backend or fetch
         // categories separately and map them here.
-        const processedCourses = fetchedCourses.map((course, index) => ({
-          ...course,
-          // Fallback if API doesn't provide category_name, for development only.
-          // In production, `course.category_name` should be guaranteed by your API.
-          category_name:
-            course.category_name || `Category ${course.category_id}`,
-          // Mocking provides_certification and one_year_access if not from API
-          provides_certification:
-            course.provides_certification !== undefined
-              ? course.provides_certification
-              : index % 2 === 0,
-          one_year_access:
-            course.one_year_access !== undefined
-              ? course.one_year_access
-              : true,
-        }));
+        // const processedCourses = fetchedCourses.map((course, index) => ({
+        //   ...course,
+        //   // Fallback if API doesn't provide category_name, for development only.
+        //   // In production, `course.category_name` should be guaranteed by your API.
+        //   category_name:
+        //     course.category_name || `Category ${course.category_id}`,
+        //   // Mocking provides_certification and one_year_access if not from API
+        //   provides_certification:
+        //     course.provides_certification !== undefined
+        //       ? course.provides_certification
+        //       : index % 2 === 0,
+        //   one_year_access:
+        //     course.one_year_access !== undefined
+        //       ? course.one_year_access
+        //       : true,
+        // }));
+
+const processedCourses = fetchedCourses.map((course) => ({
+  ...course,
+  category_name: course.category_name || `Category ${course.category_id}`,
+  provides_certification: true,
+  one_year_access: true,
+}));
+
 
         setCourses(processedCourses);
 
