@@ -16,7 +16,7 @@ import {
   BookOpen,
   Users,
   Award,
-  Calendar,
+  // Calendar,
   PlayCircle,
   CheckCircle,
   ArrowRight,
@@ -374,7 +374,7 @@ export default function StudentDashboard() {
                     My Certificates
                   </Link>
                 </Button>
-                <Button
+                {/* <Button
                   variant="outline"
                   className="h-20 flex-col bg-transparent"
                   asChild
@@ -383,7 +383,7 @@ export default function StudentDashboard() {
                     <Calendar className="h-6 w-6 mb-2" />
                     Schedule
                   </Link>
-                </Button>
+                </Button> */}
                 {/* <Button
                   variant="outline"
                   className="h-20 flex-col bg-transparent"

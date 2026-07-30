@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   BookOpen,
-  Calendar,
+  // Calendar,
   CreditCard,
   FileText,
   Home,
@@ -29,11 +29,11 @@ const navigation = [
     href: "/dashboard/certificates",
     icon: FileText,
   },
-  {
-    name: "Calendar",
-    href: "/dashboard/calendar",
-    icon: Calendar,
-  },
+  // {
+  //   name: "Calendar",
+  //   href: "/dashboard/calendar",
+  //   icon: Calendar,
+  // },
   {
     name: "Messages",
     href: "/dashboard/messages",

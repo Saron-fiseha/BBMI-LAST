@@ -32,6 +32,7 @@ import {
   MailOpen,
   AlertCircle,
   Loader2,
+  ArrowLeft,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
@@ -88,6 +89,8 @@ export default function StudentMessagesPage() {
   const [newSubject, setNewSubject] = useState("");
   const [initialMessage, setInitialMessage] = useState("");
   const [startingConversation, setStartingConversation] = useState(false);
+  // Mobile: track which panel is visible — 'list' (conversations) or 'chat'
+  const [mobilePanel, setMobilePanel] = useState<"list" | "chat">("list");
 
   useEffect(() => {
     fetchConversations();
@@ -293,9 +296,18 @@ export default function StudentMessagesPage() {
         </Alert>
       )}
 
-      <div className="flex-1 overflow-hidden flex flex-col md:flex-row bg-white">
-          {/* Conversations Sidebar */}
-          <div className="flex flex-col overflow-hidden shadow-lg border-r border-gray-200 bg-white md:w-[280px] lg:w-[320px] shrink-0 h-full z-20">
+      <div className="flex-1 overflow-hidden flex bg-white">
+          {/* ── Conversations Sidebar ──────────────────────────────────────────
+              On mobile  : full-width, hidden when mobilePanel === 'chat'
+              On desktop : fixed 280-320px wide, always visible
+          ─────────────────────────────────────────────────────────────────── */}
+          <div
+            className={`
+              flex flex-col overflow-hidden shadow-lg border-r border-gray-200 bg-white shrink-0 z-20
+              ${mobilePanel === "chat" ? "hidden" : "flex"}
+              w-full md:flex md:w-[280px] lg:w-[320px] h-full
+            `}
+          >
             <div className="p-3 border-b bg-gray-50/50 flex items-center gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -333,6 +345,7 @@ export default function StudentMessagesPage() {
                       onClick={() => {
                         setSelectedConversation(conversation);
                         fetchMessages(conversation.id);
+                        setMobilePanel("chat"); // Switch to chat view on mobile
                       }}
                       className={`
                         group relative p-3 cursor-pointer transition-colors duration-200
@@ -381,15 +394,31 @@ export default function StudentMessagesPage() {
             </ScrollArea>
           </div>
 
-          {/* Chat Area */}
-          <div className="flex-1 flex flex-col overflow-hidden bg-[#E4D9CE]/10 relative h-full">
+          {/* ── Chat Area ──────────────────────────────────────────────────
+              On mobile  : full-width, hidden when mobilePanel === 'list'
+              On desktop : flex-1, always visible
+          ─────────────────────────────────────────────────────────────────── */}
+          <div
+            className={`
+              flex-col overflow-hidden bg-[#E4D9CE]/10 relative h-full flex-1
+              ${mobilePanel === "list" ? "hidden md:flex" : "flex"}
+            `}
+          >
             {/* Tiled background pattern for chat area */}
             <div className="absolute inset-0 z-0 opacity-40 bg-[url('https://web.telegram.org/a/chat-bg-pattern-light.png')] bg-repeat bg-auto"></div>
 
             {selectedConversation ? (
               <>
-                <div className="flex items-center justify-between px-6 py-3 border-b bg-white/90 backdrop-blur-md z-10 shadow-sm">
-                  <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between px-3 md:px-6 py-3 border-b bg-white/90 backdrop-blur-md z-10 shadow-sm">
+                  <div className="flex items-center gap-2 md:gap-4">
+                    {/* Back button — mobile only */}
+                    <button
+                      className="md:hidden flex items-center justify-center h-8 w-8 rounded-full hover:bg-gray-100 transition-colors"
+                      onClick={() => setMobilePanel("list")}
+                      aria-label="Back to conversations"
+                    >
+                      <ArrowLeft className="h-5 w-5 text-gray-600" />
+                    </button>
                     <Avatar className="h-10 w-10 shadow-sm">
                       <AvatarImage src={selectedConversation.other_user.avatar || "/placeholder.svg"} />
                       <AvatarFallback className="bg-gradient-to-br from-charcoal to-deep-purple text-white">
