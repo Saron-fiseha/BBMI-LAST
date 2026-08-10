@@ -11,16 +11,21 @@ export interface CertificateData {
 }
 
 export async function generateCertificateNumber(userId: number, trainingId: number): Promise<string> {
-  const year = new Date().getFullYear()
-  const month = String(new Date().getMonth() + 1).padStart(2, "0")
-
+  // const year = new Date().getFullYear()
+  // const month = String(new Date().getMonth() + 1).padStart(2, "0")
+const now = new Date()
+const year = now.getFullYear()
+const monthNum = now.getMonth() + 1
+const month = String(monthNum).padStart(2, "0")
   // Get count of certificates issued this month
   const result = await sql`
     SELECT COUNT(*) as count 
     FROM certificates 
-    WHERE EXTRACT(YEAR FROM created_at) = ${year} 
-    AND EXTRACT(MONTH FROM created_at) = ${new Date().getMonth() + 1}
+    WHERE EXTRACT(YEAR FROM created_at) = ${year}   
+    AND EXTRACT(MONTH FROM created_at) = ${monthNum}
   `
+// AND EXTRACT(MONTH FROM created_at) = ${new Date().getMonth() + 1}
+  
 
   const count = Number.parseInt(result[0]?.count || "0") + 1
   const sequence = String(count).padStart(4, "0")
