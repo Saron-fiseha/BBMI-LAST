@@ -796,7 +796,7 @@ export async function sendVerificationEmail(user: User, token: string): Promise<
     const verifyUrl = `${baseUrl}/verify-email?token=${token}`
  
     await resend.emails.send({
-      from: "BBMI <onboarding@resend.dev>",
+      from: "BBMI <no-reply@brushedbybetty.com>",
       to: user.email,
       subject: "Please verify your email — BBMI",
       html: `
@@ -896,7 +896,7 @@ export async function sendWelcomeEmail(user: User): Promise<void> {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
  
     await resend.emails.send({
-      from: "BBMI <onboarding@resend.dev>",
+      from: "BBMI <no-reply@brushedbybetty.com>",
       to: user.email,
       subject: "Welcome to BBMI — You're all set! 🎉",
       html: `
@@ -1274,7 +1274,7 @@ export async function createResetToken(email: string): Promise<{ success: boolea
     try {
       const resend = getResendClient()
       await resend.emails.send({
-        from: "onboarding@resend.dev",
+        from: "BBMI <no-reply@brushedbybetty.com>",
         to: email,
         subject: "Reset your BBMI password",
         html: `
