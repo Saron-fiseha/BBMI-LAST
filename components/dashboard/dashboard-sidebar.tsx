@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   BookOpen,
-  // Calendar,
+  Calendar,
   CreditCard,
   FileText,
   Home,
@@ -33,11 +33,11 @@ const sidebarItems = [
     href: "/dashboard/certificates",
     icon: FileText,
   },
-  // {
-  //   title: "Calendar",
-  //   href: "/dashboard/calendar",
-  //   icon: Calendar,
-  // },
+  {
+    title: "Calendar",
+    href: "/dashboard/calendar",
+    icon: Calendar,
+  },
   {
     title: "Messages",
     href: "/dashboard/messages",

@@ -66,8 +66,6 @@
 //     return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 })
 //   }
 // }
-
-
 import { type NextRequest, NextResponse } from "next/server"
 import { registerUser } from "@/lib/auth"
 
@@ -95,26 +93,25 @@ const DISPOSABLE_DOMAINS = new Set([
   "owlpic.com", "rtrtr.com", "s0ny.net", "safe-mail.net",
   "sandelf.de", "saynotospams.com", "selfdestructingmail.com",
   "sendspamhere.com", "senseless-entertainment.com", "services391.com",
-  "sharklasers.com", "shieldedmail.com", "shiftmail.com", "shitmail.me",
+  "shieldedmail.com", "shiftmail.com", "shitmail.me",
   "skeefmail.com", "slapsfromlindas.com", "slaskpost.se", "slave-auctions.net",
   "slippery.email", "slopsbox.com", "slothmail.net", "slushmail.com",
   "sneakemail.com", "sneakmail.de", "snkmail.com", "sofimail.com",
-  "sofort-mail.de", "sogetthis.com", "sohu.com", "soodonims.com",
+  "sofort-mail.de", "sogetthis.com", "soodonims.com",
   "spam.la", "spam.su", "spamavert.com", "spambob.com", "spambob.net",
   "spambob.org", "spambog.com", "spambog.de", "spambog.ru",
-  "spambox.info", "spambox.irishspringrealty.com", "spambox.us",
+  "spambox.info", "spambox.us",
   "spamcannon.com", "spamcannon.net", "spamcero.com", "spamcon.org",
   "spamcorptastic.com", "spamcowboy.com", "spamcowboy.net", "spamcowboy.org",
-  "spamday.com", "spamex.com", "spamfree24.de", "spamfree24.eu",
-  "spamfree24.info", "spamfree24.net", "spamgoes.in", "spamgourmet.com",
+  "spamday.com", "spamfree24.de", "spamfree24.eu",
+  "spamfree24.info", "spamfree24.net", "spamgoes.in",
   "tempemail.net", "tempinbox.co.uk", "temporaryemail.net", "temporaryforwarding.com",
   "temporaryinbox.com", "temporarymail.org", "tempthe.net", "thankyou2010.com",
-  "thecloudindex.com", "thisisnotmyrealemail.com", "thismail.net", "throwam.com",
-  "tinyurl24.com", "tmail.com", "tmailinator.com", "tokem.co",
+  "thecloudindex.com", "thisisnotmyrealemail.com", "thismail.net",
+  "tmail.com", "tmailinator.com", "tokem.co",
   "tradermail.info", "trash-mail.at", "trash-mail.com", "trash-mail.de",
   "trash-mail.ga", "trash-mail.io", "trash-mail.me", "trash-mail.ml",
-  "trashmail.at", "trashmail.com", "trashmail.io", "trashmail.me",
-  "trashmail.net", "trashmail.org", "trashmail.xyz", "trashmailer.com",
+  "trashmail.org", "trashmail.xyz", "trashmailer.com",
   "trashtiara.com", "trbvm.com", "trickmail.net", "trillianpro.com",
   "tryalert.com", "turual.com", "twinmail.de", "tyldd.com",
   "uggsrock.com", "umail.net", "upliftnow.com", "uplipht.com",
@@ -124,15 +121,15 @@ const DISPOSABLE_DOMAINS = new Set([
   "vubby.com", "walala.org", "walkmail.net", "walkmail.ru",
   "wbml.net", "webemail.me", "webm4il.info", "wegwerf-email.at",
   "wegwerf-email.de", "wegwerf-email.net", "wegwerf-email.org",
-  "wegwerfadresse.de", "wegwerfmail.de", "wegwerfmail.net", "wegwerfmail.org",
-  "wetrainbayarea.com", "wetrainbayarea.org", "wilemail.com", "willhackforfood.biz",
-  "willselfdestruct.com", "winemaven.info", "wronghead.com", "www.e4ward.com",
+  "wegwerfadresse.de", "wetrainbayarea.com", "wetrainbayarea.org",
+  "wilemail.com", "willhackforfood.biz",
+  "willselfdestruct.com", "winemaven.info", "wronghead.com",
   "wwnew.com", "wwwnew.eu", "x1x.spb.ru", "xagloo.co",
   "xagloo.com", "xemaps.com", "xents.com", "xmaily.com",
   "xoxy.net", "xsmail.com", "xww.ro", "xxlocanto.us",
   "xxolocanto.us", "xyzfree.net", "yapped.net", "yeah.net",
-  "yep.it", "yogamaven.com", "yopmail.com", "yopmail.fr",
-  "yopmail.gq", "youmailr.com", "yourdomain.com", "ypmail.webarnak.fr.eu.org",
+  "yep.it", "yogamaven.com", "yopmail.gq", "youmailr.com",
+  "ypmail.webarnak.fr.eu.org",
   "yuurok.com", "z1p.biz", "za.com", "zehnminutenmail.de",
   "zetmail.com", "zhorachu.com", "zippymail.info", "zoaxe.com",
   "zoemail.com", "zoemail.net", "zoemail.org", "zomg.info",
@@ -202,7 +199,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // registerUser handles: MX record check + DB insert + welcome email
+    // registerUser handles: MX record check + DB insert + verification email
     const result = await registerUser({
       full_name,
       email: email.toLowerCase(),
