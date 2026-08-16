@@ -24,7 +24,7 @@ export default function AdminProfilePage() {
     name: user?.full_name || "Administrator",
     email: user?.email || "sarifiseha0961test@gmail.com",
     phone: user?.phone || "0961872397",
-    bio: "System Administrator for Glamour Academy Beauty Learning Management System",
+    bio: "System Administrator for BBMI Beauty Learning Management System",
     avatar: user?.profile_picture || "/placeholder.svg?height=100&width=100",
   })
 

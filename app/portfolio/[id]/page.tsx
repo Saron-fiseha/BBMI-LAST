@@ -227,10 +227,12 @@ export default function PortfolioDetailPage() {
                     src={
                       portfolioItem.file_path || "/placeholder.svg?height=500&width=800&query=beauty salon portfolio"
                     }
-                    className="object-cover w-full h-full"
+                    className="absolute inset-0 object-cover w-full h-full"
                     controls
                     autoPlay
                     muted
+                    controlsList="nodownload"
+                    onContextMenu={(e) => e.preventDefault()}
                     poster={portfolioItem.file_path ? undefined : "/placeholder.svg?height=500&width=800"}
                   />
                 ) : (

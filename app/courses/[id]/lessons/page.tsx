@@ -718,6 +718,7 @@ export default function ModulesPage({
                           opts={{
                             width: "100%",
                             height: "100%", // Changed to 100%
+                            host: "https://www.youtube-nocookie.com",
                             playerVars: {
                               controls: 0,
                               disablekb: 1,
@@ -725,6 +726,10 @@ export default function ModulesPage({
                               modestbranding: 1,
                               rel: 0,
                               iv_load_policy: 3,
+                              showinfo: 0,
+                              playsinline: 1,
+                              playlist: getYouTubeVideoId(selectedModule.video_url || ""),
+                              loop: 1,
                             },
                           }}
                           onReady={(e) => {

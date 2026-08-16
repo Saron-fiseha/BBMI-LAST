@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import { Label } from "@/components/ui/label"
+import { useAdminPrivileges } from "@/hooks/use-admin-privileges"
 
 interface User {
   sex: string
@@ -43,6 +44,7 @@ export default function AdminUsersPage() {
   const { toast } = useToast()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { canAdd, canEdit, canDelete, canExport } = useAdminPrivileges("users")
 
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
@@ -578,23 +580,27 @@ export default function AdminUsersPage() {
           <p className="text-sm sm:text-base text-deep-purple mt-1">Manage all user accounts and permissions</p>
         </div>
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-          <Button
-            variant="outline"
-            onClick={exportUsers}
-            disabled={loading || users.length === 0}
-            className="w-full sm:w-auto "
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button
-            onClick={() => setShowCreateForm(true)}
-            className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
-            disabled={submitting}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add User
-          </Button>
+          {canExport && (
+            <Button
+              variant="outline"
+              onClick={exportUsers}
+              disabled={loading || users.length === 0}
+              className="w-full sm:w-auto "
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          )}
+          {canAdd && (
+            <Button
+              onClick={() => setShowCreateForm(true)}
+              className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
+              disabled={submitting}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add User
+            </Button>
+          )}
         </div>
       </div>
 
@@ -722,24 +728,28 @@ export default function AdminUsersPage() {
                       </div>
 
                       <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openEditForm(user)}
-                          className="flex-1 "
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDeleteUser(user.id)}
-                          className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete
-                        </Button>
+                        {canEdit && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openEditForm(user)}
+                            className="flex-1 "
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                        )}
+                        {canDelete && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteUser(user.id)}
+                            className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))
@@ -799,22 +809,26 @@ export default function AdminUsersPage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex space-x-1">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => openEditForm(user)}
-                                className=""
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDeleteUser(user.id)}
-                                className="border-red-200 text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              {canEdit && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openEditForm(user)}
+                                  className=""
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {canDelete && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDeleteUser(user.id)}
+                                  className="border-red-200 text-red-600 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -860,7 +874,7 @@ export default function AdminUsersPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Full Name *</label>
                   <Input
-                    value={newUser.name}
+                    value={newUser.name || ""}
                     onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
                     placeholder="Enter full name"
                     className="border-mustard/20 focus:border-mustard"
@@ -872,7 +886,7 @@ export default function AdminUsersPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Email *</label>
                   <Input
-                    value={newUser.email}
+                    value={newUser.email || ""}
                     onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                     placeholder="Enter email"
                     className="border-mustard/20 focus:border-mustard"
@@ -885,7 +899,7 @@ export default function AdminUsersPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Phone</label>
                   <Input
-                    value={newUser.phone}
+                    value={newUser.phone || ""}
                     onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
                     placeholder="Enter phone number"
                     className="border-mustard/20 focus:border-mustard"
@@ -896,7 +910,7 @@ export default function AdminUsersPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Age</label>
                   <Input
-                    value={newUser.age}
+                    value={newUser.age || ""}
                     onChange={(e) => setNewUser({ ...newUser, age: e.target.value })}
                     placeholder="Enter age"
                     className="border-mustard/20 focus:border-mustard"
@@ -908,7 +922,7 @@ export default function AdminUsersPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Gender</label>
                   <Select
-                    value={newUser.gender}
+                    value={newUser.gender || ""}
                     onValueChange={(value) => setNewUser({ ...newUser, gender: value })}
                     disabled={submitting}
                   >
@@ -926,7 +940,7 @@ export default function AdminUsersPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Password *</label>
                   <Input
-                    value={newUser.password}
+                    value={newUser.password || ""}
                     onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
                     placeholder="Enter password"
                     className="border-mustard/20 focus:border-mustard"
@@ -939,7 +953,7 @@ export default function AdminUsersPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Confirm Password *</label>
                   <Input
-                    value={newUser.confirmPassword}
+                    value={newUser.confirmPassword || ""}
                     onChange={(e) => setNewUser({ ...newUser, confirmPassword: e.target.value })}
                     placeholder="Confirm password"
                     className="border-mustard/20 focus:border-mustard"
@@ -952,7 +966,7 @@ export default function AdminUsersPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Role</label>
                   <Select
-                    value={newUser.role}
+                    value={newUser.role || ""}
                     onValueChange={(value: "admin" | "instructor" | "student") =>
                       setNewUser({ ...newUser, role: value })
                     }
@@ -972,7 +986,7 @@ export default function AdminUsersPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Status</label>
                   <Select
-                    value={newUser.status}
+                    value={newUser.status || ""}
                     onValueChange={(value: "active" | "inactive") =>
                       setNewUser({ ...newUser, status: value })
                     }
@@ -1041,7 +1055,7 @@ export default function AdminUsersPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Full Name *</label>
                   <Input
-                    value={editingUser.full_name}
+                    value={editingUser.full_name || ""}
                     onChange={(e) => setEditingUser({ ...editingUser, full_name: e.target.value })}
                     placeholder="Enter full name"
                     className="border-mustard/20 focus:border-mustard"
@@ -1053,7 +1067,7 @@ export default function AdminUsersPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Email *</label>
                   <Input
-                    value={editingUser.email}
+                    value={editingUser.email || ""}
                     onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
                     placeholder="Enter email"
                     className="border-mustard/20 focus:border-mustard"
@@ -1066,7 +1080,7 @@ export default function AdminUsersPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Phone</label>
                   <Input
-                    value={editingUser.phone}
+                    value={editingUser.phone || ""}
                     onChange={(e) => setEditingUser({ ...editingUser, phone: e.target.value })}
                     placeholder="Enter phone number"
                     className="border-mustard/20 focus:border-mustard"
@@ -1077,7 +1091,7 @@ export default function AdminUsersPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Age</label>
                   <Input
-                    value={editingUser.age}
+                    value={editingUser.age || ""}
                     onChange={(e) =>
                       setEditingUser({
                         ...editingUser,
@@ -1094,7 +1108,7 @@ export default function AdminUsersPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Gender</label>
                   <Select
-                    value={editingUser.gender}
+                    value={editingUser.gender || ""}
                     onValueChange={(value) => setEditingUser({ ...editingUser, gender: value })}
                     disabled={submitting}
                   >
@@ -1114,7 +1128,7 @@ export default function AdminUsersPage() {
                     New Password (leave blank to keep current)
                   </label>
                   <Input
-                    value={editingUser.password}
+                    value={editingUser.password || ""}
                     onChange={(e) => setEditingUser({ ...editingUser, password: e.target.value })}
                     placeholder="Enter new password"
                     className="border-mustard/20 focus:border-mustard"
@@ -1126,7 +1140,7 @@ export default function AdminUsersPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Confirm New Password</label>
                   <Input
-                    value={editingUser.confirmPassword}
+                    value={editingUser.confirmPassword || ""}
                     onChange={(e) => setEditingUser({ ...editingUser, confirmPassword: e.target.value })}
                     placeholder="Confirm new password"
                     className="border-mustard/20 focus:border-mustard"
@@ -1138,7 +1152,7 @@ export default function AdminUsersPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Role</label>
                   <Select
-                    value={editingUser.role}
+                    value={editingUser.role || ""}
                     onValueChange={(value: "admin" | "instructor" | "student") =>
                       setEditingUser({ ...editingUser, role: value })
                     }
@@ -1158,7 +1172,7 @@ export default function AdminUsersPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Status</label>
                   <Select
-                    value={editingUser.status}
+                    value={editingUser.status || ""}
                     onValueChange={(value: "active" | "inactive") =>
                       setEditingUser({ ...editingUser, status: value })
                     }

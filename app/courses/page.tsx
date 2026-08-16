@@ -81,10 +81,11 @@ const formatDuration = (minutes: number) => {
 // --- New Component: CourseCard ---
 interface CourseCardProps {
   course: Course;
-  onEnrollClick: (courseId: number) => void;
+  isEnrolled: boolean;
+  onEnrollClick: (courseId: number, isEnrolled: boolean) => void;
 }
 
-function CourseCard({ course, onEnrollClick }: CourseCardProps) {
+function CourseCard({ course, isEnrolled, onEnrollClick }: CourseCardProps) {
   const discountedPrice = course.price * (1 - course.discount / 100);
   const hasDiscount = course.discount > 0;
 
@@ -159,10 +160,10 @@ function CourseCard({ course, onEnrollClick }: CourseCardProps) {
           <Link href={`/courses/${course.id}`}>View Details</Link>
         </Button>
         <ShinyButton
-          onClick={() => onEnrollClick(course.id)}
+          onClick={() => onEnrollClick(course.id, isEnrolled)}
           className="w-full"
         >
-          Enroll Now
+          {isEnrolled ? "Go to Training" : "Enroll Now"}
         </ShinyButton>
       </CardFooter>
     </Card>
@@ -194,14 +195,35 @@ export default function CoursesPage() {
   const [categoryFilter, setCategoryFilter] = useState("all"); // Now controlled by Tabs
   const [levelFilter, setLevelFilter] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState<number[]>([]);
 
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchEnrolledCourses();
+    }
+  }, [user?.id]);
+
+  const fetchEnrolledCourses = async () => {
+    try {
+      const response = await fetch(`/api/dashboard/student-courses?userId=${user?.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.courses) {
+           setEnrolledCourseIds(data.courses.map((c: any) => c.id));
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   useEffect(() => {
     filterCourses();
@@ -298,7 +320,7 @@ const processedCourses = fetchedCourses.map((course) => ({
     setFilteredCourses(filtered);
   };
 
-  const handleEnrollClick = (courseId: number) => {
+  const handleEnrollClick = (courseId: number, isEnrolled: boolean) => {
     if (!isAuthenticated) {
       toast({
         title: "Authentication Required",
@@ -306,6 +328,10 @@ const processedCourses = fetchedCourses.map((course) => ({
         variant: "destructive",
       });
       router.push("/login");
+      return;
+    }
+    if (isEnrolled) {
+      router.push(`/courses/${courseId}/lessons`);
       return;
     }
     router.push(`/courses/${courseId}`);
@@ -395,7 +421,7 @@ const processedCourses = fetchedCourses.map((course) => ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch">
           {filteredCourses.map((course, index) => (
             <BlurFade key={course.id} delay={0.1 * index}>
-              <CourseCard course={course} onEnrollClick={handleEnrollClick} />
+              <CourseCard course={course} isEnrolled={enrolledCourseIds.includes(course.id)} onEnrollClick={handleEnrollClick} />
             </BlurFade>
           ))}
         </div>

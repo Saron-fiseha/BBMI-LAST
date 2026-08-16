@@ -18,7 +18,7 @@ async function getLatestPortfolioItems(): Promise<PortfolioItem[]> {
     // We construct the URL to fetch the first page with a limit of 3 items.
     // Fall back to localhost:3000 when NEXT_PUBLIC_APP_URL is not set (e.g. local dev).
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const apiUrl = `${baseUrl}/api/admin/portfolio?limit=3&page=1`;
+    const apiUrl = `${baseUrl}/api/admin/portfolio?limit=3&page=1&status=published`;
 
     const res = await fetch(apiUrl, {
       // This caches the data and re-fetches it at most once every 60 seconds.
@@ -80,7 +80,8 @@ export async function AnnouncementsSection() {
                       loop
                       muted
                       playsInline
-                      className="w-full h-full object-cover"
+                      controlsList="nodownload"
+                      className="absolute inset-0 w-full h-full object-cover"
                     >
                       <source src={item.file_path} type="video/mp4" />
                       Your browser does not support the video tag.

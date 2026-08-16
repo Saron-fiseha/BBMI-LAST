@@ -239,9 +239,11 @@ export default function PortfolioPage() {
                         {item.file_type === "video" ? (
                           <video
                             src={item.file_path || "/placeholder.svg?height=192&width=300&query=beauty salon portfolio"}
-                            className="object-cover w-full h-full"
+                            className="absolute inset-0 object-cover w-full h-full"
                             controls
                             muted
+                            controlsList="nodownload"
+                            onContextMenu={(e) => e.preventDefault()}
                             poster={item.file_path ? undefined : "/placeholder.svg?height=192&width=300"}
                           />
                         ) : (

@@ -48,14 +48,14 @@ export async function middleware(request: NextRequest) {
     // Role-based access control
     const userRole = payload.role as string
 
-    if (pathname.startsWith("/admin") && userRole !== "admin") {
-      console.log("Admin access denied, redirecting to dashboard")
-      return NextResponse.redirect(new URL("/dashboard", request.url))
+    if (pathname.startsWith("/admin") && !["admin", "sub_admin", "super_admin"].includes(userRole)) {
+      console.log("Admin access denied, redirecting to unauthorized")
+      return NextResponse.redirect(new URL("/unauthorized", request.url))
     }
 
-    if (pathname.startsWith("/instructor") && userRole !== "instructor" && userRole !== "admin") {
-      console.log("Instructor access denied, redirecting to dashboard")
-      return NextResponse.redirect(new URL("/dashboard", request.url))
+    if (pathname.startsWith("/instructor") && !["instructor", "admin", "sub_admin", "super_admin"].includes(userRole)) {
+      console.log("Instructor access denied, redirecting to unauthorized")
+      return NextResponse.redirect(new URL("/unauthorized", request.url))
     }
   }
 

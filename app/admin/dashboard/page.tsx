@@ -83,8 +83,23 @@ const DashboardPage = () => {
   const [studentsPerTrainingPieData, setStudentsPerTrainingPieData] = useState<StudentsPerTrainingItem[]>([]);
 
   useEffect(() => {
-    if (!authLoading && (!user || user.role !== "admin")) {
-      router.push(user ? "/dashboard" : "/login")
+    if (!authLoading) {
+      if (!user || user.role !== "admin") {
+        router.push(user ? "/dashboard" : "/login")
+        return
+      }
+
+      // Check if user has dashboard privilege, else redirect to first available
+      if (!user.is_super_admin && user.privileges && !user.privileges.includes("view_dashboard")) {
+        if (user.privileges.includes("view_user_management")) router.push("/admin/users")
+        else if (user.privileges.includes("view_categories")) router.push("/admin/categories")
+        else if (user.privileges.includes("view_trainings")) router.push("/admin/trainings")
+        else if (user.privileges.includes("view_modules")) router.push("/admin/modules")
+        else if (user.privileges.includes("view_students")) router.push("/admin/students")
+        else if (user.privileges.includes("view_instructors")) router.push("/admin/instructors")
+        else if (user.privileges.includes("view_promotion")) router.push("/admin/portfolio")
+        else router.push("/admin/profile")
+      }
     }
   }, [user, authLoading, router])
 

@@ -5,6 +5,8 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from "@/hooks/use-auth"
+import { WhatsAppWidget } from "@/components/whatsapp-widget"
+import { SessionManager } from "@/components/session-manager"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -17,6 +19,7 @@ export const metadata: Metadata = {
 function AuthWrapper({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
+      <SessionManager />
       {children}
       <Toaster />
     </AuthProvider>
@@ -32,7 +35,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <AuthWrapper>{children}</AuthWrapper>
+          <AuthWrapper>
+            {children}
+            <WhatsAppWidget />
+          </AuthWrapper>
         </ThemeProvider>
       </body>
     </html>

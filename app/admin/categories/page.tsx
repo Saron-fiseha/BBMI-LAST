@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
+import { useAdminPrivileges } from "@/hooks/use-admin-privileges"
 
 interface Category {
   id: string
@@ -39,6 +40,7 @@ export default function CategoriesPage() {
   const { toast } = useToast()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { canAdd, canEdit, canDelete, canExport } = useAdminPrivileges("categories")
 
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
@@ -496,23 +498,27 @@ export default function CategoriesPage() {
           <p className="text-sm sm:text-base text-deep-purple mt-1">Manage beauty salon training categories</p>
         </div>
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-          <Button
-            variant="outline"
-            onClick={exportCategories}
-            disabled={loading || categories.length === 0}
-            className="w-full sm:w-auto "
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button
-            onClick={() => setShowCreateForm(true)}
-            className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
-            disabled={submitting}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Category
-          </Button>
+          {canExport && (
+            <Button
+              variant="outline"
+              onClick={exportCategories}
+              disabled={loading || categories.length === 0}
+              className="w-full sm:w-auto "
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          )}
+          {canAdd && (
+            <Button
+              onClick={() => setShowCreateForm(true)}
+              className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
+              disabled={submitting}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Category
+            </Button>
+          )}
         </div>
       </div>
 
@@ -624,24 +630,28 @@ export default function CategoriesPage() {
                       </div>
 
                       <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openEditForm(category)}
-                          className="flex-1 "
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDeleteCategory(category.id)}
-                          className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete
-                        </Button>
+                        {canEdit && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openEditForm(category)}
+                            className="flex-1 "
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                        )}
+                        {canDelete && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteCategory(category.id)}
+                            className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))
@@ -710,22 +720,26 @@ export default function CategoriesPage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex space-x-1">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => openEditForm(category)}
-                                className=""
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDeleteCategory(category.id)}
-                                className="border-red-200 text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              {canEdit && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openEditForm(category)}
+                                  className=""
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {canDelete && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDeleteCategory(category.id)}
+                                  className="border-red-200 text-red-600 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -771,7 +785,7 @@ export default function CategoriesPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Category Name *</label>
                   <Input
-                    value={newCategory.name}
+                    value={newCategory.name || ""}
                     onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
                     placeholder="Enter category name"
                     className="border-mustard/20 focus:border-mustard"
@@ -783,7 +797,7 @@ export default function CategoriesPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Description *</label>
                   <Textarea
-                    value={newCategory.description}
+                    value={newCategory.description || ""}
                     onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
                     placeholder="Enter category description"
                     className="border-mustard/20 focus:border-mustard"
@@ -796,7 +810,7 @@ export default function CategoriesPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Image URL</label>
                   <Input
-                    value={newCategory.image_url}
+                    value={newCategory.image_url || ""}
                     onChange={(e) => setNewCategory({ ...newCategory, image_url: e.target.value })}
                     placeholder="Enter image URL (optional)"
                     className="border-mustard/20 focus:border-mustard"
@@ -807,7 +821,7 @@ export default function CategoriesPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Difficulty Level</label>
                   <Select
-                    value={newCategory.level}
+                    value={newCategory.level || ""}
                     onValueChange={(value: "beginner" | "intermediate" | "advanced") =>
                       setNewCategory({ ...newCategory, level: value })
                     }
@@ -877,7 +891,7 @@ export default function CategoriesPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Category Name *</label>
                   <Input
-                    value={editingCategory.name}
+                    value={editingCategory.name || ""}
                     onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
                     placeholder="Enter category name"
                     className="border-mustard/20 focus:border-mustard"
@@ -889,7 +903,7 @@ export default function CategoriesPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Description *</label>
                   <Textarea
-                    value={editingCategory.description}
+                    value={editingCategory.description || ""}
                     onChange={(e) => setEditingCategory({ ...editingCategory, description: e.target.value })}
                     placeholder="Enter category description"
                     className="border-mustard/20 focus:border-mustard"
@@ -902,7 +916,7 @@ export default function CategoriesPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Image URL</label>
                   <Input
-                    value={editingCategory.image_url}
+                    value={editingCategory.image_url || ""}
                     onChange={(e) => setEditingCategory({ ...editingCategory, image_url: e.target.value })}
                     placeholder="Enter image URL (optional)"
                     className="border-mustard/20 focus:border-mustard"
@@ -913,7 +927,7 @@ export default function CategoriesPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Difficulty Level</label>
                   <Select
-                    value={editingCategory.level}
+                    value={editingCategory.level || ""}
                     onValueChange={(value: "beginner" | "intermediate" | "advanced") =>
                       setEditingCategory({ ...editingCategory, level: value })
                     }
@@ -933,7 +947,7 @@ export default function CategoriesPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Status</label>
                   <Select
-                    value={editingCategory.status}
+                    value={editingCategory.status || ""}
                     onValueChange={(value: "active" | "inactive") =>
                       setEditingCategory({ ...editingCategory, status: value })
                     }

@@ -715,6 +715,8 @@ export interface User {
   role: "student" | "instructor" | "admin"
   profile_picture?: string
   email_verified: boolean
+  privileges?: string[]
+  is_super_admin?: boolean
 }
  
 export interface AuthResult {
@@ -741,6 +743,8 @@ export async function generateToken(user: User): Promise<string> {
     email: user.email,
     role: user.role,
     full_name: user.full_name,
+    privileges: user.privileges,
+    is_super_admin: user.is_super_admin,
   })
     .setProtectedHeader({ alg: "HS256" })
     .setExpirationTime("7d")
@@ -1028,7 +1032,7 @@ export async function registerUser(userData: {
     const result = await sql`
       INSERT INTO users (
         full_name, email, phone, age, sex, password_hash, profile_picture,
-        role, email_verified, status,
+        role, email_verified, is_super_admin, privileges, status,
         verification_token, verification_token_expires
       )
       VALUES (
@@ -1041,11 +1045,13 @@ export async function registerUser(userData: {
         ${userData.profile_picture || null},
         'student',
         false,
+        false,
+        '[]'::jsonb,
         'pending_verification',
         ${verificationToken},
         ${verificationExpires}
       )
-      RETURNING id, full_name, email, phone, age, sex, role, profile_picture, email_verified
+      RETURNING id, full_name, email, phone, age, sex, role, profile_picture, email_verified, is_super_admin, privileges
     `
  
     const user = result[0] as User
@@ -1188,7 +1194,7 @@ export async function resendVerificationEmail(email: string): Promise<{
 export async function loginUser(email: string, password: string): Promise<AuthResult> {
   try {
     const result = await sql`
-      SELECT id, full_name, email, phone, age, sex, password_hash, role, profile_picture, email_verified, status
+      SELECT id, full_name, email, phone, age, sex, password_hash, role, profile_picture, email_verified, is_super_admin, privileges, status
       FROM users 
       WHERE email = ${email.toLowerCase()}
     `
@@ -1230,7 +1236,7 @@ export async function getUserFromToken(token: string): Promise<User | null> {
     const decoded = await verifyToken(token)
     if (!decoded) return null
     const result = await sql`
-      SELECT id, full_name, email, phone, age, sex, role, profile_picture, email_verified
+      SELECT id, full_name, email, phone, age, sex, role, profile_picture, email_verified, is_super_admin, privileges
       FROM users 
       WHERE id = ${decoded.id}
     `

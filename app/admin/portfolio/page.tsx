@@ -27,6 +27,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useAdminPrivileges } from "@/hooks/use-admin-privileges"
 
 interface PortfolioItem {
   id: string
@@ -54,6 +55,7 @@ export default function AdminPortfolioPage() {
   const { toast } = useToast()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { canAdd, canEdit, canDelete, canExport } = useAdminPrivileges("promotion")
 
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -242,9 +244,22 @@ export default function AdminPortfolioPage() {
         body: formData,
       })
 
+      if (!response.ok) {
+        if (response.status === 413) {
+          throw new Error("File is too large. Maximum size is 500MB.")
+        }
+        let data;
+        try {
+          data = await response.json();
+        } catch(e) {
+          throw new Error(`Failed to upload file (HTTP ${response.status}). The file might be too large.`);
+        }
+        throw new Error(data.error || "Failed to upload file");
+      }
+
       const data = await response.json()
 
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         throw new Error(data.error || "Failed to upload file")
       }
 
@@ -629,23 +644,27 @@ export default function AdminPortfolioPage() {
           <p className="text-sm sm:text-base text-deep-purple mt-1">Manage Brushed By Betty's promotion showcase</p>
         </div>
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-          <Button
-            variant="outline"
-            onClick={exportPortfolio}
-            disabled={loading || portfolioItems.length === 0}
-            className="w-full sm:w-auto "
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button
-            onClick={() => setShowCreateForm(true)}
-            className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
-            disabled={submitting}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Promotion Item
-          </Button>
+          {canExport && (
+            <Button
+              variant="outline"
+              onClick={exportPortfolio}
+              disabled={loading || portfolioItems.length === 0}
+              className="w-full sm:w-auto "
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          )}
+          {canAdd && (
+            <Button
+              onClick={() => setShowCreateForm(true)}
+              className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
+              disabled={submitting}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Promotion Item
+            </Button>
+          )}
         </div>
       </div>
 
@@ -782,24 +801,28 @@ export default function AdminPortfolioPage() {
                       </div>
 
                       <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openEditForm(item)}
-                          className="flex-1 "
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDeleteItem(item.id)}
-                          className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete
-                        </Button>
+                        {canEdit && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openEditForm(item)}
+                            className="flex-1 "
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                        )}
+                        {canDelete && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))
@@ -884,22 +907,26 @@ export default function AdminPortfolioPage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex space-x-1">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => openEditForm(item)}
-                                className=""
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDeleteItem(item.id)}
-                                className="border-red-200 text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              {canEdit && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openEditForm(item)}
+                                  className=""
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {canDelete && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDeleteItem(item.id)}
+                                  className="border-red-200 text-red-600 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -945,7 +972,7 @@ export default function AdminPortfolioPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Title *</label>
                   <Input
-                    value={newItem.title}
+                    value={newItem.title || ""}
                     onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
                     placeholder="Enter Promotion item title"
                     className="border-mustard/20 focus:border-mustard"
@@ -957,7 +984,7 @@ export default function AdminPortfolioPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Description *</label>
                   <Textarea
-                    value={newItem.description}
+                    value={newItem.description || ""}
                     onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
                     placeholder="Enter detailed description"
                     className="border-mustard/20 focus:border-mustard min-h-[100px]"
@@ -968,22 +995,22 @@ export default function AdminPortfolioPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Category *</label>
-                  <Select
-                    value={newItem.category}
-                    onValueChange={(value) => setNewItem({ ...newItem, category: value })}
+                  <Input
+                    list="categories"
+                    value={newItem.category || ""}
+                    onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
+                    placeholder="Enter or select category"
+                    className="border-mustard/20 focus:border-mustard"
+                    required
                     disabled={submitting}
-                  >
-                    <SelectTrigger className="border-mustard/20 focus:border-mustard">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-ivory border-mustard/20">
-                      <SelectItem value="makeup">Makeup</SelectItem>
-                      <SelectItem value="skincare">Skincare</SelectItem>
-                      <SelectItem value="haircare">Haircare</SelectItem>
-                      <SelectItem value="nails">Nails</SelectItem>
-                      <SelectItem value="training">Training</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  />
+                  <datalist id="categories">
+                    <option value="makeup" />
+                    <option value="skincare" />
+                    <option value="haircare" />
+                    <option value="nails" />
+                    <option value="training" />
+                  </datalist>
                 </div>
 
                 <div>
@@ -1022,7 +1049,7 @@ export default function AdminPortfolioPage() {
                           </>
                         )}
                       </Button>
-                      <span className="text-sm text-deep-purple">Images & Videos (Max 10MB)</span>
+                      <span className="text-sm text-deep-purple">Images & Videos (Max 500MB)</span>
                     </div>
 
                     {newItem.file_path && (
@@ -1055,7 +1082,7 @@ export default function AdminPortfolioPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Status</label>
                   <Select
-                    value={newItem.status}
+                    value={newItem.status || ""}
                     onValueChange={(value: "published" | "draft") => setNewItem({ ...newItem, status: value })}
                     disabled={submitting}
                   >
@@ -1134,7 +1161,7 @@ export default function AdminPortfolioPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Title *</label>
                   <Input
-                    value={editingItem.title}
+                    value={editingItem.title || ""}
                     onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
                     placeholder="Enter Promotion item title"
                     className="border-mustard/20 focus:border-mustard"
@@ -1146,7 +1173,7 @@ export default function AdminPortfolioPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Description *</label>
                   <Textarea
-                    value={editingItem.description}
+                    value={editingItem.description || ""}
                     onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })}
                     placeholder="Enter detailed description"
                     className="border-mustard/20 focus:border-mustard min-h-[100px]"
@@ -1157,22 +1184,22 @@ export default function AdminPortfolioPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Category *</label>
-                  <Select
-                    value={editingItem.category}
-                    onValueChange={(value) => setEditingItem({ ...editingItem, category: value })}
+                  <Input
+                    list="categories-edit"
+                    value={editingItem.category || ""}
+                    onChange={(e) => setEditingItem({ ...editingItem, category: e.target.value })}
+                    placeholder="Enter or select category"
+                    className="border-mustard/20 focus:border-mustard"
+                    required
                     disabled={submitting}
-                  >
-                    <SelectTrigger className="border-mustard/20 focus:border-mustard">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-ivory border-mustard/20">
-                      <SelectItem value="makeup">Makeup</SelectItem>
-                      <SelectItem value="skincare">Skincare</SelectItem>
-                      <SelectItem value="haircare">Haircare</SelectItem>
-                      <SelectItem value="nails">Nails</SelectItem>
-                      <SelectItem value="training">Training</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  />
+                  <datalist id="categories-edit">
+                    <option value="makeup" />
+                    <option value="skincare" />
+                    <option value="haircare" />
+                    <option value="nails" />
+                    <option value="training" />
+                  </datalist>
                 </div>
 
                 <div>
@@ -1211,7 +1238,7 @@ export default function AdminPortfolioPage() {
                           </>
                         )}
                       </Button>
-                      <span className="text-sm text-deep-purple">Images & Videos (Max 10MB)</span>
+                      <span className="text-sm text-deep-purple">Images & Videos (Max 500MB)</span>
                     </div>
 
                     {editingItem.file_path && (
@@ -1244,7 +1271,7 @@ export default function AdminPortfolioPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Status</label>
                   <Select
-                    value={editingItem.status}
+                    value={editingItem.status || ""}
                     onValueChange={(value: "published" | "draft") => setEditingItem({ ...editingItem, status: value })}
                     disabled={submitting}
                   >

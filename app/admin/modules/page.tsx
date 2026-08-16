@@ -11,6 +11,7 @@ import { Plus, Edit, Trash2, Search, Download, Play, X, Loader2, ChevronRight, C
 import { useToast } from "@/hooks/use-toast"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useAdminPrivileges } from "@/hooks/use-admin-privileges"
 
 interface Module {
   id: string
@@ -44,6 +45,7 @@ export default function ModulesPage() {
   const { toast } = useToast()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { canAdd, canEdit, canDelete, canExport } = useAdminPrivileges("modules")
 
   const [modules, setModules] = useState<Module[]>([])
   const [programs, setPrograms] = useState<Program[]>([])
@@ -663,23 +665,27 @@ export default function ModulesPage() {
           <p className="text-sm sm:text-base text-deep-purple mt-1">Manage learning modules with YouTube video integration</p>
         </div>
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-          <Button
-            variant="outline"
-            onClick={exportModules}
-            disabled={loading || modules.length === 0}
-            className="w-full sm:w-auto "
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button
-            onClick={() => setShowForm(true)}
-            className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
-            disabled={isSubmitting}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Module
-          </Button>
+          {canExport && (
+            <Button
+              variant="outline"
+              onClick={exportModules}
+              disabled={loading || modules.length === 0}
+              className="w-full sm:w-auto "
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          )}
+          {canAdd && (
+            <Button
+              onClick={() => setShowForm(true)}
+              className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
+              disabled={isSubmitting}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Module
+            </Button>
+          )}
         </div>
       </div>
 
@@ -811,24 +817,28 @@ export default function ModulesPage() {
                       </div>
 
                       <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEditClick(module)}
-                          className="flex-1 "
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDeleteModule(module.id)}
-                          className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete
-                        </Button>
+                        {canEdit && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditClick(module)}
+                            className="flex-1 "
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                        )}
+                        {canDelete && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteModule(module.id)}
+                            className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))
@@ -893,22 +903,26 @@ export default function ModulesPage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex space-x-1">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleEditClick(module)}
-                                className=""
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDeleteModule(module.id)}
-                                className="border-red-200 text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              {canEdit && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleEditClick(module)}
+                                  className=""
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {canDelete && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDeleteModule(module.id)}
+                                  className="border-red-200 text-red-600 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -950,7 +964,7 @@ export default function ModulesPage() {
                   <div>
                     <label className="block text-sm font-medium text-charcoal mb-1">Module Name *</label>
                     <Input
-                      value={newModule.name}
+                      value={newModule.name || ""}
                       onChange={(e) => setNewModule({ ...newModule, name: e.target.value })}
                       placeholder="Enter module name"
                       className="border-mustard/20 focus:border-mustard"
@@ -961,7 +975,7 @@ export default function ModulesPage() {
                   <div>
                     <label className="block text-sm font-medium text-charcoal mb-1">Module Code *</label>
                     <Input
-                      value={newModule.moduleCode}
+                      value={newModule.moduleCode || ""}
                       onChange={(e) => setNewModule({ ...newModule, moduleCode: e.target.value })}
                       placeholder="e.g., MKP-001-01"
                       className="border-mustard/20 focus:border-mustard"
@@ -974,7 +988,7 @@ export default function ModulesPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Description *</label>
                   <Textarea
-                    value={newModule.description}
+                    value={newModule.description || ""}
                     onChange={(e) => setNewModule({ ...newModule, description: e.target.value })}
                     placeholder="Enter module description"
                     className="border-mustard/20 focus:border-mustard"
@@ -988,7 +1002,7 @@ export default function ModulesPage() {
                   <div>
                     <label className="block text-sm font-medium text-charcoal mb-1">Training Program *</label>
                     <Select
-                      value={newModule.programId}
+                      value={newModule.programId || ""}
                       onValueChange={(value) => setNewModule({ ...newModule, programId: value })}
                       disabled={isSubmitting}
                     >
@@ -1007,7 +1021,7 @@ export default function ModulesPage() {
                   <div>
                     <label className="block text-sm font-medium text-charcoal mb-1">Status *</label>
                     <Select
-                      value={newModule.status}
+                      value={newModule.status || ""}
                       onValueChange={(value: "active" | "inactive" | "draft") =>
                         setNewModule({ ...newModule, status: value })
                       }
@@ -1043,7 +1057,7 @@ export default function ModulesPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">YouTube Video URL/ID *</label>
                   <Input
-                    value={newModule.videoId}
+                    value={newModule.videoId || ""}
                     onChange={(e) => setNewModule({ ...newModule, videoId: extractVideoId(e.target.value) })}
                     placeholder="Enter YouTube URL or Video ID"
                     className="border-mustard/20 focus:border-mustard"
@@ -1057,7 +1071,7 @@ export default function ModulesPage() {
                     <label className="block text-sm font-medium text-charcoal mb-1">Duration (minutes) *</label>
                     <Input
                       type="number"
-                      value={newModule.duration}
+                      value={newModule.duration || ""}
                       onChange={(e) => setNewModule({ ...newModule, duration: Number(e.target.value) })}
                       placeholder="0"
                       min="1"
@@ -1070,7 +1084,7 @@ export default function ModulesPage() {
                     <label className="block text-sm font-medium text-charcoal mb-1">Order</label>
                     <Input
                       type="number"
-                      value={newModule.order}
+                      value={newModule.order || ""}
                       onChange={(e) => setNewModule({ ...newModule, order: Number(e.target.value) })}
                       placeholder="1"
                       min="1"

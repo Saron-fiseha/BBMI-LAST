@@ -28,10 +28,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate file size (100MB limit)
-    const maxSize = 100 * 1024 * 1024 // 100MB
+    // Validate file size (500MB limit)
+    const maxSize = 500 * 1024 * 1024 // 500MB
     if (file.size > maxSize) {
-      return NextResponse.json({ success: false, error: "File size too large. Maximum size is 100MB" }, { status: 400 })
+      return NextResponse.json({ success: false, error: "File size too large. Maximum size is 500MB" }, { status: 413 })
     }
 
     const bytes = await file.arrayBuffer()

@@ -40,6 +40,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { QuizManager } from "@/components/admin/QuizManager";
+import { useAdminPrivileges } from "@/hooks/use-admin-privileges";
 
 // --- Interfaces ---
 interface Training {
@@ -122,6 +123,7 @@ export default function TrainingsPage() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { canAdd, canEdit, canDelete, canExport } = useAdminPrivileges("trainings");
 
   // --- State Declarations ---
   const [trainings, setTrainings] = useState<Training[]>([]);
@@ -1000,23 +1002,27 @@ export default function TrainingsPage() {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mt-4 sm:mt-0">
-          <Button
-            variant="outline"
-            onClick={exportTrainings}
-            disabled={loading || trainings.length === 0}
-            className="w-full sm:w-auto "
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button
-            onClick={() => setShowCreateForm(true)}
-            className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
-            disabled={submitting}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add New Training
-          </Button>
+          {canExport && (
+            <Button
+              variant="outline"
+              onClick={exportTrainings}
+              disabled={loading || trainings.length === 0}
+              className="w-full sm:w-auto "
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          )}
+          {canAdd && (
+            <Button
+              onClick={() => setShowCreateForm(true)}
+              className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
+              disabled={submitting}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add New Training
+            </Button>
+          )}
         </div>
       </div>
 
@@ -1133,22 +1139,26 @@ export default function TrainingsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditForm(training)}
-                          className=" bg-white"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteTraining(training.id)}
-                          className="border-red-200 text-red-600 hover:bg-red-50 bg-white"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {canEdit && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditForm(training)}
+                            className=" bg-white"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {canDelete && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteTraining(training.id)}
+                            className="border-red-200 text-red-600 hover:bg-red-50 bg-white"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

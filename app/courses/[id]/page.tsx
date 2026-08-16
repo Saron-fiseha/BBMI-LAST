@@ -455,7 +455,7 @@ export default function TrainingPage({
           loop: "1",
           playlist: videoId,
         });
-        return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
+        return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
       }
       return url;
     } catch {

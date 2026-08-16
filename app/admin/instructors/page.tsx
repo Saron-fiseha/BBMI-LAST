@@ -42,8 +42,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAdminPrivileges } from "@/hooks/use-admin-privileges";
 
 interface EnhancedInstructor {
   id: string;
@@ -95,6 +95,7 @@ export default function InstructorsPage() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { canAdd, canEdit, canDelete, canExport } = useAdminPrivileges("instructors");
 
   const [searchQuery, setSearchQuery] = useState(
     searchParams.get("search") || ""
@@ -830,23 +831,27 @@ export default function InstructorsPage() {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-          <Button
-            variant="outline"
-            onClick={exportInstructors}
-            disabled={loading || instructors.length === 0}
-            className="w-full sm:w-auto "
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button
-            onClick={() => setIsCreateDialogOpen(true)}
-            className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
-            disabled={submitting}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Instructor
-          </Button>
+          {canExport && (
+            <Button
+              variant="outline"
+              onClick={exportInstructors}
+              disabled={loading || instructors.length === 0}
+              className="w-full sm:w-auto "
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          )}
+          {canAdd && (
+            <Button
+              onClick={() => setIsCreateDialogOpen(true)}
+              className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
+              disabled={submitting}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Instructor
+            </Button>
+          )}
         </div>
       </div>
 
@@ -1003,33 +1008,39 @@ export default function InstructorsPage() {
                       </div>
 
                       <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openEditDialog(instructor)}
-                          className="flex-1 "
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openResetPasswordDialog(instructor)}
-                          className="flex-1 border-blue-200 text-blue-600 hover:bg-blue-50"
-                        >
-                          <RotateCcw className="h-4 w-4 mr-1" />
-                          Reset PW
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDeleteInstructor(instructor.id)}
-                          className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete
-                        </Button>
+                        {canEdit && (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openEditDialog(instructor)}
+                              className="flex-1 "
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openResetPasswordDialog(instructor)}
+                              className="flex-1 border-blue-200 text-blue-600 hover:bg-blue-50"
+                            >
+                              <RotateCcw className="h-4 w-4 mr-1" />
+                              Reset PW
+                            </Button>
+                          </>
+                        )}
+                        {canDelete && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteInstructor(instructor.id)}
+                            className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Delete
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))
@@ -1140,34 +1151,40 @@ export default function InstructorsPage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex space-x-1">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => openEditDialog(instructor)}
-                                className=""
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() =>
-                                  openResetPasswordDialog(instructor)
-                                }
-                                className="border-blue-200 text-blue-600 hover:bg-blue-50"
-                              >
-                                <RotateCcw className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() =>
-                                  handleDeleteInstructor(instructor.id)
-                                }
-                                className="border-red-200 text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              {canEdit && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => openEditDialog(instructor)}
+                                    className=""
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() =>
+                                      openResetPasswordDialog(instructor)
+                                    }
+                                    className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                                  >
+                                    <RotateCcw className="h-4 w-4" />
+                                  </Button>
+                                </>
+                              )}
+                              {canDelete && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    handleDeleteInstructor(instructor.id)
+                                  }
+                                  className="border-red-200 text-red-600 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -1202,7 +1219,7 @@ export default function InstructorsPage() {
                   id="name"
                   name="name"
                   type="text"
-                  value={newInstructor.name}
+                  value={newInstructor.name || ""}
                   onChange={(e) =>
                     setNewInstructor({ ...newInstructor, name: e.target.value })
                   }
@@ -1216,7 +1233,7 @@ export default function InstructorsPage() {
                   id="email"
                   name="email"
                   type="email"
-                  value={newInstructor.email}
+                  value={newInstructor.email || ""}
                   onChange={(e) =>
                     setNewInstructor({
                       ...newInstructor,
@@ -1233,7 +1250,7 @@ export default function InstructorsPage() {
                   id="phone"
                   name="phone"
                   type="tel"
-                  value={newInstructor.phone}
+                  value={newInstructor.phone || ""}
                   onChange={(e) =>
                     setNewInstructor({
                       ...newInstructor,
@@ -1249,7 +1266,7 @@ export default function InstructorsPage() {
                   id="experience"
                   name="experience"
                   type="number"
-                  value={newInstructor.experience}
+                  value={newInstructor.experience || ""}
                   onChange={(e) =>
                     setNewInstructor({
                       ...newInstructor,
@@ -1263,7 +1280,7 @@ export default function InstructorsPage() {
                 <Label htmlFor="specialization">Specialization</Label>
                 <Select
                   name="specialization"
-                  value={newInstructor.specialization}
+                  value={newInstructor.specialization || ""}
                   onValueChange={(value) =>
                     setNewInstructor({
                       ...newInstructor,
@@ -1287,7 +1304,7 @@ export default function InstructorsPage() {
                 <Label htmlFor="status">Status</Label>
                 <Select
                   name="status"
-                  value={newInstructor.status}
+                  value={newInstructor.status || ""}
                   onValueChange={(value: "active" | "inactive" | "on-leave") =>
                     setNewInstructor({ ...newInstructor, status: value })
                   }
@@ -1308,7 +1325,7 @@ export default function InstructorsPage() {
                   id="password"
                   name="password"
                   type="password"
-                  value={newInstructor.password}
+                  value={newInstructor.password || ""}
                   onChange={(e) =>
                     setNewInstructor({
                       ...newInstructor,
@@ -1325,7 +1342,7 @@ export default function InstructorsPage() {
                   id="confirmPassword"
                   name="confirmPassword"
                   type="password"
-                  value={newInstructor.confirmPassword}
+                  value={newInstructor.confirmPassword || ""}
                   onChange={(e) =>
                     setNewInstructor({
                       ...newInstructor,

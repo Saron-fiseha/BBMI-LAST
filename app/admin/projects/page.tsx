@@ -799,7 +799,7 @@ export default function ProjectsPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Project Name *</label>
                   <Input
-                    value={newProject.name}
+                    value={newProject.name || ""}
                     onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
                     placeholder="Enter project name"
                     className="border-mustard/20 focus:border-mustard"
@@ -811,7 +811,7 @@ export default function ProjectsPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Description *</label>
                   <Textarea
-                    value={newProject.description}
+                    value={newProject.description || ""}
                     onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
                     placeholder="Enter project description"
                     className="border-mustard/20 focus:border-mustard"
@@ -824,7 +824,7 @@ export default function ProjectsPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Image URL</label>
                   <Input
-                    value={newProject.image_url}
+                    value={newProject.image_url || ""}
                     onChange={(e) => setNewProject({ ...newProject, image_url: e.target.value })}
                     placeholder="Enter image URL (optional)"
                     className="border-mustard/20 focus:border-mustard"
@@ -835,7 +835,7 @@ export default function ProjectsPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Project Type</label>
                   <Select
-                    value={newProject.type}
+                    value={newProject.type || ""}
                     onValueChange={(value: "free" | "paid") => setNewProject({ ...newProject, type: value })}
                     disabled={submitting}
                   >
@@ -852,7 +852,7 @@ export default function ProjectsPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Mentor Name *</label>
                   <Input
-                    value={newProject.mentor_name}
+                    value={newProject.mentor_name || ""}
                     onChange={(e) => setNewProject({ ...newProject, mentor_name: e.target.value })}
                     placeholder="Enter mentor name"
                     className="border-mustard/20 focus:border-mustard"
@@ -864,7 +864,7 @@ export default function ProjectsPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Mentor Address</label>
                   <Textarea
-                    value={newProject.mentor_address}
+                    value={newProject.mentor_address || ""}
                     onChange={(e) => setNewProject({ ...newProject, mentor_address: e.target.value })}
                     placeholder="Enter mentor address (optional)"
                     className="border-mustard/20 focus:border-mustard"
@@ -926,7 +926,7 @@ export default function ProjectsPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Project Name *</label>
                   <Input
-                    value={editingProject.name}
+                    value={editingProject.name || ""}
                     onChange={(e) => setEditingProject({ ...editingProject, name: e.target.value })}
                     placeholder="Enter project name"
                     className="border-mustard/20 focus:border-mustard"
@@ -938,7 +938,7 @@ export default function ProjectsPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Description *</label>
                   <Textarea
-                    value={editingProject.description}
+                    value={editingProject.description || ""}
                     onChange={(e) => setEditingProject({ ...editingProject, description: e.target.value })}
                     placeholder="Enter project description"
                     className="border-mustard/20 focus:border-mustard"
@@ -951,7 +951,7 @@ export default function ProjectsPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Image URL</label>
                   <Input
-                    value={editingProject.image_url}
+                    value={editingProject.image_url || ""}
                     onChange={(e) => setEditingProject({ ...editingProject, image_url: e.target.value })}
                     placeholder="Enter image URL (optional)"
                     className="border-mustard/20 focus:border-mustard"
@@ -962,7 +962,7 @@ export default function ProjectsPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Project Type</label>
                   <Select
-                    value={editingProject.type}
+                    value={editingProject.type || ""}
                     onValueChange={(value: "free" | "paid") => setEditingProject({ ...editingProject, type: value })}
                     disabled={submitting}
                   >
@@ -979,7 +979,7 @@ export default function ProjectsPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Status</label>
                   <Select
-                    value={editingProject.status}
+                    value={editingProject.status || ""}
                     onValueChange={(value: "active" | "inactive") =>
                       setEditingProject({ ...editingProject, status: value })
                     }
@@ -998,7 +998,7 @@ export default function ProjectsPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Mentor Name *</label>
                   <Input
-                    value={editingProject.mentor_name}
+                    value={editingProject.mentor_name || ""}
                     onChange={(e) => setEditingProject({ ...editingProject, mentor_name: e.target.value })}
                     placeholder="Enter mentor name"
                     className="border-mustard/20 focus:border-mustard"
@@ -1010,7 +1010,7 @@ export default function ProjectsPage() {
                 <div>
                   <label className="block text-sm font-medium text-charcoal mb-1">Mentor Address</label>
                   <Textarea
-                    value={editingProject.mentor_address}
+                    value={editingProject.mentor_address || ""}
                     onChange={(e) => setEditingProject({ ...editingProject, mentor_address: e.target.value })}
                     placeholder="Enter mentor address (optional)"
                     className="border-mustard/20 focus:border-mustard"

@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     if (gender !== "all") {
       totalCountQuery = sql`
         ${totalCountQuery}
-        AND u.sex = ${gender}
+        AND u.sex ILIKE ${gender}
       `
     }
 
@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
     if (gender !== "all") {
       mainQuery = sql`
         ${mainQuery}
-        AND u.sex = ${gender}
+        AND u.sex ILIKE ${gender}
       `
     }
 

@@ -27,3 +27,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# Local portfolio videos - not stored in Git
+public/uploads/portfolio/*.MOV
+public/uploads/portfolio/*.mov
+public/uploads/portfolio/*.mp4

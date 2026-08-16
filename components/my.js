@@ -88,7 +88,7 @@
                                                  <section className="py-16 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
                                                       <div className="container">
                                                         <div className="text-center mb-12">
-                                                          <h2 className="text-3xl font-bold mb-4">Why Choose Glamour Academy</h2>
+                                                          <h2 className="text-3xl font-bold mb-4">Why Choose BBMI</h2>
                                                           <p className="text-muted-foreground max-w-2xl mx-auto">
                                                             We're committed to providing the highest quality beauty education and training.
                                                           </p>
@@ -135,7 +135,7 @@
                                                             <div className="max-w-3xl mx-auto text-center space-y-6">
                                                               <h2 className="text-3xl font-bold">Ready to Start Your Beauty Career?</h2>
                                                               <p className="text-lg opacity-90">
-                                                                Join Glamour Academy today and transform your passion into a successful career in the beauty industry.
+                                                                Join BBMI today and transform your passion into a successful career in the beauty industry.
                                                               </p>
                                                               <div className="flex flex-col sm:flex-row justify-center gap-4">
                                                                 <Button size="lg" variant="secondary" asChild>

@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { useAdminPrivileges } from "@/hooks/use-admin-privileges"
 
 interface Student {
   full_name: string
@@ -52,6 +53,7 @@ export default function StudentsPage() {
   const { toast } = useToast()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { canAdd, canEdit, canDelete, canExport } = useAdminPrivileges("students")
 
   const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
@@ -554,23 +556,27 @@ export default function StudentsPage() {
           <p className="text-sm sm:text-base text-deep-purple mt-1">Manage all registered students</p>
         </div>
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-          <Button
-            variant="outline"
-            onClick={handleExport}
-            disabled={loading || students.length === 0}
-            className="w-full sm:w-auto "
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button
-            onClick={() => setIsCreateDialogOpen(true)}
-            className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
-            disabled={isCreating}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Student
-          </Button>
+          {canExport && (
+            <Button
+              variant="outline"
+              onClick={handleExport}
+              disabled={loading || students.length === 0}
+              className="w-full sm:w-auto "
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          )}
+          {canAdd && (
+            <Button
+              onClick={() => setIsCreateDialogOpen(true)}
+              className="w-full sm:w-auto  transition-all duration-200 hover:scale-105 active:scale-95"
+              disabled={isCreating}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Student
+            </Button>
+          )}
         </div>
       </div>
 
@@ -724,29 +730,33 @@ export default function StudentsPage() {
                       </div>
 
                       <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openEditDialog(student)}
-                          className="flex-1 "
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleDeleteStudent(student.id, student.name)}
-                          disabled={isDeleting === student.id}
-                          className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
-                        >
-                          {isDeleting === student.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                          ) : (
-                            <Trash2 className="h-4 w-4 mr-1" />
-                          )}
-                          Delete
-                        </Button>
+                        {canEdit && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openEditDialog(student)}
+                            className="flex-1 "
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
+                        )}
+                        {canDelete && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteStudent(student.id, student.name)}
+                            disabled={isDeleting === student.id}
+                            className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
+                          >
+                            {isDeleting === student.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                            ) : (
+                              <Trash2 className="h-4 w-4 mr-1" />
+                            )}
+                            Delete
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))
@@ -829,27 +839,31 @@ export default function StudentsPage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex space-x-1">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => openEditDialog(student)}
-                                className=""
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDeleteStudent(student.id, student.name)}
-                                disabled={isDeleting === student.id}
-                                className="border-red-200 text-red-600 hover:bg-red-50"
-                              >
-                                {isDeleting === student.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Trash2 className="h-4 w-4" />
-                                )}
-                              </Button>
+                              {canEdit && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openEditDialog(student)}
+                                  className=""
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {canDelete && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDeleteStudent(student.id, student.name)}
+                                  disabled={isDeleting === student.id}
+                                  className="border-red-200 text-red-600 hover:bg-red-50"
+                                >
+                                  {isDeleting === student.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -881,7 +895,7 @@ export default function StudentsPage() {
                   id="name"
                   name="name"
                   type="text"
-                  value={newStudent.name}
+                  value={newStudent.name || ""}
                   onChange={(e) => setNewStudent((prev) => ({ ...prev, name: e.target.value }))}
                   required
                   className="border-mustard/20 focus:border-mustard"
@@ -893,7 +907,7 @@ export default function StudentsPage() {
                   id="email"
                   name="email"
                   type="email"
-                  value={newStudent.email}
+                  value={newStudent.email || ""}
                   onChange={(e) => setNewStudent((prev) => ({ ...prev, email: e.target.value }))}
                   required
                   className="border-mustard/20 focus:border-mustard"
@@ -905,7 +919,7 @@ export default function StudentsPage() {
                   id="phone"
                   name="phone"
                   type="number"
-                  value={newStudent.phone}
+                  value={newStudent.phone || ""}
                   onChange={(e) => setNewStudent((prev) => ({ ...prev, phone: e.target.value }))}
                   className="border-mustard/20 focus:border-mustard"
                 />
@@ -916,7 +930,7 @@ export default function StudentsPage() {
                   id="age"
                   name="age"
                   type="number"
-                  value={newStudent.age}
+                  value={newStudent.age || ""}
                   onChange={(e) => setNewStudent((prev) => ({ ...prev, age: e.target.value }))}
                   className="border-mustard/20 focus:border-mustard"
                 />
@@ -925,7 +939,7 @@ export default function StudentsPage() {
                 <Label htmlFor="gender">Gender</Label>
                 <Select
                   name="gender"
-                  value={newStudent.gender}
+                  value={newStudent.gender || ""}
                   onValueChange={(value) => setNewStudent((prev) => ({ ...prev, gender: value }))}
                   required={true}
                 >
@@ -945,7 +959,7 @@ export default function StudentsPage() {
                   id="password"
                   name="password"
                   type="password"
-                  value={newStudent.password}
+                  value={newStudent.password || ""}
                   onChange={(e) => setNewStudent((prev) => ({ ...prev, password: e.target.value }))}
                   required
                   className="border-mustard/20 focus:border-mustard"
@@ -957,7 +971,7 @@ export default function StudentsPage() {
                   id="confirmPassword"
                   name="confirmpassword"
                   type="password"
-                  value={newStudent.confirmPassword}
+                  value={newStudent.confirmPassword || ""}
                   onChange={(e) => setNewStudent((prev) => ({ ...prev, confirmPassword: e.target.value }))}
                   required
                   className="border-mustard/20 focus:border-mustard"
@@ -966,7 +980,7 @@ export default function StudentsPage() {
               <div className="grid gap-2">
                 <Label htmlFor="status">Status</Label>
                 <Select
-                  value={newStudent.status}
+                  value={newStudent.status || ""}
                   onValueChange={(value) => setNewStudent((prev) => ({ ...prev, status: value }))}
                 >
                   <SelectTrigger className="border-mustard/20 focus:border-mustard">
@@ -1021,7 +1035,7 @@ export default function StudentsPage() {
                   <Label htmlFor="edit-name">Full Name *</Label>
                   <Input
                     id="edit-name"
-                    value={editingStudent.full_name}
+                    value={editingStudent.full_name || ""}
                     onChange={(e) =>
                       setEditingStudent((prev) =>
                         prev ? { ...prev, full_name: e.target.value, name: e.target.value } : null,
@@ -1036,7 +1050,7 @@ export default function StudentsPage() {
                   <Input
                     id="edit-email"
                     type="email"
-                    value={editingStudent.email}
+                    value={editingStudent.email || ""}
                     onChange={(e) => setEditingStudent((prev) => (prev ? { ...prev, email: e.target.value } : null))}
                     required
                     className="border-mustard/20 focus:border-mustard"
@@ -1046,7 +1060,7 @@ export default function StudentsPage() {
                   <Label htmlFor="edit-phone">Phone</Label>
                   <Input
                     id="edit-phone"
-                    value={editingStudent.phone}
+                    value={editingStudent.phone || ""}
                     onChange={(e) => setEditingStudent((prev) => (prev ? { ...prev, phone: e.target.value } : null))}
                     className="border-mustard/20 focus:border-mustard"
                   />
@@ -1056,7 +1070,7 @@ export default function StudentsPage() {
                   <Input
                     id="edit-age"
                     type="number"
-                    value={editingStudent.age}
+                    value={editingStudent.age || ""}
                     onChange={(e) =>
                       setEditingStudent((prev) =>
                         prev ? { ...prev, age: e.target.value ? Number.parseInt(e.target.value) : undefined } : null,
@@ -1068,7 +1082,7 @@ export default function StudentsPage() {
                 <div className="grid gap-2">
                   <Label htmlFor="edit-gender">Gender</Label>
                   <Select
-                    value={editingStudent.gender}
+                    value={editingStudent.gender || ""}
                     onValueChange={(value) => setEditingStudent((prev) => (prev ? { ...prev, gender: value } : null))}
                   >
                     <SelectTrigger className="border-mustard/20 focus:border-mustard">
@@ -1086,7 +1100,7 @@ export default function StudentsPage() {
                   <Input
                     id="edit-password"
                     type="password"
-                    value={editingStudent.password}
+                    value={editingStudent.password || ""}
                     onChange={(e) => setEditingStudent((prev) => (prev ? { ...prev, password: e.target.value } : null))}
                     className="border-mustard/20 focus:border-mustard"
                   />
@@ -1096,7 +1110,7 @@ export default function StudentsPage() {
                   <Input
                     id="edit-confirmPassword"
                     type="password"
-                    value={editingStudent.confirmPassword}
+                    value={editingStudent.confirmPassword || ""}
                     onChange={(e) =>
                       setEditingStudent((prev) => (prev ? { ...prev, confirmPassword: e.target.value } : null))
                     }
@@ -1106,7 +1120,7 @@ export default function StudentsPage() {
                 <div className="grid gap-2">
                   <Label htmlFor="edit-status">Status</Label>
                   <Select
-                    value={editingStudent.status}
+                    value={editingStudent.status || ""}
                     onValueChange={(value) =>
                       setEditingStudent((prev) => (prev ? { ...prev, status: value as "active" | "inactive" } : null))
                     }
