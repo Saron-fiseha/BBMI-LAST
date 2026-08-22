@@ -56,6 +56,11 @@
 //   AlertDialogTrigger,
 // } from "@/components/ui/alert-dialog";
 // import { Badge } from "@/components/ui/badge";
+// import {
+//   localInputToUTCISOString,
+//   parseUTCTimestamp,
+//   utcTimestampToLocalInputValue,
+// } from "@/lib/date-utils";
 
 // interface Session {
 //   id: string;
@@ -87,7 +92,9 @@
 //   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
 //   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
 
-//   // Form state
+//   // Form state — scheduled_at here is always the LOCAL datetime-local
+//   // string as typed by the instructor (e.g. "2025-06-15T14:30").
+//   // It is converted to a UTC ISO string only at submit time.
 //   const [formData, setFormData] = useState({
 //     title: "",
 //     description: "",
@@ -161,13 +168,21 @@
 //     try {
 //       const token = localStorage.getItem("auth_token");
 
+//       // Convert the local datetime-local value the instructor typed into
+//       // a proper UTC ISO string before sending it to the API. This is the
+//       // single point where local -> UTC conversion happens.
+//       const payload = {
+//         ...formData,
+//         scheduled_at: localInputToUTCISOString(formData.scheduled_at),
+//       };
+
 //       const response = await fetch("/api/instructor/sessions", {
 //         method: "POST",
 //         headers: {
 //           "Content-Type": "application/json",
 //           Authorization: `Bearer ${token}`,
 //         },
-//         body: JSON.stringify(formData),
+//         body: JSON.stringify(payload),
 //       });
 
 //       const result = await response.json();
@@ -208,6 +223,12 @@
 //     try {
 //       const token = localStorage.getItem("auth_token");
 
+//       // Same local -> UTC conversion on update.
+//       const payload = {
+//         ...formData,
+//         scheduled_at: localInputToUTCISOString(formData.scheduled_at),
+//       };
+
 //       const response = await fetch(
 //         `/api/instructor/sessions/${selectedSession.id}`,
 //         {
@@ -216,7 +237,7 @@
 //             "Content-Type": "application/json",
 //             Authorization: `Bearer ${token}`,
 //           },
-//           body: JSON.stringify(formData),
+//           body: JSON.stringify(payload),
 //         }
 //       );
 
@@ -322,7 +343,9 @@
 //       title: session.title,
 //       description: session.description || "",
 //       training_id: session.training_id || "none",
-//       scheduled_at: new Date(session.scheduled_at).toISOString().slice(0, 16),
+//       // Convert the UTC value from the database into the correct
+//       // LOCAL wall-clock string for the datetime-local input.
+//       scheduled_at: utcTimestampToLocalInputValue(session.scheduled_at),
 //       duration: session.duration,
 //       meeting_url: session.meeting_url || "",
 //     });
@@ -343,7 +366,9 @@
 //   }
 
 //   const formatDateTime = (dateString: string) => {
-//     const date = new Date(dateString);
+//     // Always treat the stored value as a UTC instant, then let the
+//     // browser convert it to the instructor's own local time for display.
+//     const date = parseUTCTimestamp(dateString);
 //     return {
 //       date: date.toLocaleDateString("en-US", {
 //         year: "numeric",
@@ -375,7 +400,7 @@
 
 //   const isSessionLive = (session: Session) => {
 //     const now = new Date();
-//     const sessionStart = new Date(session.scheduled_at);
+//     const sessionStart = parseUTCTimestamp(session.scheduled_at);
 //     const sessionEnd = new Date(
 //       sessionStart.getTime() + session.duration * 60000
 //     );
@@ -1002,6 +1027,7 @@ interface Session {
   students: number;
   status: string;
   meeting_url?: string;
+  max_participants?: number;
 }
 
 interface Training {
@@ -1031,6 +1057,7 @@ export default function InstructorSessions() {
     scheduled_at: "",
     duration: 60,
     meeting_url: "",
+    max_participants: 50,
   });
 
   useEffect(() => {
@@ -1129,6 +1156,7 @@ export default function InstructorSessions() {
           scheduled_at: "",
           duration: 60,
           meeting_url: "",
+          max_participants: 50,
         });
         fetchData();
       } else {
@@ -1277,6 +1305,7 @@ export default function InstructorSessions() {
       scheduled_at: utcTimestampToLocalInputValue(session.scheduled_at),
       duration: session.duration,
       meeting_url: session.meeting_url || "",
+      max_participants: session.max_participants || 50,
     });
     setIsEditDialogOpen(true);
   };
@@ -1413,21 +1442,39 @@ export default function InstructorSessions() {
                     required
                   />
                 </div>
-                <div>
-                  <Label htmlFor="duration">Duration (minutes)</Label>
-                  <Input
-                    id="duration"
-                    type="number"
-                    value={formData.duration}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        duration: Number.parseInt(e.target.value),
-                      })
-                    }
-                    min="15"
-                    max="180"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="duration">Duration (minutes)</Label>
+                    <Input
+                      id="duration"
+                      type="number"
+                      value={formData.duration}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          duration: Number.parseInt(e.target.value),
+                        })
+                      }
+                      min="15"
+                      max="180"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="max_participants">Max Participants</Label>
+                    <Input
+                      id="max_participants"
+                      type="number"
+                      value={formData.max_participants}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          max_participants: Number.parseInt(e.target.value),
+                        })
+                      }
+                      min="1"
+                      max="1000"
+                    />
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="description">Description (Optional)</Label>
@@ -1521,7 +1568,7 @@ export default function InstructorSessions() {
                           </span>
                           <span className="flex items-center gap-1">
                             <Users className="h-4 w-4" />
-                            {session.students} enrolled
+                            {session.students}/{session.max_participants || 50} enrolled
                           </span>
                         </CardDescription>
                       </div>
@@ -1684,21 +1731,39 @@ export default function InstructorSessions() {
                   required
                 />
               </div>
-              <div>
-                <Label htmlFor="edit-duration">Duration (minutes)</Label>
-                <Input
-                  id="edit-duration"
-                  type="number"
-                  value={formData.duration}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      duration: Number.parseInt(e.target.value),
-                    })
-                  }
-                  min="15"
-                  max="180"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-duration">Duration (minutes)</Label>
+                  <Input
+                    id="edit-duration"
+                    type="number"
+                    value={formData.duration}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        duration: Number.parseInt(e.target.value),
+                      })
+                    }
+                    min="15"
+                    max="180"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-max_participants">Max Participants</Label>
+                  <Input
+                    id="edit-max_participants"
+                    type="number"
+                    value={formData.max_participants}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        max_participants: Number.parseInt(e.target.value),
+                      })
+                    }
+                    min="1"
+                    max="1000"
+                  />
+                </div>
               </div>
               <div>
                 <Label htmlFor="edit-description">Description (Optional)</Label>
@@ -1790,7 +1855,10 @@ export default function InstructorSessions() {
                     <Label className="text-sm font-medium text-muted-foreground">
                       Enrolled Students
                     </Label>
-                    <p>{selectedSession.students} students</p>
+                    <p>
+                      {selectedSession.students}/
+                      {selectedSession.max_participants || 50} students
+                    </p>
                   </div>
                 </div>
 
