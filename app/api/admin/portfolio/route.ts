@@ -91,18 +91,25 @@ export async function GET(request: NextRequest) {
 
     console.log(`✅ Found ${portfolioItems.length} portfolio items`)
 
-    return NextResponse.json({
-      success: true,
-      portfolioItems,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
+    return NextResponse.json(
+      {
+        success: true,
+        portfolioItems,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNext: page < totalPages,
+          hasPrev: page > 1,
+        },
       },
-    })
+      {
+        headers: {
+          "Cache-Control": "no-store, max-age=0, must-revalidate",
+        },
+      }
+    )
   } catch (error) {
     console.error("❌ Error fetching portfolio items:", error)
     return NextResponse.json(

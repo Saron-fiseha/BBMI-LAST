@@ -1,51 +1,62 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
-import { sql } from "@/lib/db"
-
-export const dynamic = "force-dynamic"
-export const revalidate = 0
 
 interface PortfolioItem {
-  id: number;
-  title: string;
-  description: string;
-  file_path: string;
-  file_type: 'video' | 'image';
+  id: number | string
+  title: string
+  description: string
+  file_path: string
+  file_type: "video" | "image"
 }
 
-async function getLatestPortfolioItems(): Promise<PortfolioItem[]> {
-  try {
-    const result = await sql`
-      SELECT id, title, description, file_path, file_type
-      FROM portfolio_items
-      WHERE LOWER(status) = 'published'
-      ORDER BY created_at DESC
-      LIMIT 3
-    `
-    return (result || []) as PortfolioItem[];
-  } catch (error) {
-    console.error("Error fetching announcements from DB:", error);
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-      const apiUrl = `${baseUrl}/api/admin/portfolio?limit=3&page=1&status=published`;
-      const res = await fetch(apiUrl, { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
-        return data.portfolioItems || [];
+export function AnnouncementsSection() {
+  const [announcements, setAnnouncements] = useState<PortfolioItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function fetchAnnouncements() {
+      try {
+        const res = await fetch("/api/admin/portfolio?limit=3&page=1&status=published", {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache",
+          },
+        })
+
+        if (res.ok) {
+          const data = await res.json()
+          if (isMounted) {
+            setAnnouncements(data.portfolioItems || [])
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching announcements:", error)
+      } finally {
+        if (isMounted) {
+          setLoading(false)
+        }
       }
-    } catch (fallbackErr) {
-      console.error("Fallback fetch error:", fallbackErr);
     }
-    return [];
+
+    fetchAnnouncements()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  if (!loading && announcements.length === 0) {
+    return null
   }
-}
 
-export async function AnnouncementsSection() {
-  const announcements = await getLatestPortfolioItems();
-
-  if (!announcements || announcements.length === 0) {
-    return null;
+  if (loading && announcements.length === 0) {
+    return null
   }
 
   return (
@@ -75,6 +86,7 @@ export async function AnnouncementsSection() {
                       muted
                       playsInline
                       controlsList="nodownload"
+                      onContextMenu={(e) => e.preventDefault()}
                       className="absolute inset-0 w-full h-full object-cover"
                     >
                       <source src={item.file_path} type="video/mp4" />
