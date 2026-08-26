@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -50,6 +51,8 @@ interface EnhancedInstructor {
   name: string;
   email: string;
   phone?: string;
+  age?: number | null;
+  gender?: string | null;
   specialization: string;
   experience: number;
   status: "active" | "inactive" | "on-leave";
@@ -97,6 +100,7 @@ export default function InstructorsPage() {
   const searchParams = useSearchParams();
   const { canAdd, canEdit, canDelete, canExport } = useAdminPrivileges("instructors");
 
+  const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
   const [searchQuery, setSearchQuery] = useState(
     searchParams.get("search") || ""
   );
@@ -142,11 +146,11 @@ export default function InstructorsPage() {
     name: "",
     email: "",
     phone: "",
+    age: "",
+    gender: "",
     specialization: "",
     experience: 0,
-    status: "active" as "active" | "inactive" | "on-leave",
-    password: "",
-    confirmPassword: "",
+    status: "active",
   });
 
   const [resetPasswordData, setResetPasswordData] = useState({
@@ -155,14 +159,7 @@ export default function InstructorsPage() {
     email: "",
   });
 
-  const specializations = [
-    "Makeup Artistry",
-    "Hair Styling",
-    "Skincare & Facial",
-    "Nail Care",
-    "Bridal Beauty",
-    "Special Effects Makeup",
-  ];
+  const [specializations, setSpecializations] = useState<string[]>([]);
 
   // Enhanced fetch function with pagination
   const fetchInstructors = useCallback(
@@ -210,7 +207,17 @@ export default function InstructorsPage() {
           data.instructors?.length || 0
         );
 
-        setInstructors(data.instructors || []);
+        const instructorList = data.instructors || [];
+        setInstructors(instructorList);
+
+        // Build unique specializations from API response + instructor list
+        const apiSpecs: string[] = (data.specializations || []);
+        const listSpecs: string[] = instructorList
+          .map((i: any) => i.specialization)
+          .filter((s: any) => s && s !== 'Not Specified' && s.trim() !== '');
+        const allSpecs = Array.from(new Set([...apiSpecs, ...listSpecs])).sort();
+        setSpecializations(allSpecs);
+
         setPagination(
           data.pagination || {
             page: 1,
@@ -342,6 +349,8 @@ export default function InstructorsPage() {
           specialization: newInstructor.specialization,
           experience: newInstructor.experience,
           status: newInstructor.status,
+          age: Number(newInstructor.age) || null,
+          gender: newInstructor.gender || null,
           password: newInstructor.password,
         }),
       });
@@ -408,17 +417,7 @@ export default function InstructorsPage() {
   const handleEditInstructor = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      editInstructor.password &&
-      editInstructor.password !== editInstructor.confirmPassword
-    ) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive",
-      });
-      return;
-    }
+    
 
     try {
       setSubmitting(true);
@@ -438,7 +437,8 @@ export default function InstructorsPage() {
           specialization: editInstructor.specialization,
           experience: editInstructor.experience,
           status: editInstructor.status,
-          password: editInstructor.password,
+        age: Number(editInstructor.age) || null,
+        gender: editInstructor.gender,
         }),
       });
 
@@ -591,9 +591,8 @@ export default function InstructorsPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          instructorId: selectedInstructor.id,
+          instructorId: selectedInstructor.user_id || selectedInstructor.id,
           newPassword: resetPasswordData.newPassword,
-          email: resetPasswordData.email,
         }),
       });
 
@@ -650,15 +649,15 @@ export default function InstructorsPage() {
   const openEditDialog = (instructor: EnhancedInstructor) => {
     setSelectedInstructor(instructor);
     setEditInstructor({
-      id: instructor.id,
+      id: instructor.user_id, // Pass user_id to PUT endpoint
       name: instructor.name,
       email: instructor.email,
       phone: instructor.phone || "",
+      age: instructor.age?.toString() || "",
+      gender: instructor.gender || "",
       specialization: instructor.specialization,
       experience: instructor.experience,
       status: instructor.status,
-      password: "",
-      confirmPassword: "",
     });
     setIsEditDialogOpen(true);
   };
@@ -826,8 +825,7 @@ export default function InstructorsPage() {
             Instructors Management
           </h1>
           <p className="text-sm sm:text-base text-deep-purple mt-1">
-            Manage instructors from users table with real-time training and
-            student counts
+            Manage instructors from users table with real-time training counts
           </p>
         </div>
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
@@ -886,14 +884,20 @@ export default function InstructorsPage() {
 
       {/* Search and Filter - Responsive */}
       <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-deep-purple" />
-          <Input
-            placeholder="Search by name or email..."
-            className="pl-8 border-mustard/20 focus:border-mustard"
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-          />
+        <div className="relative flex-1 flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-deep-purple" />
+            <Input
+              placeholder="Search by name or email..."
+              className="pl-8 border-mustard/20 focus:border-mustard"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSearchChange(searchInput);
+              }}
+            />
+          </div>
+          <Button onClick={() => handleSearchChange(searchInput)}>Search</Button>
         </div>
         <Select value={filterStatus} onValueChange={handleStatusChange}>
           <SelectTrigger className="w-full sm:w-[180px] border-mustard/20 focus:border-mustard">
@@ -1260,6 +1264,37 @@ export default function InstructorsPage() {
                   className="border-mustard/20 focus:border-mustard"
                 />
               </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="age">Age</Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    value={newInstructor.age || ""}
+                    onChange={(e) =>
+                      setNewInstructor({ ...newInstructor, age: e.target.value })
+                    }
+                    placeholder="Enter age"
+                    className="border-mustard/20 focus:border-mustard"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="gender">Gender</Label>
+                  <Select
+                    value={newInstructor.gender || ""}
+                    onValueChange={(value) =>
+                      setNewInstructor({ ...newInstructor, gender: value })
+                    }
+                  >
+                    <SelectTrigger className="border-mustard/20 focus:border-mustard">
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-ivory border-mustard/20">
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               <div className="grid gap-2">
                 <Label htmlFor="experience">Experience (years)</Label>
                 <Input
@@ -1278,27 +1313,20 @@ export default function InstructorsPage() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="specialization">Specialization</Label>
-                <Select
+                <Input
+                  id="specialization"
                   name="specialization"
+                  type="text"
                   value={newInstructor.specialization || ""}
-                  onValueChange={(value) =>
+                  onChange={(e) =>
                     setNewInstructor({
                       ...newInstructor,
-                      specialization: value,
+                      specialization: e.target.value,
                     })
                   }
-                >
-                  <SelectTrigger className="border-mustard/20 focus:border-mustard">
-                    <SelectValue placeholder="Select specialization" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-ivory border-mustard/20">
-                    {specializations.map((spec) => (
-                      <SelectItem key={spec} value={spec}>
-                        {spec}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="e.g. Hair Styling, Makeup Artistry"
+                  className="border-mustard/20 focus:border-mustard"
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="status">Status</Label>
@@ -1441,6 +1469,43 @@ export default function InstructorsPage() {
                   />
                 </div>
                 <div className="grid gap-2">
+                  <Label htmlFor="edit-age">Age</Label>
+                  <Input
+                    id="edit-age"
+                    type="number"
+                    value={editInstructor.age}
+                    onChange={(e) =>
+                      setEditInstructor({
+                        ...editInstructor,
+                        age: e.target.value,
+                      })
+                    }
+                    placeholder="Enter age"
+                    className="border-mustard/20 focus:border-mustard"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-gender">Gender</Label>
+                  <Select
+                    value={editInstructor.gender}
+                    onValueChange={(value) =>
+                      setEditInstructor({
+                        ...editInstructor,
+                        gender: value,
+                      })
+                    }
+                  >
+                    <SelectTrigger className="border-mustard/20 focus:border-mustard">
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-ivory border-mustard/20">
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
                   <Label htmlFor="edit-experience">Experience (years)</Label>
                   <Input
                     id="edit-experience"
@@ -1457,26 +1522,18 @@ export default function InstructorsPage() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="edit-specialization">Specialization</Label>
-                  <Select
-                    value={editInstructor.specialization}
-                    onValueChange={(value) =>
+                  <Input
+                    id="edit-specialization"
+                    value={editInstructor.specialization || ""}
+                    onChange={(e) =>
                       setEditInstructor({
                         ...editInstructor,
-                        specialization: value,
+                        specialization: e.target.value,
                       })
                     }
-                  >
-                    <SelectTrigger className="border-mustard/20 focus:border-mustard">
-                      <SelectValue placeholder="Select specialization" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-ivory border-mustard/20">
-                      {specializations.map((spec) => (
-                        <SelectItem key={spec} value={spec}>
-                          {spec}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    placeholder="Enter specialization"
+                    className="border-mustard/20 focus:border-mustard"
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="edit-status">Status</Label>
@@ -1498,40 +1555,7 @@ export default function InstructorsPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-password">
-                    New Password (leave blank to keep current)
-                  </Label>
-                  <Input
-                    id="edit-password"
-                    type="password"
-                    value={editInstructor.password}
-                    onChange={(e) =>
-                      setEditInstructor({
-                        ...editInstructor,
-                        password: e.target.value,
-                      })
-                    }
-                    className="border-mustard/20 focus:border-mustard"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-confirmPassword">
-                    Confirm New Password
-                  </Label>
-                  <Input
-                    id="edit-confirmPassword"
-                    type="password"
-                    value={editInstructor.confirmPassword}
-                    onChange={(e) =>
-                      setEditInstructor({
-                        ...editInstructor,
-                        confirmPassword: e.target.value,
-                      })
-                    }
-                    className="border-mustard/20 focus:border-mustard"
-                  />
-                </div>
+                
               </div>
               <DialogFooter>
                 <Button

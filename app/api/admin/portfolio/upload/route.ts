@@ -1,7 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { writeFile, mkdir } from "fs/promises"
 import path from "path"
+
 export const dynamic = "force-dynamic"
+export const maxDuration = 300
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,14 +51,14 @@ export async function POST(request: NextRequest) {
     const uploadDir = path.join(process.cwd(), "public", "uploads", "portfolio")
     await mkdir(uploadDir, { recursive: true })
 
-    // Write file
+    // Write file to disk
     const filePath = path.join(uploadDir, filename)
     await writeFile(filePath, buffer)
 
     // Return the public URL path
     const publicPath = `/uploads/portfolio/${filename}`
 
-    console.log("✅ File uploaded successfully:", publicPath)
+    console.log("✅ File uploaded successfully:", publicPath, `(${(file.size / (1024 * 1024)).toFixed(2)} MB)`)
 
     return NextResponse.json({
       success: true,
@@ -68,7 +70,7 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error("❌ Error uploading file:", error)
-    return NextResponse.json({ success: false, error: "Failed to upload file" }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : "Failed to upload file"
+    return NextResponse.json({ success: false, error: errorMessage }, { status: 500 })
   }
 }
-    

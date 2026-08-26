@@ -21,57 +21,55 @@ export async function GET(request: NextRequest) {
     const limit = Number.parseInt(searchParams.get("limit") || "10");
     const offset = (page - 1) * limit;
 
-    // Base query for counting total instructors
+    // Base query for counting total instructors from users table
     let totalQuery = sql`
-      SELECT COUNT(i.id) as total
-      FROM instructors i
-      JOIN users u ON i.user_id = u.id -- CORRECTED: Fixed typo from user-id
+      SELECT COUNT(u.id) as total
+      FROM users u
+      LEFT JOIN instructors i ON u.id = i.user_id
       WHERE u.role = 'instructor'
     `;
 
-    // Base query for fetching instructor data with real-time counts
-let dataQuery = sql`
-  SELECT 
-    i.id,
-    i.specialties as specialization,
-    i.experience,
-    i.status,
-    i.full_name as name,
-    i.email,
-    i.phone,
-    i.user_id,
-    TO_CHAR(i.join_date, 'YYYY-MM-DD') as join_date,
+    // Base query for fetching instructor data from users table
+    let dataQuery = sql`
+      SELECT 
+        COALESCE(i.id, u.id) as id,
+        COALESCE(i.specialties, 'Not Specified') as specialization,
+        COALESCE(i.experience, 0) as experience,
+        COALESCE(i.status, 'active') as status,
+        u.full_name as name,
+        u.email,
+        u.phone,\n        u.age,\n        u.sex as gender,
+        u.id as user_id,
+        TO_CHAR(u.created_at, 'YYYY-MM-DD') as join_date,
+        
+        (
+          SELECT COUNT(*)
+          FROM trainings t
+          WHERE t.instructor_id = u.id
+        ) AS trainings_count,
+        
+        (
+          SELECT COUNT(DISTINCT e.user_id)
+          FROM trainings t
+          LEFT JOIN enrollments e ON t.id = e.training_id
+          WHERE t.instructor_id = u.id
+        ) AS students_count
 
-   (
-  SELECT COUNT(*)
-  FROM trainings t
-  WHERE t.instructor_id = i.user_id -- ✅ match against user_id
-) AS trainings_count,
-
-(
-  SELECT COUNT(DISTINCT e.user_id)
-  FROM trainings t
-  LEFT JOIN enrollments e ON t.id = e.training_id
-  WHERE t.instructor_id = i.user_id -- ✅ match against user_id
-) AS students_count
-
-
-  FROM instructors i
-  JOIN users u ON i.user_id = u.id
-  WHERE u.role = 'instructor'
-`;
-
+      FROM users u
+      LEFT JOIN instructors i ON u.id = i.user_id
+      WHERE u.role = 'instructor'
+    `;
 
     // Apply filters to both queries
     const filters = [];
     if (search) {
-      filters.push(sql`(i.full_name ILIKE ${`%${search}%`} OR i.email ILIKE ${`%${search}%`})`);
+      filters.push(sql`(u.full_name ILIKE ${'%' + search + '%'} OR u.email ILIKE ${'%' + search + '%'})`);
     }
     if (status !== "all") {
-      filters.push(sql`i.status = ${status}`);
+      filters.push(sql`COALESCE(i.status, 'active') = ${status}`);
     }
     if (specializationFilter !== "all") {
-      filters.push(sql`i.specialties = ${specializationFilter}`);
+      filters.push(sql`COALESCE(i.specialties, 'Not Specified') = ${specializationFilter}`);
     }
 
     if (filters.length > 0) {
@@ -85,12 +83,17 @@ let dataQuery = sql`
     const total = Number(totalResult[0]?.total) || 0;
     const totalPages = Math.ceil(total / limit);
     
-    dataQuery = sql`${dataQuery} ORDER BY i.created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+    dataQuery = sql`${dataQuery} ORDER BY u.created_at DESC LIMIT ${limit} OFFSET ${offset}`;
 
     const instructors = await dataQuery;
 
+    
+    const specsResult = await sql`SELECT DISTINCT specialties FROM instructors WHERE specialties IS NOT NULL AND specialties != ''`;
+    const uniqueSpecializations = specsResult.map(row => row.specialties);
+    
     return NextResponse.json({
       instructors,
+      specializations: uniqueSpecializations,
       pagination: {
         page,
         limit,
@@ -113,15 +116,15 @@ let dataQuery = sql`
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, phone, specialization, experience, status, password } = body;
+    const { name, email, phone, specialization, experience, status, password, age, gender } = body;
 
     console.log("🚀 Creating new instructor user:", { name, email });
 
     const passwordHash = await bcrypt.hash(password, 10);
 
     const userResult = await sql`
-      INSERT INTO users (full_name, email, phone, role, password_hash)
-      VALUES (${name}, ${email}, ${phone || null}, 'instructor', ${passwordHash})
+      INSERT INTO users (full_name, email, phone, age, sex, role, password_hash, email_verified)
+      VALUES (${name}, ${email}, ${phone || null}, ${age || null}, ${gender || null}, 'instructor', ${passwordHash}, true)
       RETURNING id
     `;
     const userId = userResult[0].id;
@@ -155,43 +158,53 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, name, email, phone, specialization, experience, status, password } = body;
+    const { id: userId, name, email, phone, age, gender, specialization, experience, status } = body;
 
-    console.log("🔄 Updating instructor:", { id, name });
+    console.log("🔄 Updating instructor:", { userId, name });
 
-    const instructorRecord = await sql`SELECT user_id FROM instructors WHERE id = ${id}`;
-    if (instructorRecord.length === 0) {
-      return NextResponse.json({ error: "Instructor not found" }, { status: 404 });
+    const userRecord = await sql`SELECT id FROM users WHERE id = ${userId} AND role = 'instructor'`;
+    if (userRecord.length === 0) {
+      return NextResponse.json({ error: "Instructor not found in users table" }, { status: 404 });
     }
-    const userId = instructorRecord[0].user_id;
 
-    // Update the users table (which contains the password)
-    const passwordHash = password ? await bcrypt.hash(password, 10) : null;
+    // Update the users table
     await sql`
       UPDATE users 
       SET 
         full_name = ${name}, 
         email = ${email}, 
         phone = ${phone || null},
-        ${passwordHash ? sql`password_hash = ${passwordHash},` : sql``}
+        age = ${age || null},
+        sex = ${gender || null},
+        status = ${status},
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ${userId}
     `;
 
-    // Update the instructors table (which does NOT contain a password)
-    const updatedInstructor = await sql`
-      UPDATE instructors 
-      SET 
-        full_name = ${name}, 
-        email = ${email}, 
-        phone = ${phone || null}, 
-        specialties = ${specialization},
-        experience = ${experience}, 
-        status = ${status},
-        updated_at = CURRENT_TIMESTAMP
-      WHERE id = ${id}
-      RETURNING *
-    `;
+    // Upsert the instructors table
+    const instructorRecord = await sql`SELECT id FROM instructors WHERE user_id = ${userId}`;
+    let updatedInstructor;
+    if (instructorRecord.length > 0) {
+      updatedInstructor = await sql`
+        UPDATE instructors 
+        SET 
+          full_name = ${name}, 
+          email = ${email}, 
+          phone = ${phone || null}, 
+          specialties = ${specialization},
+          experience = ${experience}, 
+          status = ${status},
+          updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = ${userId}
+        RETURNING *
+      `;
+    } else {
+      updatedInstructor = await sql`
+        INSERT INTO instructors (user_id, full_name, email, phone, specialties, experience, status)
+        VALUES (${userId}, ${name}, ${email}, ${phone || null}, ${specialization}, ${experience}, ${status})
+        RETURNING *
+      `;
+    }
     
     console.log("✅ Instructor updated successfully.");
     return NextResponse.json({ instructor: updatedInstructor[0] });
