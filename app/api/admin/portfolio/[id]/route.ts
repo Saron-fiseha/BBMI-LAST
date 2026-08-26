@@ -12,18 +12,29 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ success: false, error: "Item ID is required" }, { status: 400 })
     }
 
-    // Fetch the single portfolio item that is 'published'
+    // Fetch the single portfolio item (case-insensitive published check)
     const result = await sql`
       SELECT id, title, description, category, file_path, file_type, status, featured, created_at, updated_at
       FROM portfolio_items
-      WHERE id = ${id} AND status = 'published'
+      WHERE id = ${id} AND (LOWER(status) = 'published' OR status IS NULL)
     `
 
     if (result.length === 0) {
+      // Also check if item exists in draft mode
+      const anyItem = await sql`SELECT id FROM portfolio_items WHERE id = ${id}`
+      if (anyItem.length > 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "This promotion item is currently saved as draft.",
+          },
+          { status: 404 }
+        )
+      }
       return NextResponse.json(
         {
           success: false,
-          error: "Portfolio item not found or is not published",
+          error: "Portfolio item not found",
         },
         { status: 404 }
       )
@@ -58,7 +69,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const result = await sql`
       UPDATE portfolio_items
       SET title = ${title}, description = ${description}, category = ${category},
-          file_path = ${file_path || null}, file_type = ${file_type || "image"}, status = ${status},
+          file_path = ${file_path || null}, file_type = ${file_type || "image"}, status = ${status || 'published'},
           featured = ${featured || false}, updated_at = NOW()
       WHERE id = ${id}
       RETURNING id, title, description, category, file_path, file_type, status, featured, created_at, updated_at

@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     if (status !== "all") {
       countQuery = sql`
         ${countQuery}
-        AND status = ${status}
+        AND LOWER(status) = LOWER(${status})
       `
     }
 
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
     if (status !== "all") {
       mainQuery = sql`
         ${mainQuery}
-        AND status = ${status}
+        AND LOWER(status) = LOWER(${status})
       `
     }
 

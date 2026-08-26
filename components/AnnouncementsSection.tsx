@@ -1,8 +1,11 @@
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
+import { sql } from "@/lib/db"
 
-// Define a type for the portfolio item data we expect from the API
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 interface PortfolioItem {
   id: number;
   title: string;
@@ -11,50 +14,42 @@ interface PortfolioItem {
   file_type: 'video' | 'image';
 }
 
-// --- Data fetching function ---
-// This function calls your existing portfolio API to get the latest 3 items.
 async function getLatestPortfolioItems(): Promise<PortfolioItem[]> {
   try {
-    // We construct the URL to fetch the first page with a limit of 3 items.
-    // Fall back to localhost:3000 when NEXT_PUBLIC_APP_URL is not set (e.g. local dev).
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const apiUrl = `${baseUrl}/api/admin/portfolio?limit=3&page=1&status=published`;
-
-    const res = await fetch(apiUrl, {
-      // This caches the data and re-fetches it at most once every 60 seconds.
-      // This prevents hitting your database on every single page load.
-      next: { revalidate: 60 },
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch portfolio items: ${res.statusText}`);
-    }
-
-    const data = await res.json();
-    
-    // Your API returns data inside a `portfolioItems` key
-    return data.portfolioItems || [];
-
+    const result = await sql`
+      SELECT id, title, description, file_path, file_type
+      FROM portfolio_items
+      WHERE LOWER(status) = 'published'
+      ORDER BY created_at DESC
+      LIMIT 3
+    `
+    return (result || []) as PortfolioItem[];
   } catch (error) {
-    console.error("Error fetching announcements:", error);
-    // Return an empty array on error to prevent the page from crashing.
+    console.error("Error fetching announcements from DB:", error);
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      const apiUrl = `${baseUrl}/api/admin/portfolio?limit=3&page=1&status=published`;
+      const res = await fetch(apiUrl, { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        return data.portfolioItems || [];
+      }
+    } catch (fallbackErr) {
+      console.error("Fallback fetch error:", fallbackErr);
+    }
     return [];
   }
 }
 
-
-// The component is now an `async` function, allowing us to use `await`
 export async function AnnouncementsSection() {
-  // Fetch the latest items when the component renders on the server
   const announcements = await getLatestPortfolioItems();
 
-  // If there's no data, we can choose to render nothing
   if (!announcements || announcements.length === 0) {
     return null;
   }
 
   return (
-    <section  id="announcement" className="bg-slate-50 py-20 sm:py-24">
+    <section id="announcement" className="bg-slate-50 py-20 sm:py-24">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -66,14 +61,13 @@ export async function AnnouncementsSection() {
           </p>
         </div>
 
-        {/* Announcements Grid - Now mapping over data fetched from your API */}
+        {/* Announcements Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {announcements.map((item) => (
-            // The link now dynamically points to a portfolio detail page
             <Link href={`/portfolio/${item.id}`} key={item.id} className="group block">
               <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 h-full flex flex-col">
-                {/* Media Section: Uses `file_type` and `file_path` from your API */}
-                <div className="relative w-full aspect-video">
+                {/* Media Section */}
+                <div className="relative w-full aspect-video bg-black/5">
                   {item.file_type === "video" ? (
                     <video
                       autoPlay
@@ -81,6 +75,7 @@ export async function AnnouncementsSection() {
                       muted
                       playsInline
                       controlsList="nodownload"
+                      onContextMenu={(e) => e.preventDefault()}
                       className="absolute inset-0 w-full h-full object-cover"
                     >
                       <source src={item.file_path} type="video/mp4" />
@@ -96,7 +91,7 @@ export async function AnnouncementsSection() {
                   )}
                 </div>
 
-                {/* Content Section: Uses `title` and `description` from your API */}
+                {/* Content Section */}
                 <div className="p-6 flex-grow flex flex-col">
                   <h3 className="text-xl font-bold text-gray-900 mb-2">
                     {item.title}
