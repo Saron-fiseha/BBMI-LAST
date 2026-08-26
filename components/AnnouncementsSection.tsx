@@ -75,7 +75,6 @@ export async function AnnouncementsSection() {
                       muted
                       playsInline
                       controlsList="nodownload"
-                      onContextMenu={(e) => e.preventDefault()}
                       className="absolute inset-0 w-full h-full object-cover"
                     >
                       <source src={item.file_path} type="video/mp4" />
