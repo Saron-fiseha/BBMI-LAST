@@ -796,7 +796,7 @@ export default function TrainingsPage() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Price ($)</label>
+          <label className="block text-sm font-medium mb-1">Price (ETB)</label>
           <Input
             type="number"
             value={data.price}
@@ -1130,7 +1130,7 @@ export default function TrainingsPage() {
                     <TableCell className="text-deep-purple">{training.category_name}</TableCell>
                     <TableCell className="text-deep-purple">{training.instructor_name || "N/A"}</TableCell>
                     <TableCell className="text-deep-purple">
-                      {training.price != null ? `$${Number(training.price).toFixed(2)}` : "N/A"}
+                      {training.price != null ? `ETB ${Number(training.price).toFixed(2)}` : "N/A"}
                     </TableCell>
                     <TableCell>
                       <Badge className={getStatusColor(training.status)}>

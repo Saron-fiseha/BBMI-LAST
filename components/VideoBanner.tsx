@@ -1,44 +1,32 @@
-
 "use client"
 
 import Link from "next/link"
 
 export function VideoBanner() {
   return (
-    <section className="relative h-screen w-full flex items-center justify-start overflow-hidden">
-      {/* Local Video Background */}
-      {/* <video
-        className="absolute top-1/2 left-1/2 min-w-full min-h-full w-auto h-auto -translate-x-1/2 -translate-y-1/2 object-cover z-0"
+    <section className="relative min-h-[90vh] md:min-h-[100vh] w-full flex items-center justify-start overflow-hidden">
+      {/* Background Video */}
+      <video
+        className="absolute top-0 left-0 w-full h-full object-cover object-top z-0"
         autoPlay
         muted
         loop
         playsInline
       >
-        <source src="/videos/makeup-banner.mp4" type="video/mp4" />
+        <source src="/videos/banner.mp4" type="video/mp4" />
         Your browser does not support the video tag.
-      </video> */}
-      <video
-  className="absolute top-0 left-0 w-full h-full object-cover z-0"
-  autoPlay
-  muted
-  loop
-  playsInline
->
-  <source src="/videos/makeup-banner.mp4" type="video/mp4" />
-  Your browser does not support the video tag.
-</video>
+      </video>
 
-
-      {/* Dark Overlay */}
-      <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50 z-10" />
+      {/* Subtle Gradient Overlay for text readability while preserving natural video brightness */}
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-black/60 via-black/25 to-transparent z-10" />
 
       {/* Text Content */}
-      <div className="relative z-20 text-left text-white max-w-2xl px-8 sm:px-12 lg:px-24">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight">
+      <div className="relative z-20 text-left text-white max-w-2xl px-8 sm:px-12 lg:px-24 drop-shadow-md">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight drop-shadow-lg">
           All makeup styles
           <span className="block text-custom-tan mt-2">in one place</span>
         </h1>
-        <p className="mt-6 text-lg sm:text-xl text-gray-200 leading-relaxed">
+        <p className="mt-6 text-lg sm:text-xl text-gray-100 leading-relaxed drop-shadow">
           Learn from the smooth and neutral makeup for customer service, 
           even the most daring, colorful and artistic, and unlock all your potential!
         </p>

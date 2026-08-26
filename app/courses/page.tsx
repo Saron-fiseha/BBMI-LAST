@@ -132,7 +132,7 @@ function CourseCard({ course, isEnrolled, onEnrollClick }: CourseCardProps) {
         {/* Price Display */}
         <div className="flex items-baseline space-x-2">
           <span className="text-2xl font-extrabold text-gray-900">
-            ${discountedPrice.toFixed(2)}
+            ETB {discountedPrice.toFixed(2)}
           </span>
           {hasDiscount && (
             <span className="text-md font-medium text-gray-400 line-through">

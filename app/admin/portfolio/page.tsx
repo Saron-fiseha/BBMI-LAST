@@ -61,6 +61,7 @@ export default function AdminPortfolioPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "")
   const [filterCategory, setFilterCategory] = useState(searchParams.get("category") || "all")
+  const [categories, setCategories] = useState<string[]>([])
   const [filterStatus, setFilterStatus] = useState(searchParams.get("status") || "all")
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [showEditForm, setShowEditForm] = useState(false)
@@ -167,6 +168,14 @@ export default function AdminPortfolioPage() {
       console.log("✅ Portfolio items loaded:", itemsData.length)
 
       setPortfolioItems(itemsData)
+
+      // Build unique categories from API + items list
+      const apiCats: string[] = data.categories || []
+      const listCats: string[] = itemsData
+        .map((i: any) => i.category)
+        .filter((c: any) => c && c.trim() !== "")
+      const allCategories = Array.from(new Set([...apiCats, ...listCats])).sort()
+      setCategories(allCategories)
       setPagination(
         data.pagination || {
           page: 1,
@@ -717,11 +726,11 @@ export default function AdminPortfolioPage() {
           </SelectTrigger>
           <SelectContent className="bg-ivory border-mustard/20">
             <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="makeup">Makeup</SelectItem>
-            <SelectItem value="skincare">Skincare</SelectItem>
-            <SelectItem value="haircare">Haircare</SelectItem>
-            <SelectItem value="nails">Nails</SelectItem>
-            <SelectItem value="training">Training</SelectItem>
+            {categories.map((cat) => (
+              <SelectItem key={cat} value={cat}>
+                {cat.charAt(0).toUpperCase() + cat.slice(1)}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -1005,11 +1014,9 @@ export default function AdminPortfolioPage() {
                     disabled={submitting}
                   />
                   <datalist id="categories">
-                    <option value="makeup" />
-                    <option value="skincare" />
-                    <option value="haircare" />
-                    <option value="nails" />
-                    <option value="training" />
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat} />
+                    ))}
                   </datalist>
                 </div>
 

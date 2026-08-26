@@ -53,7 +53,7 @@ export const CourseHeader = ({
       </div> */}
       <div className="flex items-center gap-1.5">
         <Clock className="h-4 w-4" />
-        <span>{duration} minuets</span>
+        <span>{duration} {duration === 1 ? "minute" : "minutes"}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <BookOpen className="h-4 w-4" />

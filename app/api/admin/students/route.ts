@@ -63,6 +63,12 @@ export async function GET(request: NextRequest) {
         COALESCE(u.sex, '') as gender,
         u.role,
         COUNT(DISTINCT e.training_id) AS courses_enrolled,
+        (
+          SELECT COALESCE(STRING_AGG(DISTINCT t.name, ', '), '')
+          FROM enrollments enr
+          JOIN trainings t ON enr.training_id = t.id
+          WHERE enr.user_id = u.id
+        ) AS enrolled_courses,
         COUNT(DISTINCT e.training_id) FILTER (WHERE e.status = 'completed') AS courses_completed,
         ROUND(COALESCE(SUM(mp.time_spent_minutes), 0)::numeric / 60.0, 1) AS total_hours,
         COALESCE(AVG(e.progress_percentage), 0) AS progress_percent,
@@ -97,7 +103,7 @@ export async function GET(request: NextRequest) {
 
     mainQuery = sql`
       ${mainQuery}
-      GROUP BY s.id, s.roll_number, s.id_number, u.full_name, u.email, u.phone, u.age, u.sex, u.role, s.join_date, s.last_active, s.status
+      GROUP BY u.id, s.id, s.roll_number, s.id_number, u.full_name, u.email, u.phone, u.age, u.sex, u.role, s.join_date, s.last_active, s.status
       ORDER BY s.roll_number ASC
       LIMIT ${limit}
       OFFSET ${offset}

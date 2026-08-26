@@ -25,7 +25,8 @@ interface User {
   phone?: string
   age?: number
   gender?: string
-  role: "admin" | "instructor" | "student"
+  role: "super_admin" | "admin" | "instructor" | "student"
+  is_super_admin?: boolean
   status: "active" | "inactive"
   image_url?: string
   created_at: string
@@ -73,7 +74,7 @@ export default function AdminUsersPage() {
     gender: "",
     password: "",
     confirmPassword: "",
-    role: "student" as "admin" | "instructor" | "student",
+    role: "student" as "super_admin" | "admin" | "instructor" | "student",
     status: "active" as "active" | "inactive",
     image_url: "",
   })
@@ -653,6 +654,7 @@ export default function AdminUsersPage() {
           </SelectTrigger>
           <SelectContent className="bg-ivory border-mustard/20">
             <SelectItem value="all">All Roles</SelectItem>
+            <SelectItem value="super_admin">Super Admin</SelectItem>
             <SelectItem value="admin">Admin</SelectItem>
             <SelectItem value="instructor">Instructor</SelectItem>
             <SelectItem value="student">Student</SelectItem>
@@ -705,7 +707,9 @@ export default function AdminUsersPage() {
                             <p className="text-sm text-deep-purple">{user.email}</p>
                           </div>
                         </div>
-                        <Badge className={getRoleColor(user.role)}>{user.role}</Badge>
+                        <Badge className={getRoleColor(user.role, user.is_super_admin)}>
+                          {(user.is_super_admin || user.role === "super_admin") ? "Super Admin" : user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                        </Badge>
                       </div>
 
                       <div className="grid grid-cols-2 gap-4 text-sm">
@@ -799,7 +803,9 @@ export default function AdminUsersPage() {
                           <TableCell className="text-deep-purple">{user.age || "-"}</TableCell>
                           <TableCell className="text-deep-purple">{user.gender || "-"}</TableCell>
                           <TableCell>
-                            <Badge className={getRoleColor(user.role)}>{user.role}</Badge>
+                            <Badge className={getRoleColor(user.role, user.is_super_admin)}>
+                          {(user.is_super_admin || user.role === "super_admin") ? "Super Admin" : user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                        </Badge>
                           </TableCell>
                           <TableCell>
                             <Badge className={getStatusColor(user.status)}>{user.status}</Badge>
@@ -979,6 +985,7 @@ export default function AdminUsersPage() {
                       <SelectItem value="student">Student</SelectItem>
                       <SelectItem value="instructor">Instructor</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="super_admin">Super Admin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1165,6 +1172,7 @@ export default function AdminUsersPage() {
                       <SelectItem value="student">Student</SelectItem>
                       <SelectItem value="instructor">Instructor</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="super_admin">Super Admin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

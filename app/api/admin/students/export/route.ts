@@ -21,6 +21,12 @@ export async function GET(request: NextRequest) {
         COALESCE(u.age, 0) as age,
         COALESCE(u.sex, '') as gender,
         COUNT(DISTINCT e.training_id) AS courses_enrolled,
+        (
+          SELECT COALESCE(STRING_AGG(DISTINCT t.name, ', '), '')
+          FROM enrollments enr
+          JOIN trainings t ON enr.training_id = t.id
+          WHERE enr.user_id = u.id
+        ) AS enrolled_courses,
         COUNT(DISTINCT e.training_id) FILTER (WHERE e.status = 'completed') AS courses_completed,
         ROUND(COALESCE(SUM(mp.time_spent_minutes), 0)::numeric / 60.0, 1) AS total_hours,
         s.status,
@@ -54,7 +60,7 @@ export async function GET(request: NextRequest) {
 
     query = sql`
       ${query}
-      GROUP BY s.id, s.roll_number, s.id_number, u.full_name, u.email, u.phone, u.age, u.sex, s.join_date, s.last_active, s.status
+      GROUP BY u.id, s.id, s.roll_number, s.id_number, u.full_name, u.email, u.phone, u.age, u.sex, s.join_date, s.last_active, s.status
       ORDER BY s.roll_number ASC
     `
 
@@ -70,6 +76,7 @@ export async function GET(request: NextRequest) {
       "Age",
       "Gender",
       "Courses Enrolled",
+      "Enrolled Course(s)",
       "Courses Completed",
       "Total Hours",
       "Status",
@@ -86,6 +93,7 @@ export async function GET(request: NextRequest) {
       student.age || "",
       student.gender || "",
       student.courses_enrolled || 0,
+      student.enrolled_courses || "None",
       student.courses_completed || 0,
       student.total_hours || 0,
       student.status || "",

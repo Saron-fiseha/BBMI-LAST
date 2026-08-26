@@ -6,7 +6,7 @@ const sql = neon(process.env.DATABASE_URL!);
 
 export const dynamic = "force-dynamic";
 
-// GET - Fetch users with pagination
+// GET - Fetch users with pagination and role splitting
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
     console.log("🔍 Fetching users with params:", { search, role, status, page, limit });
 
-    // Build count query using tagged template
+    // Build count query
     let countQuery = sql`
       SELECT COUNT(*) as total 
       FROM users 
@@ -33,10 +33,25 @@ export async function GET(request: NextRequest) {
       `;
     }
 
-    if (role !== "all") {
+    if (role === "super_admin") {
       countQuery = sql`
         ${countQuery}
-        AND role = ${role}
+        AND role = 'admin' AND is_super_admin = true
+      `;
+    } else if (role === "admin") {
+      countQuery = sql`
+        ${countQuery}
+        AND role = 'admin' AND (is_super_admin = false OR is_super_admin IS NULL)
+      `;
+    } else if (role === "instructor") {
+      countQuery = sql`
+        ${countQuery}
+        AND role = 'instructor'
+      `;
+    } else if (role === "student") {
+      countQuery = sql`
+        ${countQuery}
+        AND (role = 'student' OR role = 'user')
       `;
     }
 
@@ -51,10 +66,10 @@ export async function GET(request: NextRequest) {
     const total = Number.parseInt(totalResult[0].total);
     const totalPages = Math.ceil(total / limit);
 
-    // Build main query using tagged template
+    // Build main query
     let mainQuery = sql`
       SELECT 
-        id, full_name, email, phone, age, sex, role, status, created_at
+        id, full_name, email, phone, age, sex, role, status, is_super_admin, created_at
       FROM users 
       WHERE 1=1
     `;
@@ -66,10 +81,25 @@ export async function GET(request: NextRequest) {
       `;
     }
 
-    if (role !== "all") {
+    if (role === "super_admin") {
       mainQuery = sql`
         ${mainQuery}
-        AND role = ${role}
+        AND role = 'admin' AND is_super_admin = true
+      `;
+    } else if (role === "admin") {
+      mainQuery = sql`
+        ${mainQuery}
+        AND role = 'admin' AND (is_super_admin = false OR is_super_admin IS NULL)
+      `;
+    } else if (role === "instructor") {
+      mainQuery = sql`
+        ${mainQuery}
+        AND role = 'instructor'
+      `;
+    } else if (role === "student") {
+      mainQuery = sql`
+        ${mainQuery}
+        AND (role = 'student' OR role = 'user')
       `;
     }
 
@@ -103,6 +133,10 @@ export async function GET(request: NextRequest) {
         hasNext: page < totalPages,
         hasPrev: page > 1,
       },
+    }, {
+      headers: {
+        "Cache-Control": "no-store, max-age=0, must-revalidate",
+      }
     });
   } catch (error) {
     console.error("❌ Error fetching users:", error);
@@ -116,7 +150,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create new user
+// POST - Create user
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -124,7 +158,6 @@ export async function POST(request: NextRequest) {
 
     console.log("🚀 Creating user:", { name, email, role });
 
-    // Validate required fields
     if (!name || !email || !password) {
       return NextResponse.json(
         {
@@ -135,19 +168,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
+    const dbRole = (role === "super_admin" || role === "admin") ? "admin" : (role || "student");
+    const isSuperAdmin = role === "super_admin";
 
-    // Create user using properly formatted SQL template
     const user = await sql`
       INSERT INTO users 
-        (full_name, email, phone, age, sex, role, status, password_hash, created_at, updated_at)
+        (full_name, email, phone, age, sex, role, is_super_admin, status, password_hash, email_verified, created_at, updated_at)
       VALUES 
         (${name}, ${email}, ${phone || null}, ${age || null}, ${gender || null}, 
-         ${role || 'user'}, ${status || 'active'}, ${passwordHash}, 
+         ${dbRole}, ${isSuperAdmin}, ${status || 'active'}, ${passwordHash}, true,
          CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       RETURNING 
-        id, full_name, email, phone, age, sex, role, status, created_at
+        id, full_name, email, phone, age, sex, role, is_super_admin, status, created_at
     `;
 
     console.log("✅ User created successfully");
@@ -172,25 +205,27 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, name, email, phone, age, gender, password, role, status} = body;
+    const { id, name, email, phone, age, gender, password, role, status } = body;
 
-    console.log("🔄 Updating user:", { id, name, email });
+    console.log("🔄 Updating user:", { id, name, email, role });
 
-    // Start with base update query
+    const dbRole = (role === "super_admin" || role === "admin") ? "admin" : (role || "student");
+    const isSuperAdmin = role === "super_admin";
+
     let updateQuery = sql`
       UPDATE users 
       SET 
         full_name = ${name}, 
         email = ${email}, 
-        phone = ${phone}, 
-        age = ${age}, 
-        sex = ${gender},
-        role = ${role}, 
+        phone = ${phone || null}, 
+        age = ${age || null}, 
+        sex = ${gender || null},
+        role = ${dbRole}, 
+        is_super_admin = ${isSuperAdmin},
         status = ${status}, 
         updated_at = CURRENT_TIMESTAMP
     `;
 
-    // Conditionally add password update
     if (password) {
       const passwordHash = await bcrypt.hash(password, 10);
       updateQuery = sql`
@@ -199,11 +234,10 @@ export async function PUT(request: NextRequest) {
       `;
     }
 
-    // Complete the query
     updateQuery = sql`
       ${updateQuery}
       WHERE id = ${id}
-      RETURNING id, full_name, email, phone, age, sex, role, status, created_at
+      RETURNING id, full_name, email, phone, age, sex, role, is_super_admin, status, created_at
     `;
 
     const user = await updateQuery;
@@ -253,7 +287,6 @@ export async function DELETE(request: NextRequest) {
     }
 
     console.log("🗑️ Deleting user:", id);
-
     await sql`DELETE FROM users WHERE id = ${id}`;
 
     console.log("✅ User deleted successfully");

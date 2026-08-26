@@ -122,7 +122,7 @@ export default function InstructorCoursesPage({
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <div className="font-bold">${training.price}</div>
+                      <div className="font-bold">ETB {training.price}</div>
                       <Button variant="outline" size="sm" asChild>
                         <Link href={`/courses/${training.id}`}>
                           View Course

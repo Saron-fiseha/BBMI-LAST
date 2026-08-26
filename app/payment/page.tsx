@@ -157,7 +157,7 @@ export default function PaymentPage() {
 
                     {paymentMethod === "credit-card" && (
                       <Button type="submit" className="w-full mt-6" disabled={isProcessing}>
-                        {isProcessing ? "Processing Payment..." : `Pay $${price}`}
+                        {isProcessing ? "Processing Payment..." : `Pay ETB ${price}`}
                       </Button>
                     )}
                   </form>
@@ -178,7 +178,7 @@ export default function PaymentPage() {
                     </div>
                     <div className="flex justify-between">
                       <span>Discount</span>
-                      <span>$0.00</span>
+                      <span>ETB 0.00</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between font-bold">

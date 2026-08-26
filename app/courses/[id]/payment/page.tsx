@@ -333,11 +333,11 @@ export default function PaymentPage() {
             {/* Price: <span className="font-semibold">${training.price}</span> */}
             Price:{" "}
             <span className="font-semibold">
-              ${Number(displayPrice || 0).toFixed(2)}
+              ETB {Number(displayPrice || 0).toFixed(2)}
             </span>
             {training.discount && training.discount > 0 && (
               <span className="ml-2 line-through text-muted-foreground">
-                ${Number(training.price || 0).toFixed(2)}
+                ETB {Number(training.price || 0).toFixed(2)}
               </span>
             )}
           </p>

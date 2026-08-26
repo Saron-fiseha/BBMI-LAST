@@ -89,12 +89,21 @@ export async function GET(request: NextRequest) {
 
     const portfolioItems = await mainQuery
 
+    // Fetch distinct categories for dynamic filter
+    const categoriesResult = await sql`
+      SELECT DISTINCT category 
+      FROM portfolio_items 
+      WHERE category IS NOT NULL AND category != ''
+    `
+    const uniqueCategories = categoriesResult.map((row: any) => row.category)
+
     console.log(`✅ Found ${portfolioItems.length} portfolio items`)
 
     return NextResponse.json(
       {
         success: true,
         portfolioItems,
+        categories: uniqueCategories,
         pagination: {
           page,
           limit,

@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import Image from "next/image";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const sidebarItems = [
   {
@@ -122,9 +123,16 @@ export function DashboardSidebar({
         {/* User Info */}
         <div className="px-3 py-2 border-b">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-custom-copper to-custom-tan hover:bg-warm-brown flex items-center justify-center text-white font-semibold">
-              {user?.full_name?.charAt(0) || "S"}
-            </div>
+            <Avatar className="w-10 h-10 border border-mustard/20">
+              <AvatarImage
+                src={user?.profile_picture || (user as any)?.image_url || ""}
+                className="object-cover"
+                alt={user?.full_name || "Student"}
+              />
+              <AvatarFallback className="bg-gradient-to-r from-custom-copper to-custom-tan hover:bg-warm-brown text-white font-semibold">
+                {user?.full_name?.charAt(0) || "S"}
+              </AvatarFallback>
+            </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">
                 {user?.full_name || "Student"}
