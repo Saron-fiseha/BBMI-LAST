@@ -156,19 +156,19 @@ export default function ContactPage() {
               <Card className="h-full bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl hover:-translate-y-1 transition">
                 <CardContent className="p-6 text-center">
                   <MapPin className="h-8 w-8 mx-auto mb-4 text-custom-khaki" />
-                  <h3 className="font-bold mb-3 text-charcoal">Address</h3>
-                  <div className="space-y-2.5 text-gray-700 text-sm sm:text-base leading-relaxed">
+                  <h3 className="font-bold mb-2 text-charcoal">Address</h3>
+                  <div className="space-y-1.5 text-gray-700 text-xs sm:text-sm leading-snug">
                     <p>
-                      <strong className="text-charcoal font-semibold">Branch 1:</strong> 22 round about Noah City Point building, 5th floor
+                      Branch 1: 22 round about Noah City Point building, 5th floor
                     </p>
                     <p>
-                      <strong className="text-charcoal font-semibold">Branch 2:</strong> Lebu Mati building, 3rd floor
+                      Branch 2: Lebu Mati building, 3rd floor
                     </p>
                     <p>
-                      <strong className="text-charcoal font-semibold">Branch 3:</strong> Summit Yetebaberut, Africa Convention Center
+                      Branch 3: Summit yetebaberut, Africa convention center
                     </p>
                     <p>
-                      <strong className="text-charcoal font-semibold">Branch 4:</strong> Dire Dawa, Sapiyan oze plaza 4th floor
+                      Branch 4: Dire Dawa, Sapiyan oze plaza 4th floor
                     </p>
                   </div>
                 </CardContent>
