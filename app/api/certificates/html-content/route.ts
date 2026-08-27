@@ -1,3 +1,43 @@
+// // C:\Users\Hp\Documents\BBMI-LMS\app\api\certificates\html-content\route.ts
+// import { NextRequest, NextResponse } from 'next/server';
+// import { getCertificateByVerificationCode } from '@/lib/certificate-queries';
+// import { generateCertificateHTML } from '@/lib/certificate-generator';
+// export const dynamic = "force-dynamic"
+
+// export async function GET(req: NextRequest) {
+//   try {
+//     const { searchParams } = new URL(req.url);
+//     const verificationCode = searchParams.get('verificationCode');
+
+//     if (!verificationCode) {
+//       return NextResponse.json({ error: 'Verification code is required' }, { status: 400 });
+//     }
+
+//     const certificateData = await getCertificateByVerificationCode(verificationCode);
+
+//     if (!certificateData) {
+//       return NextResponse.json({ error: 'Certificate not found' }, { status: 404 });
+//     }
+
+//     // Generate the HTML content. This function now returns the <style> and <div class="certificate-wrapper">
+//     const htmlContent = generateCertificateHTML(certificateData);
+
+//     // Return the HTML content with the correct Content-Type header
+//     return new NextResponse(htmlContent, {
+//       status: 200,
+//       headers: {
+//         'Content-Type': 'text/html',
+//         'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+//         'Pragma': 'no-cache',
+//         'Expires': '0',
+//       },
+//     });
+
+//   } catch (error) {
+//     console.error('Error fetching certificate HTML:', error);
+//     return NextResponse.json({ error: 'Failed to retrieve certificate HTML' }, { status: 500 });
+//   }
+// }
 // C:\Users\Hp\Documents\BBMI-LMS\app\api\certificates\html-content\route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getCertificateByVerificationCode } from '@/lib/certificate-queries';
@@ -19,8 +59,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Certificate not found' }, { status: 404 });
     }
 
-    // Generate the HTML content. This function now returns the <style> and <div class="certificate-wrapper">
-    const htmlContent = generateCertificateHTML(certificateData);
+    // Generate the HTML content, passing an absolute logo URL. The
+    // frontend's "View" button fetches this HTML and writes it into a
+    // blank browser tab via document.write() — that tab has no real
+    // page origin to resolve a relative "/logo.png" against, so it would
+    // silently fall back to the placeholder logo without this fix (same
+    // root cause as the PDF download route).
+    const baseUrl = req.nextUrl.origin;
+    const logoUrl = `${baseUrl}/logo.png`;
+    const htmlContent = generateCertificateHTML(certificateData, { logoUrl });
 
     // Return the HTML content with the correct Content-Type header
     return new NextResponse(htmlContent, {
