@@ -166,33 +166,37 @@ export function SiteFooter() {
           <div className="space-y-4">
             <h4 className="text-lg font-semibold">Contact Info</h4>
             <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <MapPin className="w-5 h-5 text-custom-tan" />
-                <span className="text-custom-tan">
-                  22 round about noah city point building 5th floor{" "}
+              <div className="flex items-start space-x-3">
+                <MapPin className="w-5 h-5 text-custom-tan flex-shrink-0 mt-0.5" />
+                <span className="text-custom-tan text-sm leading-relaxed">
+                  22 round about noah city point building 5th floor
                 </span>
               </div>
-              <div className="flex items-center space-x-3">
-                <MapPin className="w-5 h-5 text-custom-tan" />
-                <span className="text-custom-tan">
-                  {" "}
+              <div className="flex items-start space-x-3">
+                <MapPin className="w-5 h-5 text-custom-tan flex-shrink-0 mt-0.5" />
+                <span className="text-custom-tan text-sm leading-relaxed">
                   lebu mati building 3rd floor
                 </span>
               </div>
-              <div className="flex items-center space-x-3">
-                <MapPin className="w-5 h-5 text-custom-tan" />
-                <span className="text-custom-tan">
-                  {" "}
+              <div className="flex items-start space-x-3">
+                <MapPin className="w-5 h-5 text-custom-tan flex-shrink-0 mt-0.5" />
+                <span className="text-custom-tan text-sm leading-relaxed">
                   summit yetebaberut, Africa convention center
                 </span>
               </div>
-              <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-custom-tan" />
-                <span className="text-custom-tan">0913218888/ 0912158143</span>
+              <div className="flex items-start space-x-3">
+                <MapPin className="w-5 h-5 text-custom-tan flex-shrink-0 mt-0.5" />
+                <span className="text-custom-tan text-sm leading-relaxed">
+                  Dire Dawa, Sapiyan oze plaza 4th floor
+                </span>
+              </div>
+              <div className="flex items-center space-x-3 pt-1">
+                <Phone className="w-5 h-5 text-custom-tan flex-shrink-0" />
+                <span className="text-custom-tan text-sm">0913218888/ 0912158143</span>
               </div>
               <div className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 text-custom-tan" />
-                <span className="text-custom-tan">
+                <Mail className="w-5 h-5 text-custom-tan flex-shrink-0" />
+                <span className="text-custom-tan text-sm">
                   brushedbybetty@gmail.com
                 </span>
               </div>
