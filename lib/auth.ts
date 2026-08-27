@@ -398,7 +398,7 @@
 //   try {
 //     // Find user with this token that hasn't expired
 //     const result = await sql`
-//       SELECT id, full_name, email, phone, age, sex, role, profile_picture, email_verified
+//       SELECT id, full_name, email, phone, age, sex, role, COALESCE(profile_picture, image_url) as profile_picture, email_verified
 //       FROM users
 //       WHERE verification_token = ${token}
 //         AND verification_token_expires > NOW()

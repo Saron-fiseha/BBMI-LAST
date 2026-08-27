@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast"; // Added for consistency with CoursesPage
 import Image from "next/image";
 
@@ -72,10 +73,11 @@ const formatDuration = (minutes: number) => {
 // --- New Component: CourseCard (Copied from app/courses/page.tsx, with import corrections) ---
 interface CourseCardProps {
   course: Course;
-  onEnrollClick: (courseId: number) => void;
+  isEnrolled: boolean;
+  onEnrollClick: (courseId: number, isEnrolled: boolean) => void;
 }
 
-function CourseCard({ course, onEnrollClick }: CourseCardProps) {
+function CourseCard({ course, isEnrolled, onEnrollClick }: CourseCardProps) {
   const discountedPrice = course.price * (1 - course.discount / 100);
   const hasDiscount = course.discount > 0;
 
@@ -126,7 +128,7 @@ function CourseCard({ course, onEnrollClick }: CourseCardProps) {
         {/* Price Display */}
         <div className="flex items-baseline space-x-2">
           <span className="text-2xl font-extrabold text-gray-900">
-            ${discountedPrice.toFixed(2)}
+            ETB {discountedPrice.toFixed(2)}
           </span>
           {hasDiscount && (
             <span className="text-md font-medium text-gray-400 line-through">
@@ -154,10 +156,10 @@ function CourseCard({ course, onEnrollClick }: CourseCardProps) {
           <Link href={`/courses/${course.id}`}>View Details</Link>
         </Button>
         <ShinyButton
-          onClick={() => onEnrollClick(course.id)}
+          onClick={() => onEnrollClick(course.id, isEnrolled)}
           className="w-full"
         >
-          Enroll Now
+          {isEnrolled ? "Go to Training" : "Enroll Now"}
         </ShinyButton>
       </CardFooter>
     </Card>
@@ -185,7 +187,47 @@ export function FeaturedCourses() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
   const { toast } = useToast();
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchEnrolledCourses();
+    }
+  }, [user?.id]);
+
+  const fetchEnrolledCourses = async () => {
+    try {
+      const response = await fetch(`/api/dashboard/student-courses?userId=${user?.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.courses) {
+          setEnrolledCourseIds(data.courses.map((c: any) => c.id));
+        }
+      }
+    } catch (e) {
+      console.error("Error fetching enrolled courses:", e);
+    }
+  };
+
+  const handleEnrollClick = (courseId: number, isEnrolled: boolean) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please login to enroll in courses.",
+        variant: "destructive",
+      });
+      router.push("/login");
+      return;
+    }
+    if (isEnrolled) {
+      router.push(`/courses/${courseId}/lessons`);
+      return;
+    }
+    router.push(`/courses/${courseId}`);
+  };
+  
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -280,10 +322,7 @@ export function FeaturedCourses() {
     );
   }
 
-  // Simple handler for enrollment click in featured section, just navigates
-  const handleEnrollClick = (courseId: number) => {
-    router.push(`/courses/${courseId}`);
-  };
+  
 
   return (
     <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-br from-pink-50 via-white to-purple-50 text-black">
@@ -304,6 +343,7 @@ export function FeaturedCourses() {
               <CourseCard
                 key={course.id}
                 course={course}
+                isEnrolled={enrolledCourseIds.some((id) => String(id) === String(course.id))}
                 onEnrollClick={handleEnrollClick}
               />
             ))

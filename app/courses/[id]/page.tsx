@@ -113,7 +113,7 @@ const StickySidebar = ({
       <CardContent className="p-6">
         <div className="flex justify-between items-center mb-4">
           <div className="text-3xl font-bold">
-            ${Number(discountedPrice || 0).toFixed(2)}
+            ETB {Number(discountedPrice || 0).toFixed(2)}
           </div>
           <Badge variant="outline">{training.level}</Badge>
         </div>

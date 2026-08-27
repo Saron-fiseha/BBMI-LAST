@@ -231,7 +231,7 @@ const DashboardPage = () => {
                 <YAxis yAxisId="right" stroke="#6B2D5C" orientation="right" />
                 <Tooltip
                   formatter={(value: number, name: string) => {
-                    if (name === "Revenue") return `$${value.toLocaleString()}`;
+                    if (name === "Revenue") return `ETB ${value.toLocaleString()}`;
                     return value;
                   }}
                   contentStyle={{

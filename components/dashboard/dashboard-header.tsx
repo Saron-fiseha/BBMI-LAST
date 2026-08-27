@@ -56,39 +56,41 @@ export function DashboardHeader({ heading, text, children }: DashboardHeaderProp
   // const fetchNotifications = async () => {
   //   if (!user) return
   const fetchNotifications = useCallback(async () => {
-    // This check is crucial. If there's no user, we don't fetch.
     if (!user) {
-      // Clear notifications if user logs out
       setNotifications([]);
       setUnreadCount(0);
       return;
     }
 
-    setLoading(true); 
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("auth_token") ||
+          localStorage.getItem("token") ||
+          document.cookie.match(/(?:^|;\s*)auth_token=([^;]+)/)?.[1]
+        : null;
 
+    if (!token || token === "null" || token === "undefined") {
+      return;
+    }
 
     try {
-      setLoading(true)
-      const token = localStorage.getItem("auth_token") // Adjust based on your auth implementation
-
+      setLoading(true);
       const response = await fetch("/api/notifications?limit=10", {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-      })
+      });
 
       if (response.ok) {
-        const data = await response.json()
-        setNotifications(data.notifications || [])
-        setUnreadCount(data.unreadCount || 0)
-      } else {
-        console.error("Failed to fetch notifications:", response.statusText)
+        const data = await response.json();
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unreadCount || 0);
       }
     } catch (error) {
-      console.error("Failed to fetch notifications:", error)
+      console.error("Failed to fetch notifications:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }, [user]);
 useEffect(() => {

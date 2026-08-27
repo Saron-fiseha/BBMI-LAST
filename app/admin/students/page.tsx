@@ -33,6 +33,7 @@ interface Student {
   gender?: string
   role: string
   courses_enrolled: number
+  enrolled_courses?: string
   courses_completed: number
   total_hours: number
   join_date: string
@@ -713,6 +714,12 @@ export default function StudentsPage() {
                             {student.courses_enrolled} enrolled, {student.courses_completed} completed
                           </p>
                         </div>
+                        <div className="col-span-2">
+                          <span className="text-gray-500">Enrolled Course(s):</span>
+                          <p className="font-medium text-xs text-charcoal">
+                            {student.enrolled_courses || "None"}
+                          </p>
+                        </div>
                         <div>
                           <span className="text-gray-500">Progress:</span>
                           <p className="font-medium">
@@ -777,6 +784,7 @@ export default function StudentsPage() {
                       <TableHead className="text-charcoal font-semibold">Age</TableHead>
                       <TableHead className="text-charcoal font-semibold">Gender</TableHead>
                       <TableHead className="text-charcoal font-semibold">Courses</TableHead>
+                      <TableHead className="text-charcoal font-semibold">Enrolled Course(s)</TableHead>
                       <TableHead className="text-charcoal font-semibold">Progress</TableHead>
                       <TableHead className="text-charcoal font-semibold">Status</TableHead>
                       <TableHead className="text-charcoal font-semibold">Actions</TableHead>
@@ -785,7 +793,7 @@ export default function StudentsPage() {
                   <TableBody>
                     {students.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={10} className="text-center py-8 text-deep-purple">
+                        <TableCell colSpan={11} className="text-center py-8 text-deep-purple">
                           {error
                             ? "Error loading students. Please try again."
                             : "No students found. Click 'Add Student' to create your first student."}
@@ -822,6 +830,23 @@ export default function StudentsPage() {
                               <div className="text-sm">Enrolled: {student.courses_enrolled}</div>
                               <div className="text-sm text-deep-purple">Completed: {student.courses_completed}</div>
                             </div>
+                          </TableCell>
+                          <TableCell className="max-w-[220px]">
+                            {student.enrolled_courses ? (
+                              <div className="flex flex-wrap gap-1">
+                                {student.enrolled_courses.split(", ").map((courseName, i) => (
+                                  <Badge
+                                    key={i}
+                                    variant="outline"
+                                    className="bg-mustard/10 text-charcoal border-mustard/30 text-xs font-normal"
+                                  >
+                                    {courseName}
+                                  </Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-gray-400 text-xs italic">None</span>
+                            )}
                           </TableCell>
                           <TableCell>
                             <div>

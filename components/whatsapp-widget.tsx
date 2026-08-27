@@ -15,7 +15,7 @@ export function WhatsAppWidget() {
     return null
   }
 
-  const phoneNumber = "251961232327"
+  const phoneNumber = "251913218888"
   const message = `Hi *BBMI*! I need some help with Courses ${currentUrl}`
   const encodedMessage = encodeURIComponent(message)
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`

@@ -290,7 +290,7 @@ export default function InstructorProfilePage() {
                           <span>{course.duration} weeks</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <div className="font-bold">${course.price}</div>
+                          <div className="font-bold">ETB {course.price}</div>
                           <Button variant="outline" size="sm" asChild>
                             <Link href={`/courses/${course.id}`}>
                               View Course

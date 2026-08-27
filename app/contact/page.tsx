@@ -157,15 +157,20 @@ export default function ContactPage() {
                 <CardContent className="p-6 text-center">
                   <MapPin className="h-8 w-8 mx-auto mb-4 text-custom-khaki" />
                   <h3 className="font-bold mb-2 text-charcoal">Address</h3>
-                  <p className="text-gray-700 text-sm sm:text-base">
-                    Branch 1: 22 round about Noah City Point building, 5th floor
-                  </p>
-                  <p className="text-gray-700 text-sm sm:text-base">
-                   Branch 2: Lebu Mati building, 3rd floor
-                  </p>
-                  <p className="text-gray-700 text-sm sm:text-base">
-                    Branch 3: Summit Yetebaberut, Africa Convention Center
-                  </p>
+                  <div className="space-y-1.5 text-gray-700 text-xs sm:text-sm leading-snug">
+                    <p>
+                      Branch 1: 22 round about Noah City Point building, 5th floor
+                    </p>
+                    <p>
+                      Branch 2: Lebu Mati building, 3rd floor
+                    </p>
+                    <p>
+                      Branch 3: Summit yetebaberut, Africa convention center
+                    </p>
+                    <p>
+                      Branch 4: Dire Dawa, Sapiyan oze plaza 4th floor
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             </BlurFade>

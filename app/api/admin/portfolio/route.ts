@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     if (status !== "all") {
       countQuery = sql`
         ${countQuery}
-        AND status = ${status}
+        AND LOWER(status) = LOWER(${status})
       `
     }
 
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
     if (status !== "all") {
       mainQuery = sql`
         ${mainQuery}
-        AND status = ${status}
+        AND LOWER(status) = LOWER(${status})
       `
     }
 
@@ -89,20 +89,36 @@ export async function GET(request: NextRequest) {
 
     const portfolioItems = await mainQuery
 
+    // Fetch distinct categories for dynamic filter
+    const categoriesResult = await sql`
+      SELECT DISTINCT category 
+      FROM portfolio_items 
+      WHERE category IS NOT NULL AND category != ''
+    `
+    const uniqueCategories = categoriesResult.map((row: any) => row.category)
+
     console.log(`✅ Found ${portfolioItems.length} portfolio items`)
 
-    return NextResponse.json({
-      success: true,
-      portfolioItems,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
+    return NextResponse.json(
+      {
+        success: true,
+        portfolioItems,
+        categories: uniqueCategories,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNext: page < totalPages,
+          hasPrev: page > 1,
+        },
       },
-    })
+      {
+        headers: {
+          "Cache-Control": "no-store, max-age=0, must-revalidate",
+        },
+      }
+    )
   } catch (error) {
     console.error("❌ Error fetching portfolio items:", error)
     return NextResponse.json(

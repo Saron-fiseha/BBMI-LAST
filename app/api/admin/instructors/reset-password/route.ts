@@ -3,62 +3,46 @@ import { sql } from "@/lib/db"
 import bcrypt from "bcryptjs"
 export const dynamic = "force-dynamic"
 
-// POST - Reset instructor password
+// POST - Reset instructor password directly in the database (no email required)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { instructorId, newPassword, email } = body
+    const { instructorId, newPassword } = body
 
-    if (!instructorId || !newPassword || !email) {
+    if (!instructorId || !newPassword) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    }
+
+    if (newPassword.length < 6) {
+      return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 })
     }
 
     // Hash the new password
     const passwordHash = await bcrypt.hash(newPassword, 10)
 
-    // Step 1: Get the user_id for this instructor
-    const instructorRecord = await sql`
-      SELECT user_id, full_name, email 
-      FROM instructors 
-      WHERE id = ${instructorId} AND email = ${email}
+    // Update password and ensure email is verified so the user can log in
+    const result = await sql`
+      UPDATE users
+      SET 
+        password_hash = ${passwordHash},
+        email_verified = true,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${instructorId}
+      RETURNING full_name, email
     `
 
-    if (instructorRecord.length === 0) {
+    if (result.length === 0) {
       return NextResponse.json({ error: "Instructor not found" }, { status: 404 })
     }
 
-    const instructor = instructorRecord[0]
-
-    // Step 2: Update the password in the users table
-    await sql`
-      UPDATE users
-      SET password_hash = ${passwordHash}, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ${instructor.user_id}
-    `
-
-    // Step 3: Simulate email notification
-    console.log(`Password reset email would be sent to: ${instructor.email}`)
-    console.log(`New password for ${instructor.full_name}: ${newPassword}`)
-
-    const emailContent = {
-      to: instructor.email,
-      subject: "Password Reset - Beauty Salon LMS",
-      body: `
-        Dear ${instructor.full_name},
-        
-        Your password has been reset by an administrator.
-        Your new temporary password is: ${newPassword}
-        
-        Please log in and change your password immediately.
-        
-        Best regards,
-        Beauty Salon LMS Team
-      `,
-    }
+    const user = result[0]
+    console.log(`Password reset for: ${user.full_name} (${user.email})`)
 
     return NextResponse.json({
       message: "Password reset successfully",
-      instructor: { name: instructor.full_name, email: instructor.email },
+      name: user.full_name,
+      email: user.email,
+      success: true,
     })
   } catch (error) {
     console.error("Error resetting password:", error)
