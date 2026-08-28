@@ -10,28 +10,61 @@
 //   trainingDescription?: string
 // }
 
-// export async function generateCertificateNumber(userId: number, trainingId: number): Promise<string> {
-//   // const year = new Date().getFullYear()
-//   // const month = String(new Date().getMonth() + 1).padStart(2, "0")
-// const now = new Date()
-// const year = now.getFullYear()
-// const monthNum = now.getMonth() + 1
-// const month = String(monthNum).padStart(2, "0")
-//   // Get count of certificates issued this month
-//   const result = await sql`
-//     SELECT COUNT(*) as count 
-//     FROM certificates 
-//     WHERE EXTRACT(YEAR FROM created_at) = ${year}   
-//     AND EXTRACT(MONTH FROM created_at) = ${monthNum}
-//   `
-// // AND EXTRACT(MONTH FROM created_at) = ${new Date().getMonth() + 1}
+// // export async function generateCertificateNumber(userId: number, trainingId: number): Promise<string> {
+// //   // const year = new Date().getFullYear()
+// //   // const month = String(new Date().getMonth() + 1).padStart(2, "0")
+// // const now = new Date()
+// // const year = now.getFullYear()
+// // const monthNum = now.getMonth() + 1
+// // const month = String(monthNum).padStart(2, "0")
+// //   // Get count of certificates issued this month
+// //   const result = await sql`
+// //     SELECT COUNT(*) as count 
+// //     FROM certificates 
+// //     WHERE EXTRACT(YEAR FROM created_at) = ${year}   
+// //     AND EXTRACT(MONTH FROM created_at) = ${monthNum}
+// //   `
+// // // AND EXTRACT(MONTH FROM created_at) = ${new Date().getMonth() + 1}
   
 
-//   const count = Number.parseInt(result[0]?.count || "0") + 1
-//   const sequence = String(count).padStart(4, "0")
+// //   const count = Number.parseInt(result[0]?.count || "0") + 1
+// //   const sequence = String(count).padStart(4, "0")
 
-//   return `BBMI-${year}${month}-${sequence}`
+// //   return `BBMI-${year}${month}-${sequence}`
+// // }
+// export async function generateCertificateNumber(
+//   userId: number,
+//   trainingId: number
+// ): Promise<string> {
+//   const now = new Date()
+//   const year = now.getFullYear()
+//   const month = String(now.getMonth() + 1).padStart(2, "0")
+//   const prefix = `BBMI-${year}${month}-`
+
+//   const result = await sql`
+//     SELECT certificate_number
+//     FROM certificates
+//     WHERE certificate_number LIKE ${prefix + "%"}
+//     ORDER BY certificate_number DESC
+//     LIMIT 1
+//   `
+
+//   let nextSequence = 1
+
+//   if (result.length > 0 && result[0].certificate_number) {
+//     const lastNumber = result[0].certificate_number
+//     const lastSequence = Number.parseInt(lastNumber.split("-").pop() || "0", 10)
+
+//     if (!Number.isNaN(lastSequence)) {
+//       nextSequence = lastSequence + 1
+//     }
+//   }
+
+//   const sequence = String(nextSequence).padStart(4, "0")
+
+//   return `${prefix}${sequence}`
 // }
+
 
 // export function generateVerificationCode(): string {
 //   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -189,8 +222,25 @@
 //   }
 // }
 
+// /**
+//  * Options for HTML generation. `logoUrl` lets callers pass an ABSOLUTE URL
+//  * (e.g. "https://brushedbybetty.com/logo.png") for contexts where the HTML
+//  * is not rendered as a real page on the site's own origin — such as
+//  * Puppeteer's page.setContent() (used for PDF generation) or a fetched
+//  * HTML string written into a blank browser tab via document.write().
+//  * In both of those cases a relative path like "/logo.png" has no site
+//  * origin to resolve against and silently fails to load, falling back to
+//  * the placeholder logo. When generateCertificateHTML is used to render a
+//  * REAL page at the site's own domain (e.g. the /verify/[code] page),
+//  * the relative default is fine and logoUrl can be omitted.
+//  */
+// export interface CertificateHTMLOptions {
+//   logoUrl?: string
+// }
+
 // // PDF Generation using HTML/CSS (simpler approach)
-// export function generateCertificateHTML(data: CertificateData): string {
+// export function generateCertificateHTML(data: CertificateData, options?: CertificateHTMLOptions): string {
+// const logoSrc = options?.logoUrl || "/logo.png"
 // return `
 // <!DOCTYPE html>
 // <html>
@@ -477,7 +527,7 @@
 //   <div class="cert-content">
  
 //     <div class="logo-box">
-//       <img src="/logo.png" alt="BBMI Logo"
+//       <img src="${logoSrc}" alt="BBMI Logo"
 //            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
 //       <div class="logo-ring" style="display:none;">
 //         <div class="logo-fallback-flame">🔥</div>
@@ -568,6 +618,7 @@
 // </html>
 // `
 //  }
+
 import { sql } from "@/lib/db"
 
 export interface CertificateData {
@@ -580,35 +631,20 @@ export interface CertificateData {
   trainingDescription?: string
 }
 
-// export async function generateCertificateNumber(userId: number, trainingId: number): Promise<string> {
-//   // const year = new Date().getFullYear()
-//   // const month = String(new Date().getMonth() + 1).padStart(2, "0")
-// const now = new Date()
-// const year = now.getFullYear()
-// const monthNum = now.getMonth() + 1
-// const month = String(monthNum).padStart(2, "0")
-//   // Get count of certificates issued this month
-//   const result = await sql`
-//     SELECT COUNT(*) as count 
-//     FROM certificates 
-//     WHERE EXTRACT(YEAR FROM created_at) = ${year}   
-//     AND EXTRACT(MONTH FROM created_at) = ${monthNum}
-//   `
-// // AND EXTRACT(MONTH FROM created_at) = ${new Date().getMonth() + 1}
-  
-
-//   const count = Number.parseInt(result[0]?.count || "0") + 1
-//   const sequence = String(count).padStart(4, "0")
-
-//   return `BBMI-${year}${month}-${sequence}`
-// }
-export async function generateCertificateNumber(
-  userId: number,
-  trainingId: number
-): Promise<string> {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, "0")
+/**
+ * Finds the next available certificate sequence number for a given
+ * year/month by looking at the HIGHEST existing sequence already used
+ * this month, rather than counting total rows. A COUNT-based approach
+ * (the previous implementation) breaks whenever the number of existing
+ * rows doesn't line up 1:1 with the highest sequence already issued —
+ * e.g. leftover test data, rows inserted through a different code path,
+ * or timestamp quirks — silently regenerating a number that's already
+ * taken and causing a unique constraint violation on insert. Taking the
+ * MAX of already-issued numbers for this month self-corrects for all of
+ * that.
+ */
+async function getNextCertificateSequence(year: number, monthNum: number): Promise<number> {
+  const month = String(monthNum).padStart(2, "0")
   const prefix = `BBMI-${year}${month}-`
 
   const result = await sql`
@@ -619,22 +655,24 @@ export async function generateCertificateNumber(
     LIMIT 1
   `
 
-  let nextSequence = 1
+  if (result.length === 0) return 1
 
-  if (result.length > 0 && result[0].certificate_number) {
-    const lastNumber = result[0].certificate_number
-    const lastSequence = Number.parseInt(lastNumber.split("-").pop() || "0", 10)
-
-    if (!Number.isNaN(lastSequence)) {
-      nextSequence = lastSequence + 1
-    }
-  }
-
-  const sequence = String(nextSequence).padStart(4, "0")
-
-  return `${prefix}${sequence}`
+  const lastNumber: string = result[0].certificate_number
+  const lastSequence = Number.parseInt(lastNumber.slice(prefix.length), 10)
+  return (Number.isNaN(lastSequence) ? 0 : lastSequence) + 1
 }
 
+export async function generateCertificateNumber(userId: number, trainingId: number): Promise<string> {
+  const now = new Date()
+  const year = now.getFullYear()
+  const monthNum = now.getMonth() + 1
+  const month = String(monthNum).padStart(2, "0")
+
+  const sequence = await getNextCertificateSequence(year, monthNum)
+  const sequenceStr = String(sequence).padStart(4, "0")
+
+  return `BBMI-${year}${month}-${sequenceStr}`
+}
 
 export function generateVerificationCode(): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -739,38 +777,64 @@ export async function checkAndGenerateCertificate(userId: number, trainingId: nu
     `
 
     const instructorName = instructor[0]?.instructor_name || "Ms Betelhem"
+    const completionDate = new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
 
-    // Generate certificate data
-    const certificateNumber = await generateCertificateNumber(userId, trainingId)
-    const verificationCode = generateVerificationCode()
+    // Generate the certificate record with a small retry loop: if two
+    // completions race each other (or a stale number somehow still
+    // collides), regenerate a fresh number and try again rather than
+    // failing the whole request outright.
+    const MAX_ATTEMPTS = 5
+    let lastError: any = null
 
-    const certificateData: CertificateData = {
-      userName: enrollmentData.full_name,
-      trainingTitle: enrollmentData.training_title,
-      completionDate: new Date().toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }),
-      certificateNumber,
-      verificationCode,
-      instructorName,
-      trainingDescription: enrollmentData.training_description,
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      const certificateNumber = await generateCertificateNumber(userId, trainingId)
+      const verificationCode = generateVerificationCode()
+
+      const certificateData: CertificateData = {
+        userName: enrollmentData.full_name,
+        trainingTitle: enrollmentData.training_title,
+        completionDate,
+        certificateNumber,
+        verificationCode,
+        instructorName,
+        trainingDescription: enrollmentData.training_description,
+      }
+
+      console.log(`Generated certificate data (attempt ${attempt}):`, certificateData)
+
+      try {
+        const createdCertificateNumber = await createCertificateRecord(
+          userId,
+          trainingId,
+          enrollmentData.id,
+          certificateData,
+        )
+
+        console.log("Certificate created successfully:", createdCertificateNumber)
+        return createdCertificateNumber
+      } catch (error: any) {
+        lastError = error
+        const isCertificateNumberCollision =
+          error?.code === "23505" &&
+          String(error?.constraint || "").includes("certificate_number")
+
+        if (isCertificateNumberCollision && attempt < MAX_ATTEMPTS) {
+          console.warn(
+            `Certificate number collision on attempt ${attempt} (${certificateNumber}), regenerating and retrying...`
+          )
+          continue
+        }
+
+        // Not a number collision, or we've exhausted retries — surface it
+        throw error
+      }
     }
 
-    console.log("Generated certificate data:", certificateData)
-
-    // Store in database
-    const createdCertificateNumber = await createCertificateRecord(
-      userId,
-      trainingId,
-      enrollmentData.id,
-      certificateData,
-    )
-
-    console.log("Certificate created successfully:", createdCertificateNumber)
-
-    return createdCertificateNumber
+    throw lastError || new Error("Failed to generate a unique certificate number after multiple attempts")
   } catch (error) {
     console.error("Error generating certificate:", error)
     throw error
