@@ -1,4 +1,3 @@
-
 // // C:\Users\Hp\Documents\BBMI-LMS\app\courses\[id]\lessons\page.tsx
 // "use client";
 
@@ -107,9 +106,6 @@
 //   const [error, setError] = useState<string | null>(null);
 //   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
 //   const [updatingProgress, setUpdatingProgress] = useState(false);
-//   // Removed showDocumentViewer and documentToView states
-//   // const [showDocumentViewer, setShowDocumentViewer] = useState(false);
-//   // const [documentToView, setDocumentToView] = useState<Document | null>(null);
 //   const [downloadingCertificate, setDownloadingCertificate] = useState(false);
 
 //   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -175,27 +171,21 @@
 //   }, [params, isAuthenticated, router]);
 
 //   useEffect(() => {
-//     // Only attempt to scroll if data is loaded and there's a hash in the URL
 //     if (
 //       !loading &&
 //       progressData &&
 //       typeof window !== "undefined" &&
 //       window.location.hash
 //     ) {
-//       const targetId = window.location.hash.substring(1); // Remove the '#'
+//       const targetId = window.location.hash.substring(1);
 //       const targetElement = document.getElementById(targetId);
 
 //       if (targetElement) {
-//         // Use requestAnimationFrame for smoother scrolling, ensures layout is stable
 //         requestAnimationFrame(() => {
 //           targetElement.scrollIntoView({
 //             behavior: "smooth",
-//             block: "start", // or 'center', 'end'
+//             block: "start",
 //           });
-//           // Remove the hash from the URL to prevent re-scrolling on subsequent updates
-//           // and for cleaner URLs after initial navigation.
-//           // Optional: You might want to keep the hash if users are expected to copy/share direct links.
-//           // If you decide to keep it, just remove this line.
 //           history.replaceState(null, "", window.location.pathname);
 //         });
 //       }
@@ -263,7 +253,6 @@
 //         setProgressData((prev) => {
 //           if (!prev) return prev;
 
-//           // 1. Update the specific module's status
 //           const updatedModules = prev.modules.map((module) =>
 //             module.id === moduleId
 //               ? {
@@ -274,10 +263,9 @@
 //               : module
 //           );
 
-//           // 2. Update overall enrollment progress and statistics using data from API response
 //           const newEnrollmentProgress = data.overallProgress;
 //           const newCompletedModules = data.completedModules;
-//           const newTotalModules = data.totalModules; // This should be consistent, but good to get from API
+//           const newTotalModules = data.totalModules;
 
 //           return {
 //             ...prev,
@@ -293,27 +281,22 @@
 //             statistics: {
 //               ...prev.statistics,
 //               completed_modules: newCompletedModules,
-//               // Update in_progress_modules based on new completed count
 //               in_progress_modules: newTotalModules - newCompletedModules,
-//               avg_module_progress: newEnrollmentProgress, // Same as completion_rate for overall
+//               avg_module_progress: newEnrollmentProgress,
 //               completion_rate: newEnrollmentProgress,
 //             },
-//             // If a certificate was just generated, you might want to update it here
-//             // based on the `data.certificateGenerated` and `data.certificateNumber`
-//             // and potentially a full `certificate` object if your API returned it.
 //             certificate:
 //               data.certificateGenerated && !prev.certificate
 //                 ? {
 //                     certificate_number: data.certificateNumber,
-//                     verification_code: "N/A", // API doesn't return this, would need re-fetch or adjustment
+//                     verification_code: "N/A",
 //                     created_at: new Date().toISOString(),
-//                     pdf_url: "", // API doesn't return this, would need re-fetch or adjustment
+//                     pdf_url: "",
 //                   }
 //                 : prev.certificate,
 //           };
 //         });
 //         toast({ title: "Module Completed ✅" });
-//         // Optional: If a certificate was just generated, you might want to show a more specific toast
 //         if (data.trainingCompleted && data.certificateGenerated) {
 //           toast({
 //             title: "Congratulations!",
@@ -401,7 +384,7 @@
 
 //   const getYouTubeVideoId = (url: string | null | undefined): string => {
 //     if (!url || typeof url !== "string") return "";
-//     if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return url; // Already an ID
+//     if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return url;
 //     try {
 //       const parsedUrl = new URL(url);
 //       if (parsedUrl.hostname.includes("youtube.com")) {
@@ -427,8 +410,6 @@
 //   };
 
 //   // --- Player Controls and Fullscreen Logic ---
-
-//   // Handle fullscreen state change
 //   useEffect(() => {
 //     const handleFullscreenChange = () => {
 //       setIsFullscreen(!!document.fullscreenElement);
@@ -443,7 +424,6 @@
 //     if (!videoContainerRef.current) return;
 
 //     if (!document.fullscreenElement) {
-//       // Enter fullscreen
 //       videoContainerRef.current
 //         .requestFullscreen()
 //         .then(() => setIsFullscreen(true))
@@ -453,7 +433,6 @@
 //           )
 //         );
 //     } else {
-//       // Exit fullscreen
 //       document
 //         .exitFullscreen()
 //         .then(() => setIsFullscreen(false))
@@ -465,7 +444,6 @@
 //     }
 //   }, []);
 
-//   // Update progress bar
 //   useEffect(() => {
 //     const interval = setInterval(() => {
 //       if (playerRef.current && playerRef.current.getCurrentTime) {
@@ -476,7 +454,7 @@
 //           setProgress((currentTime / total) * 100);
 //         }
 //       }
-//     }, 1000); // Update every second
+//     }, 1000);
 //     return () => clearInterval(interval);
 //   }, []);
 
@@ -506,7 +484,7 @@
 //     (q) => quizAnswers[q.id] === q.correct_answer_index
 //   ).length;
 
-//   // --- Document Opener Handler (NEW LOGIC) ---
+//   // --- Document Opener Handler ---
 //   const handleViewDocumentClick = () => {
 //     if (!progressData?.documents?.length) {
 //       toast({
@@ -517,13 +495,8 @@
 //       return;
 //     }
 
-//     // Open the document in a new tab
 //     const documentUrl = progressData.documents[0].file_url;
 //     window.open(documentUrl, "_blank");
-
-//     // No need to set states for a modal, as it's not opening one.
-//     // setShowDocumentViewer(true);
-//     // setDocumentToView(progressData.documents[0]);
 //   };
 
 //   // --- Render Logic ---
@@ -569,15 +542,12 @@
 //         {progressData?.certificate && (
 //           <div className="flex justify-end mt-6">
 //             <div className="relative bg-gradient-to-br from-custom-copper to-custom-copper p-6 rounded-lg border border-custom-copper w-full max-w-sm flex flex-col items-center">
-//               {/* Star at top-right */}
 //               <div className="absolute -top-1 -right-1">
 //                 <Star className="h-6 w-6 text-white fill-current" />
 //               </div>
 
-//               {/* Centered Award Icon */}
 //               <Award className="h-16 w-16 text-white mb-3" />
 
-//               {/* Text */}
 //               <h3 className="font-bold text-lg bg-custom-copper text-white mb-1 text-center">
 //                 Training Completed!
 //               </h3>
@@ -585,7 +555,6 @@
 //                 Certificate #{progressData.certificate.certificate_number}
 //               </p>
 
-//               {/* Button */}
 //               <Button
 //                 onClick={downloadCertificate}
 //                 disabled={downloadingCertificate}
@@ -609,16 +578,12 @@
 //         )}
 
 //         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-//           {/* Module List (Sidebar on desktop) */}
 //           <div className="lg:col-span-1">
 //             <Card>
 //               <CardHeader>
 //                 <CardTitle>Training Modules</CardTitle>
 //               </CardHeader>
-//               <CardContent
-//                 // Add responsive max-height and overflow for scrollability
-//                 className="p-0 border-t md:border-t-0 max-h-[70vh] overflow-y-auto lg:max-h-[calc(100vh-180px)]"
-//               >
+//               <CardContent className="p-0 border-t md:border-t-0 max-h-[70vh] overflow-y-auto lg:max-h-[calc(100vh-180px)]">
 //                 <div className="space-y-1">
 //                   {progressData.modules
 //                     .sort((a, b) => a.order_index - b.order_index)
@@ -686,7 +651,6 @@
 //             </Card>
 //           </div>
 
-//           {/* Main Content Area (Video, Description, Quiz, Reviews) */}
 //           <div className="lg:col-span-2">
 //             {selectedModule ? (
 //               <Card>
@@ -717,7 +681,7 @@
 //                           )}
 //                           opts={{
 //                             width: "100%",
-//                             height: "100%", // Changed to 100%
+//                             height: "100%",
 //                             host: "https://www.youtube-nocookie.com",
 //                             playerVars: {
 //                               controls: 0,
@@ -728,8 +692,18 @@
 //                               iv_load_policy: 3,
 //                               showinfo: 0,
 //                               playsinline: 1,
-//                               playlist: getYouTubeVideoId(selectedModule.video_url || ""),
-//                               loop: 1,
+//                               // NOTE: `loop` + `playlist` (pointing at the
+//                               // same video) were intentionally removed.
+//                               // That combination makes YouTube's player
+//                               // loop the video forever, so it never
+//                               // cleanly reaches the "ended" state —
+//                               // react-youtube's onEnd callback below
+//                               // never reliably fired, so module
+//                               // completion (and certificate generation)
+//                               // never triggered even after watching the
+//                               // full video. Without looping, the player
+//                               // reaches a real "ended" state and onEnd
+//                               // fires correctly.
 //                             },
 //                           }}
 //                           onReady={(e) => {
@@ -737,14 +711,11 @@
 //                             playerRef.current.setVolume(volume);
 //                           }}
 //                           onEnd={handleVideoEnd}
-//                           // This div needs to correctly apply width/height 100%
 //                           className="absolute inset-0"
 //                         />
-//                         {/* Overlay to block clicks on the player */}
 //                         <div className="absolute inset-0 z-10 bg-transparent pointer-events-auto"></div>
 //                       </div>
 
-//                       {/* Custom LMS Controls */}
 //                       <div
 //                         className={`flex flex-wrap items-center justify-between mt-2 gap-4 ${
 //                           isFullscreen
@@ -752,7 +723,6 @@
 //                             : ""
 //                         } sm:flex-nowrap`}
 //                       >
-//                         {/* Play/Pause Button */}
 //                         <Button
 //                           size="sm"
 //                           className="bg-custom-copper hover:bg-custom-copper text-white flex-shrink-0"
@@ -773,7 +743,6 @@
 //                           )}
 //                         </Button>
 
-//                         {/* Progress Bar */}
 //                         <input
 //                           type="range"
 //                           min={0}
@@ -792,7 +761,6 @@
 //                           className="flex-1 h-1 rounded-lg bg-custom-copper hover:bg-custom-copper accent-primary min-w-[100px]"
 //                         />
 
-//                         {/* Volume Slider */}
 //                         <input
 //                           type="range"
 //                           min={0}
@@ -807,7 +775,6 @@
 //                           className="w-24 h-1 rounded-lg bg-custom-copper hover:bg-custom-copper accent-primary flex-shrink-0"
 //                         />
 
-//                         {/* Fullscreen Button */}
 //                         <Button
 //                           size="sm"
 //                           className="bg-custom-copper hover:bg-custom-copper text-white flex-shrink-0"
@@ -829,17 +796,45 @@
 
 //                   <Button
 //                     className="bg-custom-copper hover:bg-custom-copper text-white"
-//                     onClick={handleViewDocumentClick} // This now opens in a new tab
+//                     onClick={handleViewDocumentClick}
 //                   >
 //                     View Document
 //                   </Button>
+
+//                   {/* Mark as Complete — explicit fallback so completion
+//                       doesn't depend solely on the YouTube "ended" event
+//                       firing (and works for modules with no video at all,
+//                       which previously had no way to be completed). */}
+//                   {selectedModule.status !== "completed" ? (
+//                     <Button
+//                       onClick={() => markModuleComplete(selectedModule.id)}
+//                       disabled={updatingProgress}
+//                       className="bg-green-600 hover:bg-green-700 text-white"
+//                     >
+//                       {updatingProgress ? (
+//                         <>
+//                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+//                           Marking Complete...
+//                         </>
+//                       ) : (
+//                         <>
+//                           <CheckCircle className="h-4 w-4 mr-2" />
+//                           Mark as Complete
+//                         </>
+//                       )}
+//                     </Button>
+//                   ) : (
+//                     <div className="flex items-center gap-2 text-green-600 font-medium">
+//                       <CheckCircle className="h-4 w-4" />
+//                       Module Completed
+//                     </div>
+//                   )}
 //                 </CardContent>
 //               </Card>
 //             ) : (
 //               <p>Select a module to view its content.</p>
 //             )}
 
-//             {/* Professional Quiz */}
 //             {progressData.enrollment.progress_percentage === 100 && (
 //               <div className="mt-8">
 //                 <Card>
@@ -916,7 +911,6 @@
 //                               })}
 //                             </div>
 
-//                             {/* Navigation */}
 //                             <div className="mt-4 flex justify-between">
 //                               <Button
 //                                 onClick={handlePrevQuiz}
@@ -944,7 +938,6 @@
 //               </div>
 //             )}
 
-//             {/* Reviews */}
 //             {progressData.enrollment.progress_percentage === 100 && (
 //               <div id="reviews-section" className="mt-8">
 //                 <ReviewsSection
@@ -956,19 +949,6 @@
 //         </div>
 //       </main>
 
-//       {/* REMOVED Document Viewer component rendering */}
-//       {/* {showDocumentViewer && documentToView && (
-//         <DocumentViewer
-//           document={documentToView}
-//           onClose={() => {
-//             setShowDocumentViewer(false);
-//             setDocumentToView(null);
-//           }}
-//           userName={user?.full_name || "Authorized User"}
-//         />
-//       )} */}
-
-//       {/* Learning Statistics Card */}
 //       <Card className="mt-8 mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8">
 //         <CardHeader>
 //           <CardTitle>Learning Statistics</CardTitle>
@@ -1025,10 +1005,6 @@ import YouTube from "react-youtube";
 import Link from "next/link";
 import { ReviewsSection } from "@/components/reviews/reviews-section";
 
-// We will no longer need to import DocumentViewer or related icons for the viewer
-// import DocumentViewer from "@/components/document-viewer";
-// import { X } from "lucide-react"; // No longer needed for document viewer close
-
 import {
   Play,
   Pause,
@@ -1044,7 +1020,7 @@ import {
   Minimize,
 } from "lucide-react";
 
-// --- Interfaces (Keep these as they are) ---
+// --- Interfaces ---
 interface Document {
   id: string;
   file_name: string;
@@ -1131,8 +1107,8 @@ export default function ModulesPage({
   const router = useRouter();
 
   // --- YouTube Player State and Refs ---
-  const playerRef = useRef<any>(null); // Ref for the YouTube player instance
-  const videoContainerRef = useRef<HTMLDivElement>(null); // Ref for the div wrapping the YouTube player
+  const playerRef = useRef<any>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [volume, setVolume] = useState(100);
@@ -1140,25 +1116,41 @@ export default function ModulesPage({
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // --- Data Fetching ---
-  useEffect(() => {
-    const fetchProgressData = async () => {
-      if (!isAuthenticated) {
-        router.push("/login");
-        return;
-      }
-      try {
-        setLoading(true);
-        const resolvedParams = await params;
-        const response = await fetch(`/api/progress/${resolvedParams.id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-          },
-        });
-        if (!response.ok) throw new Error("Failed to fetch progress data");
-        const data = await response.json();
-        setProgressData(data);
+  // Extracted as a reusable, stable function (not just inline in a
+  // useEffect) so it can also be called after a module is completed —
+  // this refetches the AUTHORITATIVE progress/certificate data from the
+  // server instead of hand-splicing a partial/fake certificate object
+  // into local state. That hand-splicing was the source of the "N/A"
+  // placeholder verification code seen right after generating a
+  // certificate: the real record (with its real verification_code) only
+  // existed in the database, never in local state, until this refetch.
+  const fetchProgressData = useCallback(async () => {
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+    try {
+      const resolvedParams = await params;
+      const response = await fetch(`/api/progress/${resolvedParams.id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch progress data");
+      const data = await response.json();
+      setProgressData(data);
 
-        if (data.modules && data.modules.length > 0) {
+      if (data.modules && data.modules.length > 0) {
+        setSelectedModule((prevSelected) => {
+          // Keep the currently-viewed module selected across a refresh
+          // (e.g. right after marking it complete) instead of jumping
+          // back to the first available module every time.
+          if (prevSelected) {
+            const stillExists = data.modules.find(
+              (m: Module) => m.id === prevSelected.id
+            );
+            if (stillExists) return stillExists;
+          }
           const firstAvailableModule = data.modules.find(
             (module: Module) =>
               module.is_preview ||
@@ -1167,18 +1159,20 @@ export default function ModulesPage({
                 .filter((m: Module) => m.order_index < module.order_index)
                 .every((m: Module) => m.status === "completed")
           );
-          setSelectedModule(firstAvailableModule || data.modules[0]);
-        }
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load training data"
-        );
-      } finally {
-        setLoading(false);
+          return firstAvailableModule || data.modules[0];
+        });
       }
-    };
-    fetchProgressData();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to load training data"
+      );
+    }
   }, [params, isAuthenticated, router]);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchProgressData().finally(() => setLoading(false));
+  }, [fetchProgressData]);
 
   useEffect(() => {
     if (
@@ -1260,52 +1254,6 @@ export default function ModulesPage({
       });
       const data = await response.json();
       if (data.success) {
-        setProgressData((prev) => {
-          if (!prev) return prev;
-
-          const updatedModules = prev.modules.map((module) =>
-            module.id === moduleId
-              ? {
-                  ...module,
-                  status: "completed" as const,
-                  progress_percentage: 100,
-                }
-              : module
-          );
-
-          const newEnrollmentProgress = data.overallProgress;
-          const newCompletedModules = data.completedModules;
-          const newTotalModules = data.totalModules;
-
-          return {
-            ...prev,
-            modules: updatedModules,
-            enrollment: {
-              ...prev.enrollment,
-              progress_percentage: newEnrollmentProgress,
-              status: data.trainingCompleted ? "completed" : "active",
-              completed_at: data.trainingCompleted
-                ? new Date().toISOString()
-                : prev.enrollment.completed_at,
-            },
-            statistics: {
-              ...prev.statistics,
-              completed_modules: newCompletedModules,
-              in_progress_modules: newTotalModules - newCompletedModules,
-              avg_module_progress: newEnrollmentProgress,
-              completion_rate: newEnrollmentProgress,
-            },
-            certificate:
-              data.certificateGenerated && !prev.certificate
-                ? {
-                    certificate_number: data.certificateNumber,
-                    verification_code: "N/A",
-                    created_at: new Date().toISOString(),
-                    pdf_url: "",
-                  }
-                : prev.certificate,
-          };
-        });
         toast({ title: "Module Completed ✅" });
         if (data.trainingCompleted && data.certificateGenerated) {
           toast({
@@ -1314,6 +1262,14 @@ export default function ModulesPage({
               "You have completed the training and your certificate is ready!",
           });
         }
+
+        // Re-fetch the authoritative progress/certificate data from the
+        // server rather than hand-building a partial certificate object
+        // locally. This is what actually fixes the "N/A"/inconsistent
+        // verification code problem — the real certificate row (with
+        // its real certificate_number and verification_code) only
+        // exists in the database, so we go get it rather than guessing.
+        await fetchProgressData();
       }
     } catch (error) {
       console.error(error);
@@ -1334,34 +1290,28 @@ export default function ModulesPage({
     }
   };
 
-  const downloadCertificate = async () => {
+  // View Certificate — now calls the exact same endpoint the dashboard
+  // Certificates page uses (/api/certificates/html-content), instead of
+  // the old /api/certificates/generate-pdf route. That route built its
+  // own certificate HTML from whatever fields the frontend happened to
+  // have in memory, including a FABRICATED verification code
+  // (`VERIFY-${certificateId}`) that never matched the real stored
+  // value, and used a relative logo path. Routing through html-content
+  // guarantees this "View" button always renders identically to the
+  // dashboard's "View" button, from the same server-side data.
+  const viewCertificate = async () => {
     if (!progressData?.certificate) return;
 
     setDownloadingCertificate(true);
     try {
-      const response = await fetch("/api/certificates/generate-pdf", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          studentName: user?.full_name || "Student",
-          courseName: progressData.enrollment.training_title,
-          instructorName: "Ms Betelhem",
-          completionDate: new Date(
-            progressData.certificate.created_at
-          ).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          }),
-          certificateId: progressData.certificate.certificate_number,
-          trainingDescription: `professional ${progressData.enrollment.training_title.toLowerCase()} techniques`,
-        }),
-      });
+      const response = await fetch(
+        `/api/certificates/html-content?verificationCode=${encodeURIComponent(
+          progressData.certificate.verification_code
+        )}`
+      );
 
       if (!response.ok) {
-        throw new Error("Failed to generate certificate");
+        throw new Error("Failed to fetch certificate");
       }
 
       const htmlContent = await response.text();
@@ -1370,21 +1320,21 @@ export default function ModulesPage({
       if (newWindow) {
         newWindow.document.write(htmlContent);
         newWindow.document.close();
-
-        newWindow.onload = () => {
-          setTimeout(() => {
-            newWindow.print();
-          }, 500);
-        };
+      } else {
+        toast({
+          title: "Blocked",
+          description: "Pop-ups blocked. Please allow pop-ups for this site.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      console.error("Certificate download error:", error);
+      console.error("Certificate view error:", error);
       toast({
-        title: "Download Failed",
+        title: "View Failed",
         description:
           error instanceof Error
             ? error.message
-            : "Failed to generate certificate",
+            : "Failed to load certificate",
         variant: "destructive",
       });
     } finally {
@@ -1566,7 +1516,7 @@ export default function ModulesPage({
               </p>
 
               <Button
-                onClick={downloadCertificate}
+                onClick={viewCertificate}
                 disabled={downloadingCertificate}
                 className="bg-custom-copper hover:bg-custom-copper text-white"
                 size="sm"
@@ -1702,18 +1652,10 @@ export default function ModulesPage({
                               iv_load_policy: 3,
                               showinfo: 0,
                               playsinline: 1,
-                              // NOTE: `loop` + `playlist` (pointing at the
-                              // same video) were intentionally removed.
-                              // That combination makes YouTube's player
-                              // loop the video forever, so it never
-                              // cleanly reaches the "ended" state —
-                              // react-youtube's onEnd callback below
-                              // never reliably fired, so module
-                              // completion (and certificate generation)
-                              // never triggered even after watching the
-                              // full video. Without looping, the player
-                              // reaches a real "ended" state and onEnd
-                              // fires correctly.
+                              // `loop` + `playlist` intentionally removed —
+                              // that combination prevented the player from
+                              // ever reaching a real "ended" state, so
+                              // onEnd below never fired reliably.
                             },
                           }}
                           onReady={(e) => {
