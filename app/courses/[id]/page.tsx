@@ -380,10 +380,19 @@ export default function TrainingPage({
       return;
     }
     if (details) {
-      if (Number(details.training.price) === 0) {
+  //     if (Number(details.training.price) === 0) {
+  //       handleFreeEnrollment();
+  //     } else {
+  //       router.push(`/courses/${details.training.id}/payment`); // Go to payment if not free and not enrolled
+  //     }
+  //   }
+  // };
+  const isFree = Number(details.training.price) === 0 || Number(details.training.discount) === 100;
+
+      if (isFree) {
         handleFreeEnrollment();
       } else {
-        router.push(`/courses/${details.training.id}/payment`); // Go to payment if not free and not enrolled
+        router.push(`/courses/${details.training.id}/payment`); 
       }
     }
   };

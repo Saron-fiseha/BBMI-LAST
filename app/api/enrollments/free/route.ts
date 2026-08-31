@@ -42,7 +42,15 @@ export async function POST(request: NextRequest) {
     }
 
     const trainingData = training[0];
-    if (trainingData.price > 0) {
+    // if (trainingData.price > 0) {
+    //   return NextResponse.json(
+    //     { success: false, message: "This training requires payment" },
+    //     { status: 400 }
+    //   );
+    // }
+    const isActuallyFree = Number(trainingData.price) === 0 || Number(trainingData.discount) === 100;
+
+    if (!isActuallyFree) {
       return NextResponse.json(
         { success: false, message: "This training requires payment" },
         { status: 400 }
