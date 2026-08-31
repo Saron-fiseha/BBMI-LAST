@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     // --- Get training details ---
     const training = await sql`
-      SELECT id, name, price, instructor_name
+      SELECT id, name, price, discount, instructor_name
       FROM trainings 
       WHERE id = ${trainingId}
     `;
