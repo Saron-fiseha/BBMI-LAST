@@ -65,7 +65,8 @@ export async function GET(req: NextRequest) {
     // page origin to resolve a relative "/logo.png" against, so it would
     // silently fall back to the placeholder logo without this fix (same
     // root cause as the PDF download route).
-    const baseUrl = req.nextUrl.origin;
+    // const baseUrl = req.nextUrl.origin;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin;
     const logoUrl = `${baseUrl}/logo.png`;
     const htmlContent = generateCertificateHTML(certificateData, { logoUrl });
 

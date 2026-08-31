@@ -125,7 +125,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing essential certificate data for PDF generation." }, { status: 400 });
     }
 
-    const baseUrl = req.nextUrl.origin;
+    // const baseUrl = req.nextUrl.origin;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin;
     const logoUrl = `${baseUrl}/logo.png`;
 
     const certificateData: CertificateData = {
