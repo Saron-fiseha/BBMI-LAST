@@ -191,11 +191,40 @@ export async function DELETE(request: NextRequest) {
     if (!id) {
       return NextResponse.json({ error: "Training ID is required" }, { status: 400 });
     }
+
+    // 1. Clean up dependent child records across all related tables
+    await sql`
+      DELETE FROM certificates 
+      WHERE training_id = ${id} 
+         OR enrollment_id IN (SELECT id FROM enrollments WHERE training_id = ${id})
+    `;
+
+    await sql`
+      DELETE FROM module_progress 
+      WHERE training_id = ${id} 
+         OR enrollment_id IN (SELECT id FROM enrollments WHERE training_id = ${id})
+    `;
+
+    await sql`DELETE FROM lesson_progress WHERE training_id = ${id}`;
+    await sql`DELETE FROM documents WHERE training_id = ${id}`;
+    await sql`DELETE FROM quiz WHERE training_id = ${id}`;
+    await sql`DELETE FROM reviews WHERE training_id = ${id}`;
+    await sql`DELETE FROM payments WHERE training_id = ${id}`;
+    await sql`DELETE FROM enrollments WHERE training_id = ${id}`;
+    await sql`DELETE FROM modules WHERE training_id = ${id}`;
+
+    // 2. Delete training
     await sql`DELETE FROM trainings WHERE id = ${id}`;
-    console.log("✅ Training deleted successfully");
-    return NextResponse.json({ success: true });
+    console.log("✅ Training and associated relations deleted successfully");
+    return NextResponse.json({ success: true, message: "Training deleted successfully" });
   } catch (error) {
     console.error("❌ Training deletion error:", error);
-    return NextResponse.json({ error: "Failed to delete training" }, { status: 500 });
+    return NextResponse.json(
+      { 
+        error: "Failed to delete training", 
+        details: error instanceof Error ? error.message : String(error) 
+      }, 
+      { status: 500 }
+    );
   }
 }
