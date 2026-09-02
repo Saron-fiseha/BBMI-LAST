@@ -287,6 +287,40 @@ export async function DELETE(request: NextRequest) {
     }
 
     console.log("🗑️ Deleting user:", id);
+
+    // 1. Clean up dependent child records across all related tables
+    await sql`
+      DELETE FROM certificates 
+      WHERE user_id = ${id} 
+         OR enrollment_id IN (SELECT id FROM enrollments WHERE user_id = ${id})
+    `;
+
+    await sql`
+      DELETE FROM module_progress 
+      WHERE user_id = ${id} 
+         OR enrollment_id IN (SELECT id FROM enrollments WHERE user_id = ${id})
+    `;
+
+    await sql`DELETE FROM lesson_progress WHERE user_id = ${id}`;
+    await sql`DELETE FROM student_activities WHERE user_id = ${id}`;
+    await sql`DELETE FROM reviews WHERE user_id = ${id}`;
+    await sql`DELETE FROM payments WHERE user_id = ${id}`;
+    await sql`DELETE FROM enrollments WHERE user_id = ${id}`;
+    await sql`DELETE FROM students WHERE user_id = ${id}`;
+
+    await sql`
+      DELETE FROM instructor_sessions 
+      WHERE instructor_id IN (SELECT id FROM instructors WHERE user_id = ${id})
+    `;
+    await sql`DELETE FROM instructors WHERE user_id = ${id}`;
+
+    await sql`UPDATE trainings SET instructor_id = NULL WHERE instructor_id = ${id}`;
+
+    await sql`DELETE FROM messages WHERE sender_id = ${id}`;
+    await sql`DELETE FROM conversations WHERE user1_id = ${id} OR user2_id = ${id}`;
+    await sql`DELETE FROM notifications WHERE user_id = ${id}`;
+
+    // 2. Delete user
     await sql`DELETE FROM users WHERE id = ${id}`;
 
     console.log("✅ User deleted successfully");
@@ -300,6 +334,7 @@ export async function DELETE(request: NextRequest) {
       {
         success: false,
         error: "Failed to delete user",
+        details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 }
     );

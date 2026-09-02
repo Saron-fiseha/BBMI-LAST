@@ -6,19 +6,16 @@ const sql = neon(process.env.DATABASE_URL!)
 
 export async function PUT(request: NextRequest) {
   try {
-     // Get the ID from the URL path
     const id = request.nextUrl.pathname.split('/').pop()
     const body = await request.json()
     const { name, email, phone, age, gender, password, status } = body
 
     console.log("Updating student with ID:", id, "Data:", { name, email, phone, age, gender, status })
 
-    // Validate required fields
     if (!name?.trim() || !email?.trim()) {
       return NextResponse.json({ success: false, error: "Name and email are required" }, { status: 400 })
     }
 
-    // Get the student's user_id
     const student = await sql`
       SELECT user_id FROM students WHERE id = ${id}
     `
@@ -29,7 +26,6 @@ export async function PUT(request: NextRequest) {
 
     const userId = student[0].user_id
 
-    // Check if email already exists for other users
     const existingUser = await sql`
       SELECT id FROM users WHERE email = ${email.trim()} AND id != ${userId}
     `
@@ -38,9 +34,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Email already exists" }, { status: 400 })
     }
 
-    // Update user record using password_hash column
     if (password?.trim()) {
-      // Update with new password
       const hashedPassword = await hashPassword(password)
       await sql`
         UPDATE users 
@@ -54,7 +48,6 @@ export async function PUT(request: NextRequest) {
         WHERE id = ${userId}
       `
     } else {
-      // Update without changing password
       await sql`
         UPDATE users 
         SET full_name = ${name.trim()}, 
@@ -67,7 +60,6 @@ export async function PUT(request: NextRequest) {
       `
     }
 
-    // Update student record
     await sql`
       UPDATE students 
       SET status = ${status || "active"},
@@ -92,32 +84,64 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> | { id: string } }) {
   try {
-    const { id } = params
+    const resolvedParams = await params
+    const id = resolvedParams?.id || request.nextUrl.pathname.split('/').pop()
 
     console.log("Deleting student with ID:", id)
 
-    // Get the student's user_id
-    const student = await sql`
-      SELECT user_id FROM students WHERE id = ${id}
-    `
+    // Check if the ID belongs to students.id or users.id
+    const studentById = await sql`SELECT id, user_id FROM students WHERE id = ${id}`
+    let userId: string | number | null = null
+    let studentRecordId: string | number | null = null
 
-    if (student.length === 0) {
-      return NextResponse.json({ success: false, error: "Student not found" }, { status: 404 })
+    if (studentById.length > 0) {
+      studentRecordId = studentById[0].id
+      userId = studentById[0].user_id
+    } else {
+      // Fallback: check if id was passed as user_id directly
+      const studentByUserId = await sql`SELECT id, user_id FROM students WHERE user_id = ${id}`
+      if (studentByUserId.length > 0) {
+        studentRecordId = studentByUserId[0].id
+        userId = id
+      } else {
+        const userDirect = await sql`SELECT id FROM users WHERE id = ${id}`
+        if (userDirect.length > 0) {
+          userId = id
+        } else {
+          return NextResponse.json({ success: false, error: "Student not found" }, { status: 404 })
+        }
+      }
     }
 
-    const userId = student[0].user_id
+    // 1. Clean up dependent child records for userId
+    if (userId) {
+      await sql`
+        DELETE FROM certificates 
+        WHERE user_id = ${userId} 
+           OR enrollment_id IN (SELECT id FROM enrollments WHERE user_id = ${userId})
+      `
 
-    // Delete student record first (due to foreign key constraint)
-    await sql`
-      DELETE FROM students WHERE id = ${id}
-    `
+      await sql`
+        DELETE FROM module_progress 
+        WHERE user_id = ${userId} 
+           OR enrollment_id IN (SELECT id FROM enrollments WHERE user_id = ${userId})
+      `
 
-    // Delete user record
-    await sql`
-      DELETE FROM users WHERE id = ${userId}
-    `
+      await sql`DELETE FROM lesson_progress WHERE user_id = ${userId}`
+      await sql`DELETE FROM student_activities WHERE user_id = ${userId}`
+      await sql`DELETE FROM reviews WHERE user_id = ${userId}`
+      await sql`DELETE FROM payments WHERE user_id = ${userId}`
+      await sql`DELETE FROM enrollments WHERE user_id = ${userId}`
+      await sql`DELETE FROM students WHERE user_id = ${userId} OR id = ${id}`
+      await sql`DELETE FROM notifications WHERE user_id = ${userId}`
+      await sql`DELETE FROM messages WHERE sender_id = ${userId}`
+      await sql`DELETE FROM conversations WHERE user1_id = ${userId} OR user2_id = ${userId}`
+      await sql`DELETE FROM users WHERE id = ${userId}`
+    } else if (studentRecordId) {
+      await sql`DELETE FROM students WHERE id = ${studentRecordId}`
+    }
 
     return NextResponse.json({
       success: true,
@@ -136,7 +160,6 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   }
 }
 
-// Simple password hashing function
 async function hashPassword(password: string): Promise<string> {
   try {
     const bcrypt = await import("bcryptjs")

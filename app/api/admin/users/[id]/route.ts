@@ -1,16 +1,16 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { sql } from "@/lib/db"
+import { neon } from "@neondatabase/serverless"
 import bcrypt from "bcryptjs"
 export const dynamic = "force-dynamic"
 
+const sql = neon(process.env.DATABASE_URL!)
+
 export async function PUT(request: NextRequest) {
   try {
-    // Get the ID from the URL path
     const id = request.nextUrl.pathname.split('/').pop()
     const body = await request.json()
     const { name, email, phone, age, gender, password, role, status, image_url } = body
 
-    // Validate required fields
     if (!name || !email) {
       return NextResponse.json(
         {
@@ -21,7 +21,6 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // Check if email is already taken by another user
     const existingUser = await sql`SELECT id FROM users WHERE email = ${email} AND id != ${id}`
 
     if (existingUser.length > 0) {
@@ -34,10 +33,8 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // Update user with or without password
     let result
     if (password && password.trim()) {
-      // Update with new password
       const hashedPassword = await bcrypt.hash(password, 12)
       result = await sql`
         UPDATE users 
@@ -48,7 +45,6 @@ export async function PUT(request: NextRequest) {
         RETURNING id, full_name, email, phone, age, sex, role, status,  profile_picture, created_at
       `
     } else {
-      // Update without changing password
       result = await sql`
         UPDATE users 
         SET full_name = ${name}, email = ${email}, phone = ${phone || null}, age = ${age || null}, 
@@ -86,11 +82,15 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> | { id: string } }) {
   try {
-    const { id } = params
+    const resolvedParams = await params
+    const id = resolvedParams?.id || request.nextUrl.pathname.split('/').pop()
 
-    // Check if user exists
+    if (!id) {
+      return NextResponse.json({ success: false, error: "User ID is required" }, { status: 400 })
+    }
+
     const existingUser = await sql`SELECT id, full_name FROM users WHERE id = ${id}`
 
     if (existingUser.length === 0) {
@@ -103,12 +103,46 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       )
     }
 
-    // Delete user
+    const userName = existingUser[0].full_name
+
+    // 1. Clean up dependent child records across all related tables
+    await sql`
+      DELETE FROM certificates 
+      WHERE user_id = ${id} 
+         OR enrollment_id IN (SELECT id FROM enrollments WHERE user_id = ${id})
+    `
+
+    await sql`
+      DELETE FROM module_progress 
+      WHERE user_id = ${id} 
+         OR enrollment_id IN (SELECT id FROM enrollments WHERE user_id = ${id})
+    `
+
+    await sql`DELETE FROM lesson_progress WHERE user_id = ${id}`
+    await sql`DELETE FROM student_activities WHERE user_id = ${id}`
+    await sql`DELETE FROM reviews WHERE user_id = ${id}`
+    await sql`DELETE FROM payments WHERE user_id = ${id}`
+    await sql`DELETE FROM enrollments WHERE user_id = ${id}`
+    await sql`DELETE FROM students WHERE user_id = ${id}`
+
+    await sql`
+      DELETE FROM instructor_sessions 
+      WHERE instructor_id IN (SELECT id FROM instructors WHERE user_id = ${id})
+    `
+    await sql`DELETE FROM instructors WHERE user_id = ${id}`
+
+    await sql`UPDATE trainings SET instructor_id = NULL WHERE instructor_id = ${id}`
+
+    await sql`DELETE FROM messages WHERE sender_id = ${id}`
+    await sql`DELETE FROM conversations WHERE user1_id = ${id} OR user2_id = ${id}`
+    await sql`DELETE FROM notifications WHERE user_id = ${id}`
+
+    // 2. Delete the user
     await sql`DELETE FROM users WHERE id = ${id}`
 
     return NextResponse.json({
       success: true,
-      message: `User ${existingUser[0].name} deleted successfully`,
+      message: `User ${userName} deleted successfully`,
     })
   } catch (error) {
     console.error("Error deleting user:", error)
@@ -116,6 +150,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       {
         success: false,
         error: "Failed to delete user",
+        details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 },
     )

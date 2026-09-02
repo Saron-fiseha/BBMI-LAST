@@ -238,6 +238,13 @@ export async function DELETE(request: NextRequest) {
     const userId = instructorRecord[0].user_id;
     
     // It's safer to delete the instructor record first, then the user record.
+    // Clean up dependent child records before deleting instructor
+    await sql`DELETE FROM instructor_sessions WHERE instructor_id = ${id}`;
+    await sql`UPDATE trainings SET instructor_id = NULL WHERE instructor_id = ${userId}`;
+    await sql`DELETE FROM reviews WHERE user_id = ${userId}`;
+    await sql`DELETE FROM messages WHERE sender_id = ${userId}`;
+    await sql`DELETE FROM conversations WHERE user1_id = ${userId} OR user2_id = ${userId}`;
+    await sql`DELETE FROM notifications WHERE user_id = ${userId}`;
     await sql`DELETE FROM instructors WHERE id = ${id}`;
     await sql`DELETE FROM users WHERE id = ${userId}`;
 
