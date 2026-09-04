@@ -22,11 +22,32 @@ export async function GET(request: NextRequest) {
         COALESCE(u.sex, '') as gender,
         COUNT(DISTINCT e.training_id) AS courses_enrolled,
         (
-          SELECT COALESCE(STRING_AGG(DISTINCT t.name, ', '), '')
+          SELECT COALESCE(STRING_AGG(DISTINCT t.name, ', ' ORDER BY t.name), '')
           FROM enrollments enr
           JOIN trainings t ON enr.training_id = t.id
           WHERE enr.user_id = u.id
         ) AS enrolled_courses,
+        (
+          SELECT COALESCE(
+            STRING_AGG(
+              t.name || ' (Quiz: ' || 
+              CASE 
+                WHEN (SELECT COUNT(*) FROM quiz q WHERE q.training_id = t.id) = 0 THEN 'No quiz'
+                WHEN enr.grade IS NOT NULL AND enr.grade != '' THEN 
+                  CASE 
+                    WHEN enr.grade LIKE '%/%' THEN enr.grade
+                    ELSE enr.grade || '/' || (SELECT COUNT(*) FROM quiz q WHERE q.training_id = t.id)::text
+                  END
+                ELSE '0/' || (SELECT COUNT(*) FROM quiz q WHERE q.training_id = t.id)::text
+              END || ')',
+              ', '
+            ),
+            'None'
+          )
+          FROM enrollments enr
+          JOIN trainings t ON enr.training_id = t.id
+          WHERE enr.user_id = u.id
+        ) AS courses_with_quiz_export,
         COUNT(DISTINCT e.training_id) FILTER (WHERE e.status = 'completed') AS courses_completed,
         ROUND(COALESCE(SUM(mp.time_spent_minutes), 0)::numeric / 60.0, 1) AS total_hours,
         s.status,
@@ -42,7 +63,7 @@ export async function GET(request: NextRequest) {
     if (search) {
       query = sql`
         ${query}
-        AND (u.full_name ILIKE ${`%${search}%`} OR u.email ILIKE ${`%${search}%`})
+        AND (u.full_name ILIKE ${'%' + search + '%'} OR u.email ILIKE ${'%' + search + '%'})
       `
     }
     if (status !== "all") {
@@ -77,6 +98,7 @@ export async function GET(request: NextRequest) {
       "Gender",
       "Courses Enrolled",
       "Enrolled Course(s)",
+      "Quiz Results",
       "Courses Completed",
       "Total Hours",
       "Status",
@@ -94,6 +116,7 @@ export async function GET(request: NextRequest) {
       student.gender || "",
       student.courses_enrolled || 0,
       student.enrolled_courses || "None",
+      student.courses_with_quiz_export || "None",
       student.courses_completed || 0,
       student.total_hours || 0,
       student.status || "",

@@ -34,6 +34,15 @@ interface Student {
   role: string
   courses_enrolled: number
   enrolled_courses?: string
+  courses_details?: Array<{
+    course_name: string
+    training_id: number
+    grade: string | null
+    status: string
+    progress: number
+    total_questions: number
+  }>
+  courses_with_quiz_export?: string
   courses_completed: number
   total_hours: number
   join_date: string
@@ -720,6 +729,33 @@ export default function StudentsPage() {
                             {student.enrolled_courses || "None"}
                           </p>
                         </div>
+                        <div className="col-span-2">
+                          <span className="text-gray-500">Quiz Results:</span>
+                          {student.courses_details && student.courses_details.length > 0 ? (
+                            <div className="mt-1 space-y-1">
+                              {student.courses_details.map((c, cIdx) => {
+                                let scoreDisplay = "";
+                                if (c.grade && c.grade.trim() !== "") {
+                                  scoreDisplay = c.grade.includes("/") ? c.grade : `${c.grade}/${c.total_questions}`;
+                                } else if (c.total_questions === 0) {
+                                  scoreDisplay = "No quiz";
+                                } else {
+                                  scoreDisplay = `0/${c.total_questions}`;
+                                }
+                                return (
+                                  <div key={cIdx} className="flex items-center justify-between text-xs py-0.5">
+                                    <span className="text-charcoal">• {c.course_name}:</span>
+                                    <span className="font-semibold text-deep-purple bg-mustard/10 px-1.5 py-0.5 rounded border border-mustard/20">
+                                      {scoreDisplay}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-gray-400 italic">No quiz data</p>
+                          )}
+                        </div>
                         <div>
                           <span className="text-gray-500">Progress:</span>
                           <p className="font-medium">
@@ -785,6 +821,7 @@ export default function StudentsPage() {
                       <TableHead className="text-charcoal font-semibold">Gender</TableHead>
                       <TableHead className="text-charcoal font-semibold">Courses</TableHead>
                       <TableHead className="text-charcoal font-semibold">Enrolled Course(s)</TableHead>
+                      <TableHead className="text-charcoal font-semibold">Quiz Results</TableHead>
                       <TableHead className="text-charcoal font-semibold">Progress</TableHead>
                       <TableHead className="text-charcoal font-semibold">Status</TableHead>
                       <TableHead className="text-charcoal font-semibold">Actions</TableHead>
@@ -793,7 +830,7 @@ export default function StudentsPage() {
                   <TableBody>
                     {students.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={11} className="text-center py-8 text-deep-purple">
+                        <TableCell colSpan={12} className="text-center py-8 text-deep-purple">
                           {error
                             ? "Error loading students. Please try again."
                             : "No students found. Click 'Add Student' to create your first student."}
@@ -831,21 +868,62 @@ export default function StudentsPage() {
                               <div className="text-sm text-deep-purple">Completed: {student.courses_completed}</div>
                             </div>
                           </TableCell>
-                          <TableCell className="max-w-[220px]">
+                          <TableCell className="max-w-[200px]">
                             {student.enrolled_courses ? (
-                              <div className="flex flex-wrap gap-1">
+                              <div className="flex flex-col gap-1.5">
                                 {student.enrolled_courses.split(", ").map((courseName, i) => (
-                                  <Badge
+                                  <div
                                     key={i}
-                                    variant="outline"
-                                    className="bg-mustard/10 text-charcoal border-mustard/30 text-xs font-normal"
+                                    className="px-2.5 py-1 bg-mustard/10 rounded-md border border-mustard/20 text-xs text-charcoal font-medium"
                                   >
                                     {courseName}
-                                  </Badge>
+                                  </div>
                                 ))}
                               </div>
                             ) : (
                               <span className="text-gray-400 text-xs italic">None</span>
+                            )}
+                          </TableCell>
+                          <TableCell className="min-w-[180px] max-w-[260px]">
+                            {student.courses_details && student.courses_details.length > 0 ? (
+                              <div className="flex flex-col gap-1.5">
+                                {student.courses_details.map((c, cIdx) => {
+                                  let scoreDisplay = "";
+                                  let isCompleteOrHigh = false;
+                                  if (c.grade && c.grade.trim() !== "") {
+                                    scoreDisplay = c.grade.includes("/") ? c.grade : `${c.grade}/${c.total_questions}`;
+                                    isCompleteOrHigh = true;
+                                  } else if (c.total_questions === 0) {
+                                    scoreDisplay = "No quiz";
+                                  } else {
+                                    scoreDisplay = `0/${c.total_questions}`;
+                                  }
+
+                                  return (
+                                    <div
+                                      key={cIdx}
+                                      className="flex items-center justify-between gap-2 px-2.5 py-1 bg-mustard/10 rounded-md border border-mustard/20 text-xs"
+                                    >
+                                      <span className="font-medium text-charcoal truncate max-w-[130px]" title={c.course_name}>
+                                        {c.course_name}
+                                      </span>
+                                      <span
+                                        className={`font-semibold px-2 py-0.5 rounded text-[11px] whitespace-nowrap ${
+                                          c.total_questions === 0
+                                            ? "bg-gray-100 text-gray-500 border border-gray-200"
+                                            : isCompleteOrHigh
+                                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                                            : "bg-amber-50 text-amber-700 border border-amber-200"
+                                        }`}
+                                      >
+                                        {scoreDisplay}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <span className="text-gray-400 text-xs italic">No quiz data</span>
                             )}
                           </TableCell>
                           <TableCell>

@@ -64,11 +64,51 @@ export async function GET(request: NextRequest) {
         u.role,
         COUNT(DISTINCT e.training_id) AS courses_enrolled,
         (
-          SELECT COALESCE(STRING_AGG(DISTINCT t.name, ', '), '')
+          SELECT COALESCE(STRING_AGG(DISTINCT t.name, ', ' ORDER BY t.name), '')
           FROM enrollments enr
           JOIN trainings t ON enr.training_id = t.id
           WHERE enr.user_id = u.id
         ) AS enrolled_courses,
+        (
+          SELECT COALESCE(
+            json_agg(
+              json_build_object(
+                'course_name', t.name,
+                'training_id', t.id,
+                'grade', enr.grade,
+                'status', enr.status,
+                'progress', enr.progress_percentage,
+                'total_questions', (SELECT COUNT(*) FROM quiz q WHERE q.training_id = t.id)
+              )
+              ORDER BY t.name
+            ),
+            '[]'::json
+          )
+          FROM enrollments enr
+          JOIN trainings t ON enr.training_id = t.id
+          WHERE enr.user_id = u.id
+        ) AS courses_details,
+        (
+          SELECT COALESCE(
+            STRING_AGG(
+              t.name || ' (Quiz: ' || 
+              CASE 
+                WHEN (SELECT COUNT(*) FROM quiz q WHERE q.training_id = t.id) = 0 THEN 'No quiz'
+                WHEN enr.grade IS NOT NULL AND enr.grade != '' THEN 
+                  CASE 
+                    WHEN enr.grade LIKE '%/%' THEN enr.grade
+                    ELSE enr.grade || '/' || (SELECT COUNT(*) FROM quiz q WHERE q.training_id = t.id)::text
+                  END
+                ELSE '0/' || (SELECT COUNT(*) FROM quiz q WHERE q.training_id = t.id)::text
+              END || ')',
+              ', '
+            ),
+            'None'
+          )
+          FROM enrollments enr
+          JOIN trainings t ON enr.training_id = t.id
+          WHERE enr.user_id = u.id
+        ) AS courses_with_quiz_export,
         COUNT(DISTINCT e.training_id) FILTER (WHERE e.status = 'completed') AS courses_completed,
         ROUND(COALESCE(SUM(mp.time_spent_minutes), 0)::numeric / 60.0, 1) AS total_hours,
         COALESCE(AVG(e.progress_percentage), 0) AS progress_percent,

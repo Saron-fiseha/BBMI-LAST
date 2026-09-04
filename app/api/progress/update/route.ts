@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     console.log("User authenticated:", user.id)
 
     const body = await request.json()
-    const { trainingId, moduleId, status, progressPercentage, timeSpent } = body
+    const { trainingId, moduleId, status, progressPercentage, timeSpent, grade } = body
 
     console.log("Request body:", body)
 
@@ -94,6 +94,7 @@ export async function POST(request: NextRequest) {
       SET 
         progress_percentage = ${overallProgress},
         status = ${trainingCompleted ? "completed" : "active"},
+        grade = CASE WHEN ${grade ? true : false} THEN ${grade || null} ELSE grade END,
         completed_at = ${trainingCompleted ? sql`CURRENT_TIMESTAMP` : null},
         last_accessed = CURRENT_TIMESTAMP
       WHERE id = ${enrollmentId}

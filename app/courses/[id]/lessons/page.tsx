@@ -1424,11 +1424,38 @@ export default function ModulesPage({
     selectedIdx: number,
     correctIdx: number
   ) => {
-    setQuizAnswers((prev) => ({ ...prev, [quizId]: selectedIdx }));
+    const updatedAnswers = { ...quizAnswers, [quizId]: selectedIdx };
+    setQuizAnswers(updatedAnswers);
     setShowCorrectAnswers((prev) => ({
       ...prev,
       [quizId]: selectedIdx !== correctIdx,
     }));
+
+    // If all quiz questions are answered, immediately submit the score to the backend
+    if (quizzes.length > 0 && Object.keys(updatedAnswers).length === quizzes.length && progressData?.enrollment) {
+      const calculatedScore = quizzes.filter(
+        (q) => updatedAnswers[q.id] === q.correct_answer_index
+      ).length;
+      
+      const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+      if (token) {
+        fetch("/api/quiz/submit", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            trainingId: progressData.enrollment.training_id,
+            score: calculatedScore,
+            totalQuestions: quizzes.length,
+          }),
+        })
+          .then((res) => res.json())
+          .then((d) => console.log("Quiz score saved:", d))
+          .catch((err) => console.error("Error saving quiz score:", err));
+      }
+    }
   };
 
   const handleNextQuiz = () => {
@@ -1443,6 +1470,26 @@ export default function ModulesPage({
   const totalScore = quizzes.filter(
     (q) => quizAnswers[q.id] === q.correct_answer_index
   ).length;
+
+  useEffect(() => {
+    if (quizzes.length > 0 && Object.keys(quizAnswers).length === quizzes.length && progressData?.enrollment) {
+      const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+      if (token) {
+        fetch("/api/quiz/submit", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            trainingId: progressData.enrollment.training_id,
+            score: totalScore,
+            totalQuestions: quizzes.length,
+          }),
+        }).catch((e) => console.error("Error saving quiz score:", e));
+      }
+    }
+  }, [quizAnswers, quizzes.length, totalScore, progressData?.enrollment?.training_id]);
 
   // --- Document Opener Handler ---
   const handleViewDocumentClick = () => {
